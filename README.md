@@ -46,6 +46,30 @@
   └── docs/
       └── api/             # Documentação da API
 
+## Workflow de Desenvolvimento
+
+  ### Trabalhando com Banco de Dados
+
+  1. **Criar nova tabela/alteração:**
+     ```bash
+     make migrate-create name=descrição_da_mudança
+
+  2. Escrever queries SQL:
+    - Adicione queries em internal/repository/queries/
+    - Use comentários especiais do SQLC: -- name: NomeDaFuncao :tipo
+  3. Gerar código:
+  make sqlc-generate
+  4. Aplicar no banco:
+  make migrate-up
+
+  Tipos de queries SQLC:
+
+  - :one - Retorna um único registro
+  - :many - Retorna múltiplos registros
+  - :exec - Executa sem retorno (DELETE, UPDATE)
+  - :execrows - Executa e retorna número de linhas afetadas
+  - :copyfrom - Bulk insert eficiente
+
   ## Documentação
 
   - [Arquitetura](kitnet_architecture.md)
@@ -59,4 +83,4 @@
 
   Projeto privado
 
-  4. Verificar estrutura criada
+  1. Verificar estrutura criada

@@ -63,3 +63,23 @@ migrate-force: ## Forçar versão da migration (resolver dirty state). Uso: make
 	fi
 	@echo "$(YELLOW)Forçando migration para versão $(version)...$(NC)"
 	@migrate -path $(MIGRATIONS_PATH) -database "$(DB_URL)" force $(version)
+
+.PHONY: sqlc-generate
+sqlc-generate: ## Gerar código Go a partir das queries SQL
+	@echo "$(GREEN)Gerando código SQLC...$(NC)"
+	@sqlc generate
+	@echo "$(GREEN)✓ Código SQLC gerado com sucesso$(NC)"
+
+.PHONY: sqlc-verify
+sqlc-verify: ## Verificar se as queries SQL estão corretas
+	@echo "$(GREEN)Verificando queries SQL...$(NC)"
+	@sqlc verify
+	@echo "$(GREEN)✓ Queries SQL válidas$(NC)"
+
+.PHONY: db-setup
+db-setup: migrate-up sqlc-generate ## Setup completo do banco (migrations + sqlc)
+	@echo "$(GREEN)✓ Banco de dados configurado$(NC)"
+
+.PHONY: db-reset
+db-reset: migrate-drop migrate-up sqlc-generate ## Reset completo do banco
+	@echo "$(GREEN)✓ Banco de dados resetado$(NC)"

@@ -57,11 +57,11 @@
 - [x] Testar criação de migration de exemplo
 
 ### 0.6 Setup do SQLC
-- [ ] Instalar SQLC CLI
-- [ ] Criar diretório `internal/repository/queries/`
-- [ ] Criar arquivo `sqlc.yaml` com configurações
-- [ ] Adicionar comando no Makefile para gerar código SQLC
-- [ ] Documentar workflow do SQLC no README
+- [x] Instalar SQLC CLI
+- [x] Criar diretório `internal/repository/queries/`
+- [x] Criar arquivo `sqlc.yaml` com configurações
+- [x] Adicionar comando no Makefile para gerar código SQLC
+- [x] Documentar workflow do SQLC no README
 
 ### 0.7 Estrutura Base da Aplicação
 - [ ] Criar `cmd/api/main.go` com estrutura básica
