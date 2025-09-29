@@ -40,13 +40,13 @@
 - [x] Documentar credenciais no .env.example
 
 ### 0.4 Configuração de Dependências
-- [ ] Instalar Chi router: `go get github.com/go-chi/chi/v5`
-- [ ] Instalar driver PostgreSQL: `go get github.com/lib/pq`
-- [ ] Instalar godotenv: `go get github.com/joho/godotenv`
-- [ ] Instalar validator: `go get github.com/go-playground/validator/v10`
-- [ ] Instalar UUID: `go get github.com/google/uuid`
-- [ ] Instalar decimal: `go get github.com/shopspring/decimal`
-- [ ] Documentar todas as dependências no README
+- [x] Instalar Chi router: `go get github.com/go-chi/chi/v5`
+- [x] Instalar driver PostgreSQL: `go get github.com/lib/pq`
+- [x] Instalar godotenv: `go get github.com/joho/godotenv`
+- [x] Instalar validator: `go get github.com/go-playground/validator/v10`
+- [x] Instalar UUID: `go get github.com/google/uuid`
+- [x] Instalar decimal: `go get github.com/shopspring/decimal`
+- [x] Documentar todas as dependências no README
 
 ### 0.5 Setup de Migrations
 - [ ] Instalar golang-migrate CLI

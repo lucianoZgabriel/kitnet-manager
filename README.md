@@ -11,13 +11,19 @@
 
   🚧 Em desenvolvimento - Sprint 0: Setup inicial
 
-  ## Tecnologias
+  ## Tecnologias e Dependências
 
-  - **Backend:** Go 1.21+
-  - **Database:** PostgreSQL (Neon)
-  - **Router:** Chi
-  - **Migrations:** golang-migrate
-  - **SQL:** SQLC
+  ### Backend
+  - **Linguagem:** Go 1.21+
+  - **Database:** PostgreSQL 17.5 (Neon)
+
+  ### Principais Dependências
+  - **Chi Router** (`go-chi/chi/v5`) - Roteador HTTP leve e idiomático
+  - **pq** (`lib/pq`) - Driver PostgreSQL nativo para Go
+  - **godotenv** (`joho/godotenv`) - Carregamento de variáveis de ambiente
+  - **validator** (`go-playground/validator/v10`) - Validação de structs e campos
+  - **uuid** (`google/uuid`) - Geração e manipulação de UUIDs
+  - **decimal** (`shopspring/decimal`) - Precisão decimal para valores monetários
 
   ## Estrutura do Projeto
 
