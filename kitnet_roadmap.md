@@ -1,0 +1,721 @@
+# Roadmap - Kitnet Manager
+
+> Plano de desenvolvimento detalhado com sprints e tarefas granulares
+
+## 📅 Visão Geral
+
+- **Duração estimada do MVP:** 8-10 semanas
+- **Metodologia:** Desenvolvimento iterativo e incremental
+- **Entregas:** Funcionalidades testáveis ao final de cada sprint
+
+---
+
+## Sprint 0: Setup & Infraestrutura
+**Duração:** 2-3 dias  
+**Objetivo:** Preparar ambiente de desenvolvimento e infraestrutura básica
+
+### 0.1 Configuração do Controle de Versão
+- [ ] Criar conta no GitHub (se não tiver)
+- [ ] Criar novo repositório: `kitnet-manager`
+- [ ] Configurar visibilidade (privado ou público)
+- [ ] Adicionar `.gitignore` para Go
+- [ ] Criar branch `main` como padrão
+- [ ] Configurar proteção da branch main (opcional)
+- [ ] Fazer commit inicial com README básico
+
+### 0.2 Estrutura do Projeto Local
+- [ ] Criar diretório local do projeto
+- [ ] Inicializar Go module: `go mod init github.com/seu-usuario/kitnet-manager`
+- [ ] Criar estrutura de diretórios completa
+- [ ] Adicionar README.md detalhado
+- [ ] Adicionar ARCHITECTURE.md
+- [ ] Adicionar ROADMAP.md
+- [ ] Adicionar LICENSE (se aplicável)
+
+### 0.3 Configuração do Neon Database
+- [ ] Criar conta no Neon (https://neon.tech)
+- [ ] Criar novo projeto no Neon
+- [ ] Anotar connection string
+- [ ] Testar conexão localmente
+- [ ] Documentar credenciais no .env.example
+
+### 0.4 Configuração de Dependências
+- [ ] Instalar Chi router: `go get github.com/go-chi/chi/v5`
+- [ ] Instalar driver PostgreSQL: `go get github.com/lib/pq`
+- [ ] Instalar godotenv: `go get github.com/joho/godotenv`
+- [ ] Instalar validator: `go get github.com/go-playground/validator/v10`
+- [ ] Instalar UUID: `go get github.com/google/uuid`
+- [ ] Instalar decimal: `go get github.com/shopspring/decimal`
+- [ ] Documentar todas as dependências no README
+
+### 0.5 Setup de Migrations
+- [ ] Instalar golang-migrate CLI
+- [ ] Criar diretório `migrations/`
+- [ ] Adicionar comando no Makefile para criar migrations
+- [ ] Adicionar comando no Makefile para executar migrations up
+- [ ] Adicionar comando no Makefile para executar migrations down
+- [ ] Testar criação de migration de exemplo
+
+### 0.6 Setup do SQLC
+- [ ] Instalar SQLC CLI
+- [ ] Criar diretório `internal/repository/queries/`
+- [ ] Criar arquivo `sqlc.yaml` com configurações
+- [ ] Adicionar comando no Makefile para gerar código SQLC
+- [ ] Documentar workflow do SQLC no README
+
+### 0.7 Estrutura Base da Aplicação
+- [ ] Criar `cmd/api/main.go` com estrutura básica
+- [ ] Criar `internal/pkg/database/postgres.go` para conexão
+- [ ] Criar `internal/pkg/response/response.go` para padronização
+- [ ] Criar `.env.example` com variáveis necessárias
+- [ ] Criar `.env` local (gitignored)
+- [ ] Testar inicialização básica da aplicação
+
+### 0.8 Makefile e Scripts
+- [ ] Criar Makefile com comandos úteis:
+  - `make run` - executar aplicação
+  - `make build` - compilar binário
+  - `make test` - executar testes
+  - `make migrate-up` - aplicar migrations
+  - `make migrate-down` - reverter migrations
+  - `make migrate-create` - criar nova migration
+  - `make sqlc-generate` - gerar código SQLC
+  - `make lint` - executar linter (futuro)
+- [ ] Documentar comandos no README
+- [ ] Testar todos os comandos
+
+### 0.9 Commit e Push Inicial
+- [ ] Revisar todos os arquivos criados
+- [ ] Adicionar arquivos ao git
+- [ ] Fazer commit: "chore: initial project setup"
+- [ ] Push para repositório remoto
+- [ ] Verificar no GitHub
+
+---
+
+## Sprint 1: CRUD de Unidades e Moradores
+**Duração:** 3-4 dias  
+**Objetivo:** Implementar gestão completa de unidades e moradores
+
+### 1.1 Migration e Schema - Units
+- [ ] Criar migration `000001_create_units_table.up.sql`
+- [ ] Definir tabela units com todos os campos
+- [ ] Adicionar constraints e checks
+- [ ] Criar índices necessários
+- [ ] Criar migration down correspondente
+- [ ] Executar migration e verificar no Neon
+- [ ] Adicionar schema no arquivo de referência SQLC
+
+### 1.2 Domain Model - Unit
+- [ ] Criar arquivo `internal/domain/unit.go`
+- [ ] Definir struct Unit com todos os campos
+- [ ] Definir enum UnitStatus (available, occupied, maintenance, renovation)
+- [ ] Adicionar métodos de validação no domínio
+- [ ] Adicionar método CalculateCurrentRentValue()
+- [ ] Adicionar testes unitários do domínio
+
+### 1.3 Repository - Unit (SQLC)
+- [ ] Criar arquivo `internal/repository/queries/units.sql`
+- [ ] Escrever query CreateUnit
+- [ ] Escrever query GetUnitByID
+- [ ] Escrever query ListUnits (com filtros opcionais)
+- [ ] Escrever query UpdateUnit
+- [ ] Escrever query UpdateUnitStatus
+- [ ] Escrever query DeleteUnit
+- [ ] Gerar código com SQLC
+- [ ] Criar `internal/repository/postgres/unit_repo.go`
+- [ ] Implementar interface UnitRepository
+- [ ] Adicionar testes de integração (opcional neste momento)
+
+### 1.4 Service - Unit
+- [ ] Criar arquivo `internal/service/unit_service.go`
+- [ ] Definir struct UnitService com dependências
+- [ ] Implementar CreateUnit com validações de negócio
+- [ ] Implementar GetUnitByID
+- [ ] Implementar ListUnits com filtros
+- [ ] Implementar UpdateUnit
+- [ ] Implementar UpdateUnitStatus (validar transições)
+- [ ] Implementar DeleteUnit (validar se não tem contrato ativo)
+- [ ] Adicionar testes unitários do service
+
+### 1.5 Handler - Unit
+- [ ] Criar arquivo `internal/handler/unit_handler.go`
+- [ ] Definir struct UnitHandler
+- [ ] Criar DTOs (CreateUnitRequest, UpdateUnitRequest, UnitResponse)
+- [ ] Implementar CreateUnit handler (POST /api/units)
+- [ ] Implementar GetUnit handler (GET /api/units/:id)
+- [ ] Implementar ListUnits handler (GET /api/units)
+- [ ] Implementar UpdateUnit handler (PUT /api/units/:id)
+- [ ] Implementar UpdateUnitStatus handler (PATCH /api/units/:id/status)
+- [ ] Implementar DeleteUnit handler (DELETE /api/units/:id)
+- [ ] Adicionar validação de inputs
+
+### 1.6 Router - Units
+- [ ] Criar ou atualizar `internal/handler/router.go`
+- [ ] Registrar rotas de units
+- [ ] Configurar middlewares básicos (logger, CORS)
+- [ ] Agrupar rotas sob /api/v1
+- [ ] Testar todas as rotas manualmente (Postman/cURL)
+
+### 1.7 Migration e Schema - Tenants
+- [ ] Criar migration `000002_create_tenants_table.up.sql`
+- [ ] Definir tabela tenants com todos os campos
+- [ ] Adicionar constraint UNIQUE no CPF
+- [ ] Criar índice no CPF
+- [ ] Criar migration down correspondente
+- [ ] Executar migration e verificar no Neon
+- [ ] Adicionar schema no arquivo de referência SQLC
+
+### 1.8 Domain Model - Tenant
+- [ ] Criar arquivo `internal/domain/tenant.go`
+- [ ] Definir struct Tenant
+- [ ] Adicionar método ValidateCPF()
+- [ ] Adicionar método FormatPhone()
+- [ ] Adicionar testes unitários
+
+### 1.9 Repository - Tenant (SQLC)
+- [ ] Criar arquivo `internal/repository/queries/tenants.sql`
+- [ ] Escrever queries: Create, GetByID, GetByCPF, List, Update, Delete
+- [ ] Gerar código com SQLC
+- [ ] Criar `internal/repository/postgres/tenant_repo.go`
+- [ ] Implementar interface TenantRepository
+
+### 1.10 Service - Tenant
+- [ ] Criar arquivo `internal/service/tenant_service.go`
+- [ ] Implementar CreateTenant (validar CPF único)
+- [ ] Implementar GetTenantByID
+- [ ] Implementar GetTenantByCPF
+- [ ] Implementar ListTenants
+- [ ] Implementar UpdateTenant
+- [ ] Implementar DeleteTenant (validar se não tem contrato ativo)
+- [ ] Adicionar testes unitários
+
+### 1.11 Handler - Tenant
+- [ ] Criar arquivo `internal/handler/tenant_handler.go`
+- [ ] Criar DTOs necessários
+- [ ] Implementar handlers para todas as operações CRUD
+- [ ] Adicionar validação de CPF no handler
+
+### 1.12 Router - Tenants
+- [ ] Registrar rotas de tenants no router
+- [ ] Testar todas as rotas manualmente
+
+### 1.13 Testes e Documentação
+- [ ] Testar fluxo completo de unidades
+- [ ] Testar fluxo completo de moradores
+- [ ] Documentar endpoints no README ou criar doc/api/
+- [ ] Commit: "feat: implement units and tenants CRUD"
+- [ ] Push para repositório
+
+---
+
+## Sprint 2: Gestão de Contratos (Leases)
+**Duração:** 4-5 dias  
+**Objetivo:** Implementar sistema completo de contratos com regras de negócio
+
+### 2.1 Migration e Schema - Leases
+- [ ] Criar migration `000003_create_leases_table.up.sql`
+- [ ] Definir tabela leases com todas as colunas
+- [ ] Adicionar foreign keys para units e tenants
+- [ ] Adicionar checks (payment_due_day entre 1-31, installments 1-3)
+- [ ] Criar índices necessários (unit_id, tenant_id, status)
+- [ ] Criar migration down
+- [ ] Executar e verificar
+
+### 2.2 Domain Model - Lease
+- [ ] Criar arquivo `internal/domain/lease.go`
+- [ ] Definir struct Lease completa
+- [ ] Definir enum LeaseStatus
+- [ ] Implementar método CalculateEndDate() (start + 6 meses)
+- [ ] Implementar método IsExpiringSoon() (< 45 dias)
+- [ ] Implementar método CanBeRenewed()
+- [ ] Implementar método RemainingPaintingFee()
+- [ ] Adicionar testes unitários de todos os métodos
+
+### 2.3 Repository - Lease (SQLC)
+- [ ] Criar arquivo `internal/repository/queries/leases.sql`
+- [ ] Query CreateLease
+- [ ] Query GetLeaseByID (com JOIN de unit e tenant)
+- [ ] Query ListLeases (filtros: status, unit_id, tenant_id)
+- [ ] Query GetActiveLeaseByUnitID
+- [ ] Query GetActiveLeaseByTenantID
+- [ ] Query UpdateLease
+- [ ] Query UpdateLeaseStatus
+- [ ] Query GetExpiringSoonLeases (end_date < now + 45 days)
+- [ ] Gerar código SQLC
+- [ ] Implementar repository
+
+### 2.4 Service - Lease (Parte 1: Criação)
+- [ ] Criar arquivo `internal/service/lease_service.go`
+- [ ] Definir dependências (leaseRepo, unitRepo, tenantRepo, paymentRepo)
+- [ ] Implementar CreateLease:
+  - Validar unidade existe e está disponível
+  - Validar morador existe
+  - Validar não há contrato ativo para essa unidade
+  - Validar não há contrato ativo para esse morador
+  - Validar datas (start_date < end_date)
+  - Calcular end_date automaticamente
+  - Iniciar transação
+  - Criar lease
+  - Atualizar unit.status = occupied
+  - Commit transação
+- [ ] Adicionar testes do CreateLease
+
+### 2.5 Service - Lease (Parte 2: Outras Operações)
+- [ ] Implementar GetLeaseByID
+- [ ] Implementar ListLeases com filtros
+- [ ] Implementar GetLeaseDetails (com unit e tenant completos)
+- [ ] Implementar CancelLease:
+  - Validar lease existe
+  - Atualizar lease.status = cancelled
+  - Atualizar unit.status = available
+  - Cancelar pagamentos futuros pendentes
+- [ ] Adicionar testes
+
+### 2.6 Service - Lease (Parte 3: Renovação)
+- [ ] Implementar RenewLease:
+  - Validar lease existe e está ativo ou expiring_soon
+  - Criar novo lease com start_date = old.end_date + 1 dia
+  - Calcular novo end_date (+ 6 meses)
+  - Manter mesmo unit_id, tenant_id, monthly_rent_value
+  - Nova taxa de pintura
+  - Atualizar lease antigo para status = expired
+  - Retornar novo lease
+- [ ] Implementar CheckExpiringSoonLeases (cronjob futuro):
+  - Buscar leases com end_date < 45 dias
+  - Atualizar status para expiring_soon
+  - Gerar notificação interna
+- [ ] Adicionar testes
+
+### 2.7 Handler - Lease (Parte 1: CRUD Básico)
+- [ ] Criar arquivo `internal/handler/lease_handler.go`
+- [ ] Criar DTOs (CreateLeaseRequest, LeaseResponse, LeaseDetailResponse)
+- [ ] Implementar CreateLease handler (POST /api/leases)
+- [ ] Implementar GetLease handler (GET /api/leases/:id)
+- [ ] Implementar ListLeases handler (GET /api/leases)
+- [ ] Adicionar query params para filtros (status, unit_id, tenant_id)
+
+### 2.8 Handler - Lease (Parte 2: Operações Especiais)
+- [ ] Implementar RenewLease handler (POST /api/leases/:id/renew)
+- [ ] Implementar CancelLease handler (POST /api/leases/:id/cancel)
+- [ ] Implementar GetLeaseDetails handler (GET /api/leases/:id/details)
+- [ ] Validar inputs em todos os handlers
+
+### 2.9 Router e Testes
+- [ ] Registrar todas as rotas de leases
+- [ ] Testar criação de contrato manualmente
+- [ ] Testar cancelamento
+- [ ] Testar renovação
+- [ ] Testar filtros de listagem
+- [ ] Verificar alteração de status das unidades
+
+### 2.10 Documentação e Commit
+- [ ] Documentar endpoints de leases
+- [ ] Adicionar exemplos de requests/responses
+- [ ] Atualizar README com regras de negócio implementadas
+- [ ] Commit: "feat: implement lease management"
+- [ ] Push para repositório
+
+---
+
+## Sprint 3: Sistema de Pagamentos
+**Duração:** 4-5 dias  
+**Objetivo:** Implementar controle completo de pagamentos
+
+### 3.1 Migration e Schema - Payments
+- [ ] Criar migration `000004_create_payments_table.up.sql`
+- [ ] Definir tabela payments
+- [ ] Adicionar foreign key para leases
+- [ ] Adicionar checks em payment_type
+- [ ] Criar índices (lease_id, status, due_date)
+- [ ] Criar índice composto (status, due_date) para queries de vencimento
+- [ ] Executar migration
+
+### 3.2 Domain Model - Payment
+- [ ] Criar arquivo `internal/domain/payment.go`
+- [ ] Definir struct Payment
+- [ ] Definir enums: PaymentType, PaymentStatus, PaymentMethod
+- [ ] Implementar método IsOverdue()
+- [ ] Implementar método CanBePaid()
+- [ ] Implementar método MarkAsPaid()
+- [ ] Adicionar testes unitários
+
+### 3.3 Repository - Payment (SQLC)
+- [ ] Criar arquivo `internal/repository/queries/payments.sql`
+- [ ] Query CreatePayment
+- [ ] Query GetPaymentByID
+- [ ] Query ListPaymentsByLeaseID
+- [ ] Query ListPaymentsByStatus
+- [ ] Query GetOverduePayments (status=pending AND due_date < now)
+- [ ] Query GetUpcomingPayments (due_date BETWEEN now AND now+X days)
+- [ ] Query UpdatePayment
+- [ ] Query UpdatePaymentStatus
+- [ ] Query MarkAsPaid
+- [ ] Gerar código e implementar repository
+
+### 3.4 Service - Payment (Parte 1: Geração)
+- [ ] Criar arquivo `internal/service/payment_service.go`
+- [ ] Implementar GenerateMonthlyRentPayment:
+  - Receber lease_id, reference_month
+  - Calcular due_date baseado em payment_due_day
+  - Criar Payment tipo "rent"
+  - Amount = lease.monthly_rent_value
+- [ ] Implementar GeneratePaintingFeePayments:
+  - Receber lease, installments
+  - Se installments=1: 1 payment com amount=total
+  - Se installments=2 ou 3: dividir amount igualmente
+  - Calcular due_dates escalonadas
+  - Criar múltiplos Payments
+- [ ] Implementar GenerateAdjustmentPayment (proporcional)
+- [ ] Adicionar testes
+
+### 3.5 Service - Payment (Parte 2: Registro)
+- [ ] Implementar MarkPaymentAsPaid:
+  - Validar payment existe e está pending/overdue
+  - Atualizar payment_date, status=paid, payment_method
+  - Se type=painting_fee: atualizar lease.painting_fee_paid
+  - Retornar payment atualizado
+- [ ] Implementar GetPaymentsByLease
+- [ ] Implementar GetOverduePayments
+- [ ] Implementar GetPaymentsDueSoon (próximos X dias)
+- [ ] Adicionar testes
+
+### 3.6 Service - Payment (Parte 3: Cronjob)
+- [ ] Implementar CheckOverduePayments:
+  - Buscar payments com status=pending e due_date < hoje
+  - Atualizar status para overdue
+  - Retornar quantidade atualizada
+- [ ] Adicionar lógica para ser executado diariamente (scheduler futuro)
+
+### 3.7 Integração Lease + Payment na Criação de Contrato
+- [ ] Atualizar LeaseService.CreateLease:
+  - Após criar lease, gerar primeiro pagamento de aluguel
+  - Gerar pagamentos de taxa de pintura (1x ou 3x)
+  - Retornar lease + lista de payments criados
+- [ ] Atualizar LeaseHandler.CreateLease:
+  - Retornar no response os payments gerados
+- [ ] Testar criação de contrato com geração automática de pagamentos
+
+### 3.8 Handler - Payment
+- [ ] Criar arquivo `internal/handler/payment_handler.go`
+- [ ] Criar DTOs (MarkPaymentAsPaidRequest, PaymentResponse)
+- [ ] Implementar GetPaymentsByLease (GET /api/leases/:id/payments)
+- [ ] Implementar GetPayment (GET /api/payments/:id)
+- [ ] Implementar MarkAsPaid (PUT /api/payments/:id/pay)
+- [ ] Implementar ListOverduePayments (GET /api/payments/overdue)
+- [ ] Implementar ListUpcomingPayments (GET /api/payments/upcoming)
+
+### 3.9 Router e Testes Manuais
+- [ ] Registrar rotas de payments
+- [ ] Testar criação de contrato e verificar payments gerados
+- [ ] Testar marcação de pagamento como pago
+- [ ] Testar listagem de atrasados
+- [ ] Testar listagem de próximos vencimentos
+- [ ] Verificar atualização de painting_fee_paid no lease
+
+### 3.10 Documentação e Commit
+- [ ] Documentar endpoints de payments
+- [ ] Documentar lógica de geração de pagamentos
+- [ ] Adicionar exemplos no README
+- [ ] Commit: "feat: implement payment management"
+- [ ] Push para repositório
+
+---
+
+## Sprint 4: Dashboard e Relatórios
+**Duração:** 3-4 dias  
+**Objetivo:** Criar visão executiva e relatórios financeiros
+
+### 4.1 Service - Dashboard (Métricas Gerais)
+- [ ] Criar arquivo `internal/service/dashboard_service.go`
+- [ ] Implementar GetOccupancyMetrics:
+  - Total de unidades
+  - Unidades ocupadas
+  - Unidades disponíveis
+  - Unidades em manutenção/reforma
+  - Taxa de ocupação (%)
+- [ ] Implementar GetFinancialMetrics:
+  - Receita mensal projetada (soma de todos alugueis ativos)
+  - Receita mensal realizada (pagamentos pagos no mês)
+  - Inadimplência (pagamentos overdue)
+  - Taxa de inadimplência (%)
+- [ ] Adicionar testes
+
+### 4.2 Service - Dashboard (Contratos e Alertas)
+- [ ] Implementar GetContractMetrics:
+  - Total de contratos ativos
+  - Contratos expirando em 45 dias
+  - Contratos expirados
+- [ ] Implementar GetAlerts:
+  - Lista de pagamentos atrasados
+  - Lista de contratos expirando
+  - Unidades sem contrato há muito tempo
+- [ ] Adicionar testes
+
+### 4.3 Service - Reports (Relatório Financeiro)
+- [ ] Criar arquivo `internal/service/report_service.go`
+- [ ] Implementar GetFinancialReport:
+  - Filtros: start_date, end_date, payment_type
+  - Receita total por tipo (rent, painting_fee)
+  - Receita por mês
+  - Detalhamento por unidade
+  - Retornar estrutura agregada
+- [ ] Implementar GetPaymentHistoryReport:
+  - Histórico completo de pagamentos
+  - Filtros: lease_id, tenant_id, status, date_range
+- [ ] Adicionar testes
+
+### 4.4 Handler - Dashboard
+- [ ] Criar arquivo `internal/handler/dashboard_handler.go`
+- [ ] Criar DTO DashboardResponse com todas as métricas
+- [ ] Implementar GetDashboard (GET /api/dashboard)
+- [ ] Consolidar dados de múltiplos services
+- [ ] Retornar JSON estruturado
+
+### 4.5 Handler - Reports
+- [ ] Criar arquivo `internal/handler/report_handler.go`
+- [ ] Criar DTOs para requests e responses
+- [ ] Implementar GetFinancialReport (GET /api/reports/financial)
+- [ ] Adicionar query params para filtros
+- [ ] Implementar GetPaymentHistory (GET /api/reports/payments)
+- [ ] Validar filtros de data
+
+### 4.6 Queries SQL Otimizadas
+- [ ] Criar queries agregadas no SQLC para dashboard
+- [ ] Query para receita mensal agrupada
+- [ ] Query para contagem de unidades por status
+- [ ] Query para pagamentos atrasados com detalhes
+- [ ] Gerar código e testar performance
+
+### 4.7 Router e Testes
+- [ ] Registrar rotas de dashboard e reports
+- [ ] Testar dashboard com dados reais
+- [ ] Verificar cálculos de taxas e percentuais
+- [ ] Testar filtros de relatórios
+- [ ] Validar formato JSON das respostas
+
+### 4.8 Melhorias de Performance (Opcional)
+- [ ] Adicionar cache em memória para dashboard (5 minutos)
+- [ ] Implementar paginação nos relatórios
+- [ ] Adicionar campo de ordenação
+
+### 4.9 Documentação e Commit
+- [ ] Documentar endpoints de dashboard
+- [ ] Documentar estrutura dos relatórios
+- [ ] Adicionar exemplos de responses
+- [ ] Commit: "feat: implement dashboard and reports"
+- [ ] Push para repositório
+
+---
+
+## Sprint 5: Sistema de Notificações
+**Duração:** 2-3 dias  
+**Objetivo:** Implementar lembretes e alertas internos
+
+### 5.1 Migration e Schema - Notifications
+- [ ] Criar migration `000005_create_notifications_table.up.sql`
+- [ ] Definir tabela notifications
+- [ ] Adicionar foreign keys (lease_id, tenant_id)
+- [ ] Criar índices (status, scheduled_date)
+- [ ] Executar migration
+
+### 5.2 Domain Model - Notification
+- [ ] Criar arquivo `internal/domain/notification.go`
+- [ ] Definir struct Notification
+- [ ] Definir enums: NotificationType, NotificationStatus
+- [ ] Implementar método IsReadyToSend()
+- [ ] Implementar método MarkAsSent()
+- [ ] Adicionar testes
+
+### 5.3 Repository - Notification (SQLC)
+- [ ] Criar arquivo `internal/repository/queries/notifications.sql`
+- [ ] Query CreateNotification
+- [ ] Query GetNotificationByID
+- [ ] Query ListPendingNotifications (status=pending, scheduled_date <= now)
+- [ ] Query ListNotificationsByLease
+- [ ] Query UpdateNotificationStatus
+- [ ] Query MarkAsSent
+- [ ] Gerar código e implementar
+
+### 5.4 Service - Notification (Criação)
+- [ ] Criar arquivo `internal/service/notification_service.go`
+- [ ] Implementar CreateRentReminderNotification:
+  - Receber lease_id, due_date
+  - Calcular scheduled_date = due_date - 3 dias
+  - Gerar message_content com dados do morador
+  - Criar notification tipo sms_rent_reminder
+- [ ] Implementar CreateContractExpiringNotification:
+  - Receber lease_id
+  - Scheduled_date = end_date - 45 dias
+  - Message_content personalizada
+- [ ] Adicionar testes
+
+### 5.5 Service - Notification (Processamento)
+- [ ] Implementar ProcessDailyNotifications:
+  - Buscar leases ativos
+  - Para cada lease, buscar payments pendentes/overdue
+  - Se payment.due_date = hoje + 3 dias e não existe notificação:
+    - Criar notificação de lembrete
+  - Buscar leases com end_date = hoje + 45 dias:
+    - Criar notificação de contrato expirando
+  - Retornar quantidade de notificações criadas
+- [ ] Implementar GetPendingNotifications
+- [ ] Implementar MarkNotificationAsSent
+- [ ] Adicionar testes
+
+### 5.6 Handler - Notification
+- [ ] Criar arquivo `internal/handler/notification_handler.go`
+- [ ] Criar DTOs necessários
+- [ ] Implementar ListNotifications (GET /api/notifications)
+- [ ] Implementar GetNotificationsByLease (GET /api/leases/:id/notifications)
+- [ ] Implementar MarkAsSent (PUT /api/notifications/:id/mark-sent)
+- [ ] Implementar TriggerDailyProcessing (POST /api/notifications/process) - endpoint administrativo
+
+### 5.7 Scheduler/Cronjob Básico
+- [ ] Criar arquivo `internal/pkg/scheduler/scheduler.go`
+- [ ] Implementar função DailyNotificationJob:
+  - Executar NotificationService.ProcessDailyNotifications()
+  - Executar PaymentService.CheckOverduePayments()
+  - Executar LeaseService.CheckExpiringSoonLeases()
+  - Logar resultados
+- [ ] Integrar scheduler no main.go (executar a cada X horas ou usar time.Ticker)
+- [ ] Adicionar flag de enable/disable via config
+
+### 5.8 Router e Testes
+- [ ] Registrar rotas de notifications
+- [ ] Testar criação manual de notificação
+- [ ] Testar processamento diário (endpoint /process)
+- [ ] Verificar notificações sendo criadas automaticamente
+- [ ] Testar marcação como enviada
+
+### 5.9 Logs e Monitoramento
+- [ ] Adicionar logs detalhados no scheduler
+- [ ] Logar quantidade de notificações processadas
+- [ ] Logar erros de processamento
+- [ ] Adicionar métricas básicas (opcional)
+
+### 5.10 Documentação e Commit
+- [ ] Documentar sistema de notificações
+- [ ] Documentar cronjob e como funciona
+- [ ] Adicionar instruções para teste manual
+- [ ] Commit: "feat: implement notification system"
+- [ ] Push para repositório
+
+---
+
+## Sprint 6: Refinamentos e MVP Final
+**Duração:** 3-4 dias  
+**Objetivo:** Polir aplicação e preparar para uso
+
+### 6.1 Tratamento de Erros Global
+- [ ] Criar middleware de error handling
+- [ ] Padronizar responses de erro (código, mensagem, detalhes)
+- [ ] Implementar error types customizados
+- [ ] Adicionar logging de erros
+
+### 6.2 Validações Completas
+- [ ] Revisar todas as validações de input nos handlers
+- [ ] Adicionar validações de regras de negócio nos services
+- [ ] Testar casos extremos e edge cases
+- [ ] Documentar validações aplicadas
+
+### 6.3 Middlewares
+- [ ] Implementar middleware de logging (request/response)
+- [ ] Implementar middleware de CORS
+- [ ] Implementar middleware de recovery (panic)
+- [ ] Implementar middleware de timeout (opcional)
+- [ ] Aplicar middlewares no router
+
+### 6.4 Configuração Avançada
+- [ ] Externalizar todas as configurações hardcoded
+- [ ] Criar arquivo config.yaml (opcional)
+- [ ] Validar variáveis de ambiente obrigatórias
+- [ ] Documentar todas as variáveis no .env.example
+
+### 6.5 Testes Finais
+- [ ] Executar suite completa de testes
+- [ ] Testar todos os endpoints manualmente
+- [ ] Criar collection do Postman/Insomnia (opcional)
+- [ ] Testar fluxo completo end-to-end:
+  - Criar unidade
+  - Criar morador
+  - Criar contrato
+  - Gerar pagamentos
+  - Registrar pagamento
+  - Ver dashboard
+  - Gerar relatórios
+
+### 6.6 Documentação Final
+- [ ] Atualizar README com instruções completas
+- [ ] Criar documentação da API (endpoints, requests, responses)
+- [ ] Adicionar exemplos de uso
+- [ ] Criar guia de troubleshooting
+- [ ] Documentar próximos passos e melhorias futuras
+
+### 6.7 Preparação para Deploy (Futuro)
+- [ ] Criar Dockerfile (básico)
+- [ ] Adicionar health check endpoint (GET /health)
+- [ ] Configurar variáveis para produção
+- [ ] Documentar processo de deploy
+
+### 6.8 Revisão de Código
+- [ ] Revisar código de todos os módulos
+- [ ] Refatorar duplicações
+- [ ] Melhorar nomenclaturas se necessário
+- [ ] Adicionar comentários onde necessário
+- [ ] Executar linter (golangci-lint)
+
+### 6.9 Commit Final do MVP
+- [ ] Atualizar CHANGELOG (criar arquivo)
+- [ ] Criar tag de versão v1.0.0
+- [ ] Commit: "chore: MVP v1.0.0 release"
+- [ ] Push com tags
+
+### 6.10 Celebração! 🎉
+- [ ] Fazer backup do banco de dados
+- [ ] Documentar aprendizados
+- [ ] Planejar próximas features (v2.0)
+
+---
+
+## 🚀 Próximas Versões (Pós-MVP)
+
+### Versão 2.0 - Integrações e Automações
+- Integração com gateway de SMS
+- Geração automática de cobranças mensais
+- Upload e armazenamento de comprovantes
+- Exportação de relatórios (PDF/Excel)
+- Integração com PIX para confirmação automática
+
+### Versão 3.0 - Portal do Morador
+- Autenticação e autorização
+- Login para moradores
+- Visualização de pagamentos e contratos
+- Download de comprovantes
+- Histórico completo
+
+### Versão 4.0 - Analytics Avançado
+- Dashboard avançado com gráficos
+- Previsões de receita
+- Análise de inadimplência
+- KPIs e métricas de negócio
+- Relatórios customizáveis
+
+---
+
+## 📊 Estimativas
+
+| Sprint | Duração | Complexidade |
+|--------|---------|--------------|
+| Sprint 0 | 2-3 dias | Baixa |
+| Sprint 1 | 3-4 dias | Média |
+| Sprint 2 | 4-5 dias | Alta |
+| Sprint 3 | 4-5 dias | Alta |
+| Sprint 4 | 3-4 dias | Média |
+| Sprint 5 | 2-3 dias | Média |
+| Sprint 6 | 3-4 dias | Baixa |
+| **TOTAL** | **8-10 semanas** | - |
+
+---
+
+**Última atualização:** Setembro 2025
