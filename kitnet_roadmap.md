@@ -49,12 +49,12 @@
 - [x] Documentar todas as dependências no README
 
 ### 0.5 Setup de Migrations
-- [ ] Instalar golang-migrate CLI
-- [ ] Criar diretório `migrations/`
-- [ ] Adicionar comando no Makefile para criar migrations
-- [ ] Adicionar comando no Makefile para executar migrations up
-- [ ] Adicionar comando no Makefile para executar migrations down
-- [ ] Testar criação de migration de exemplo
+- [x] Instalar golang-migrate CLI
+- [x] Criar diretório `migrations/`
+- [x] Adicionar comando no Makefile para criar migrations
+- [x] Adicionar comando no Makefile para executar migrations up
+- [x] Adicionar comando no Makefile para executar migrations down
+- [x] Testar criação de migration de exemplo
 
 ### 0.6 Setup do SQLC
 - [ ] Instalar SQLC CLI
