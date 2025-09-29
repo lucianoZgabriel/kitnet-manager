@@ -15,29 +15,29 @@
 **Objetivo:** Preparar ambiente de desenvolvimento e infraestrutura básica
 
 ### 0.1 Configuração do Controle de Versão
-- [ ] Criar conta no GitHub (se não tiver)
-- [ ] Criar novo repositório: `kitnet-manager`
-- [ ] Configurar visibilidade (privado ou público)
-- [ ] Adicionar `.gitignore` para Go
-- [ ] Criar branch `main` como padrão
+- [x] Criar conta no GitHub (se não tiver)
+- [x] Criar novo repositório: `kitnet-manager`
+- [x] Configurar visibilidade (privado ou público)
+- [x] Adicionar `.gitignore` para Go
+- [x] Criar branch `main` como padrão
 - [ ] Configurar proteção da branch main (opcional)
-- [ ] Fazer commit inicial com README básico
+- [x] Fazer commit inicial com README básico
 
 ### 0.2 Estrutura do Projeto Local
-- [ ] Criar diretório local do projeto
-- [ ] Inicializar Go module: `go mod init github.com/seu-usuario/kitnet-manager`
-- [ ] Criar estrutura de diretórios completa
-- [ ] Adicionar README.md detalhado
-- [ ] Adicionar ARCHITECTURE.md
-- [ ] Adicionar ROADMAP.md
+- [x] Criar diretório local do projeto
+- [x] Inicializar Go module: `go mod init github.com/seu-usuario/kitnet-manager`
+- [x] Criar estrutura de diretórios completa
+- [x] Adicionar README.md detalhado
+- [x] Adicionar ARCHITECTURE.md
+- [x] Adicionar ROADMAP.md
 - [ ] Adicionar LICENSE (se aplicável)
 
 ### 0.3 Configuração do Neon Database
-- [ ] Criar conta no Neon (https://neon.tech)
-- [ ] Criar novo projeto no Neon
-- [ ] Anotar connection string
-- [ ] Testar conexão localmente
-- [ ] Documentar credenciais no .env.example
+- [x] Criar conta no Neon (https://neon.tech)
+- [x] Criar novo projeto no Neon
+- [x] Anotar connection string
+- [x] Testar conexão localmente
+- [x] Documentar credenciais no .env.example
 
 ### 0.4 Configuração de Dependências
 - [ ] Instalar Chi router: `go get github.com/go-chi/chi/v5`
