@@ -85,11 +85,11 @@
 - [x] Testar todos os comandos
 
 ### 0.9 Commit e Push Inicial
-- [ ] Revisar todos os arquivos criados
-- [ ] Adicionar arquivos ao git
-- [ ] Fazer commit: "chore: initial project setup"
-- [ ] Push para repositório remoto
-- [ ] Verificar no GitHub
+- [x] Revisar todos os arquivos criados
+- [x] Adicionar arquivos ao git
+- [x] Fazer commit: "chore: initial project setup"
+- [x] Push para repositório remoto
+- [x] Verificar no GitHub
 
 ---
 
