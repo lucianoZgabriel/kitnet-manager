@@ -2,10 +2,10 @@ version: "2"
 sql:
   - engine: "postgresql"
     queries: "./internal/repository/queries"
-    schema: "./migrations"
+    schema: "./internal/repository/queries/schema.sql"
     gen:
       go:
-        package: "db"
+        package: "sqlc"
         out: "./internal/repository/sqlc"
         emit_json_tags: true
         emit_prepared_queries: false
@@ -14,9 +14,17 @@ sql:
         emit_empty_slices: true
         json_tags_case_style: "snake"
         overrides:
-          - db_type: "uuid"
+          - db_type: "pg_catalog.uuid"
             go_type: "github.com/google/uuid.UUID"
-          - db_type: "decimal"
-            go_type: "github.com/shopspring/decimal.Decimal"
-          - db_type: "numeric"
-            go_type: "github.com/shopspring/decimal.Decimal"
+          - column: "units.base_rent_value"
+            go_type:
+              import: "github.com/shopspring/decimal"
+              type: "Decimal"
+          - column: "units.renovated_rent_value"
+            go_type:
+              import: "github.com/shopspring/decimal"
+              type: "Decimal"
+          - column: "units.current_rent_value"
+            go_type:
+              import: "github.com/shopspring/decimal"
+              type: "Decimal"
