@@ -104,7 +104,7 @@
 - [x] Criar índices necessários
 - [x] Criar migration down correspondente
 - [x] Executar migration e verificar no Neon
-- [ ] Adicionar schema no arquivo de referência SQLC
+- [x] Adicionar schema no arquivo de referência SQLC
 
 ### 1.2 Domain Model - Unit
 - [x] Criar arquivo `internal/domain/unit.go`
@@ -115,28 +115,28 @@
 - [x] Adicionar testes unitários do domínio
 
 ### 1.3 Repository - Unit (SQLC)
-- [ ] Criar arquivo `internal/repository/queries/units.sql`
-- [ ] Escrever query CreateUnit
-- [ ] Escrever query GetUnitByID
-- [ ] Escrever query ListUnits (com filtros opcionais)
-- [ ] Escrever query UpdateUnit
-- [ ] Escrever query UpdateUnitStatus
-- [ ] Escrever query DeleteUnit
-- [ ] Gerar código com SQLC
-- [ ] Criar `internal/repository/postgres/unit_repo.go`
-- [ ] Implementar interface UnitRepository
+- [x] Criar arquivo `internal/repository/queries/units.sql`
+- [x] Escrever query CreateUnit
+- [x] Escrever query GetUnitByID
+- [x] Escrever query ListUnits (com filtros opcionais)
+- [x] Escrever query UpdateUnit
+- [x] Escrever query UpdateUnitStatus
+- [x] Escrever query DeleteUnit
+- [x] Gerar código com SQLC
+- [x] Criar `internal/repository/postgres/unit_repo.go`
+- [x] Implementar interface UnitRepository
 - [ ] Adicionar testes de integração (opcional neste momento)
 
 ### 1.4 Service - Unit
-- [ ] Criar arquivo `internal/service/unit_service.go`
-- [ ] Definir struct UnitService com dependências
-- [ ] Implementar CreateUnit com validações de negócio
-- [ ] Implementar GetUnitByID
-- [ ] Implementar ListUnits com filtros
-- [ ] Implementar UpdateUnit
-- [ ] Implementar UpdateUnitStatus (validar transições)
-- [ ] Implementar DeleteUnit (validar se não tem contrato ativo)
-- [ ] Adicionar testes unitários do service
+- [x] Criar arquivo `internal/service/unit_service.go`
+- [x] Definir struct UnitService com dependências
+- [x] Implementar CreateUnit com validações de negócio
+- [x] Implementar GetUnitByID
+- [x] Implementar ListUnits com filtros
+- [x] Implementar UpdateUnit
+- [x] Implementar UpdateUnitStatus (validar transições)
+- [x] Implementar DeleteUnit (validar se não tem contrato ativo)
+- [x] Adicionar testes unitários do service
 
 ### 1.5 Handler - Unit
 - [ ] Criar arquivo `internal/handler/unit_handler.go`
