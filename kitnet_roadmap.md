@@ -72,7 +72,7 @@
 - [x] Testar inicialização básica da aplicação
 
 ### 0.8 Makefile e Scripts
-- [ ] Criar Makefile com comandos úteis:
+- [x] Criar Makefile com comandos úteis:
   - `make run` - executar aplicação
   - `make build` - compilar binário
   - `make test` - executar testes
@@ -81,8 +81,8 @@
   - `make migrate-create` - criar nova migration
   - `make sqlc-generate` - gerar código SQLC
   - `make lint` - executar linter (futuro)
-- [ ] Documentar comandos no README
-- [ ] Testar todos os comandos
+- [x] Documentar comandos no README
+- [x] Testar todos os comandos
 
 ### 0.9 Commit e Push Inicial
 - [ ] Revisar todos os arquivos criados

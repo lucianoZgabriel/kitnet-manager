@@ -99,3 +99,36 @@ build: ## Compilar a aplicação
 test: ## Executar testes
 	@echo "$(GREEN)Executando testes...$(NC)"
 	@go test -v ./...
+
+# Configuração do linter
+GOLANGCI_VERSION = 2.5.0
+GOLANGCI_BIN = ./bin/golangci-lint
+
+.PHONY: install-lint
+install-lint: ## Instalar golangci-lint localmente no projeto
+	@echo "$(GREEN)Instalando golangci-lint v$(GOLANGCI_VERSION)...$(NC)"
+	@mkdir -p bin
+	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b ./bin v$(GOLANGCI_VERSION)
+	@echo "$(GREEN)✓ golangci-lint instalado em ./bin$(NC)"
+
+.PHONY: lint
+lint: ## Executar linter
+	@echo "$(GREEN)Executando linter...$(NC)"
+	@if [ -f $(GOLANGCI_BIN) ]; then \
+		$(GOLANGCI_BIN) run; \
+	else \
+		echo "$(YELLOW)Por favor, execute 'make install-lint' primeiro$(NC)"; \
+		exit 1; \
+	fi
+	@echo "$(GREEN)✓ Lint concluído$(NC)"
+
+.PHONY: lint-fix
+lint-fix: ## Executar linter com correções automáticas
+	@echo "$(GREEN)Executando linter com fix...$(NC)"
+	@if [ -f $(GOLANGCI_BIN) ]; then \
+		$(GOLANGCI_BIN) run --fix; \
+	else \
+		echo "$(YELLOW)Por favor, execute 'make install-lint' primeiro$(NC)"; \
+		exit 1; \
+	fi
+	@echo "$(GREEN)✓ Correções aplicadas$(NC)"

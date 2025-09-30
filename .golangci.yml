@@ -1,0 +1,73 @@
+# .golangci.yml
+run:
+  timeout: 3m
+  skip-dirs:
+    - internal/repository/sqlc # Código gerado pelo SQLC
+    - vendor
+
+linters:
+  enable:
+    - gofmt      # Formatação padrão Go
+    - govet      # Analisa código para erros
+    - errcheck   # Verifica erros não tratados
+    - staticcheck # Verificações estáticas
+    - gosimple   # Simplificações de código
+    - ineffassign # Variáveis não usadas
+    - unused     # Código não utilizado
+    - gosec      # Segurança
+    - gocritic   # Opiniões sobre o código
+    - goimports  # Organiza imports
+    - revive     # Substituto moderno do golint
+    - misspell   # Erros de ortografia
+
+  disable:
+    - godox      # TODO/FIXME comments
+    - wsl        # Whitespace linter (muito restritivo)
+
+linters-settings:
+  gofmt:
+    simplify: true
+
+  govet:
+    check-shadowing: true
+
+  errcheck:
+    check-type-assertions: true
+    check-blank: false
+
+  gosec:
+    excludes:
+      - G104 # Não forçar verificação de erro em todos os casos
+
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - performance
+      - style
+    disabled-checks:
+      - commentedOutCode
+      - whyNoLint
+
+  revive:
+    rules:
+      - name: var-naming
+        disabled: true # IDs em maiúsculo são OK (ex: ID, URL)
+      - name: package-comments
+        disabled: true # Nem todo pacote precisa de comentário
+
+issues:
+  exclude-rules:
+    # Ignora erros não verificados em main.go para log.Fatal
+    - path: cmd/api/main.go
+      linters:
+        - errcheck
+      text: "Error return value of"
+
+    # Ignora em testes
+    - path: _test\.go
+      linters:
+        - gosec
+        - errcheck
+
+  max-same-issues: 3
+  new: false

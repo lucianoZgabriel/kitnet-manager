@@ -32,7 +32,11 @@ func main() {
 	if err != nil {
 		log.Fatal("Erro ao conectar com banco de dados:", err)
 	}
-	defer dbConn.Close()
+	defer func() {
+		if err := dbConn.Close(); err != nil {
+			log.Printf("Erro ao fechar conexão com banco: %v", err)
+		}
+	}()
 
 	log.Println("✅ Conectado ao banco de dados")
 

@@ -70,6 +70,35 @@
   - :execrows - Executa e retorna número de linhas afetadas
   - :copyfrom - Bulk insert eficiente
 
+## Comandos Disponíveis
+
+  ```bash
+  make help          # Mostra todos os comandos disponíveis
+  make run           # Executa a aplicação
+  make build         # Compila o binário
+  make test          # Executa os testes
+  make clean         # Limpa arquivos gerados
+
+  # Banco de dados
+  make migrate-create name=nome_da_migration  # Cria nova migration
+  make migrate-up    # Aplica todas as migrations
+  make migrate-down  # Reverte última migration
+  make migrate-status # Verifica status das migrations
+  make sqlc-generate # Gera código a partir das queries SQL
+
+  # Desenvolvimento
+  make dev           # Roda em modo desenvolvimento
+  make db-setup      # Setup completo do banco
+
+  ### Testar comando clean
+
+  ```bash
+  # Testar o comando clean
+  make build
+  ls bin/
+  make clean
+  ls bin/  # Deve dar erro - pasta não existe mais
+
   ## Documentação
 
   - [Arquitetura](kitnet_architecture.md)
