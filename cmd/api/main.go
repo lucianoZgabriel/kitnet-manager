@@ -12,8 +12,11 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/config"
+	"github.com/lucianoZgabriel/kitnet-manager/internal/handler"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/pkg/database"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/pkg/response"
+	"github.com/lucianoZgabriel/kitnet-manager/internal/repository/postgres"
+	"github.com/lucianoZgabriel/kitnet-manager/internal/service"
 )
 
 func main() {
@@ -39,6 +42,15 @@ func main() {
 	}()
 
 	log.Println("✅ Conectado ao banco de dados")
+
+	// Inicializar camadas da aplicação
+	// Repository
+	unitRepo := postgres.NewUnitRepository(dbConn.DB)
+
+	// Service
+	unitService := service.NewUnitService(unitRepo)
+
+	log.Println("✅ Serviços inicializados")
 
 	// Configurar roteador
 	r := chi.NewRouter()
@@ -66,6 +78,11 @@ func main() {
 			"environment": cfg.Environment,
 		})
 	})
+
+	// Registrar rotas da aplicação
+	handler.SetupRoutes(r, unitService)
+
+	log.Println("✅ Rotas configuradas")
 
 	// Configurar servidor
 	srv := &http.Server{
