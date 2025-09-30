@@ -98,12 +98,12 @@
 **Objetivo:** Implementar gestão completa de unidades e moradores
 
 ### 1.1 Migration e Schema - Units
-- [ ] Criar migration `000001_create_units_table.up.sql`
-- [ ] Definir tabela units com todos os campos
-- [ ] Adicionar constraints e checks
-- [ ] Criar índices necessários
-- [ ] Criar migration down correspondente
-- [ ] Executar migration e verificar no Neon
+- [x] Criar migration `000001_create_units_table.up.sql`
+- [x] Definir tabela units com todos os campos
+- [x] Adicionar constraints e checks
+- [x] Criar índices necessários
+- [x] Criar migration down correspondente
+- [x] Executar migration e verificar no Neon
 - [ ] Adicionar schema no arquivo de referência SQLC
 
 ### 1.2 Domain Model - Unit
