@@ -107,12 +107,12 @@
 - [ ] Adicionar schema no arquivo de referência SQLC
 
 ### 1.2 Domain Model - Unit
-- [ ] Criar arquivo `internal/domain/unit.go`
-- [ ] Definir struct Unit com todos os campos
-- [ ] Definir enum UnitStatus (available, occupied, maintenance, renovation)
-- [ ] Adicionar métodos de validação no domínio
-- [ ] Adicionar método CalculateCurrentRentValue()
-- [ ] Adicionar testes unitários do domínio
+- [x] Criar arquivo `internal/domain/unit.go`
+- [x] Definir struct Unit com todos os campos
+- [x] Definir enum UnitStatus (available, occupied, maintenance, renovation)
+- [x] Adicionar métodos de validação no domínio
+- [x] Adicionar método CalculateCurrentRentValue()
+- [x] Adicionar testes unitários do domínio
 
 ### 1.3 Repository - Unit (SQLC)
 - [ ] Criar arquivo `internal/repository/queries/units.sql`
