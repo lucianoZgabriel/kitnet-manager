@@ -64,12 +64,12 @@
 - [x] Documentar workflow do SQLC no README
 
 ### 0.7 Estrutura Base da Aplicação
-- [ ] Criar `cmd/api/main.go` com estrutura básica
-- [ ] Criar `internal/pkg/database/postgres.go` para conexão
-- [ ] Criar `internal/pkg/response/response.go` para padronização
-- [ ] Criar `.env.example` com variáveis necessárias
-- [ ] Criar `.env` local (gitignored)
-- [ ] Testar inicialização básica da aplicação
+- [x] Criar `cmd/api/main.go` com estrutura básica
+- [x] Criar `internal/pkg/database/postgres.go` para conexão
+- [x] Criar `internal/pkg/response/response.go` para padronização
+- [x] Criar `.env.example` com variáveis necessárias
+- [x] Criar `.env` local (gitignored)
+- [x] Testar inicialização básica da aplicação
 
 ### 0.8 Makefile e Scripts
 - [ ] Criar Makefile com comandos úteis:

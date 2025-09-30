@@ -83,3 +83,19 @@ db-setup: migrate-up sqlc-generate ## Setup completo do banco (migrations + sqlc
 .PHONY: db-reset
 db-reset: migrate-drop migrate-up sqlc-generate ## Reset completo do banco
 	@echo "$(GREEN)✓ Banco de dados resetado$(NC)"
+
+.PHONY: run
+run: ## Executar a aplicação
+	@echo "$(GREEN)Iniciando aplicação...$(NC)"
+	@go run cmd/api/main.go
+
+.PHONY: build
+build: ## Compilar a aplicação
+	@echo "$(GREEN)Compilando...$(NC)"
+	@go build -o bin/api cmd/api/main.go
+	@echo "$(GREEN)✓ Binário criado: bin/api$(NC)"
+
+.PHONY: test
+test: ## Executar testes
+	@echo "$(GREEN)Executando testes...$(NC)"
+	@go test -v ./...
