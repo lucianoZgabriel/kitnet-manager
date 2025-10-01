@@ -18,8 +18,8 @@ import (
 	"github.com/lucianoZgabriel/kitnet-manager/internal/repository/postgres"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/service"
 
-	httpSwagger "github.com/swaggo/http-swagger"
 	_ "github.com/lucianoZgabriel/kitnet-manager/docs" // Swagger docs
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 // @title           Kitnet Manager API
@@ -40,6 +40,8 @@ import (
 
 // @tag.name Units
 // @tag.description Operações relacionadas a unidades/kitnets
+// @tag.name Tenants
+// @tag.description Operações relacionadas a moradores/inquilinos
 
 // @tag.name Health
 // @tag.description Health check e status do sistema
@@ -71,9 +73,11 @@ func main() {
 	// Inicializar camadas da aplicação
 	// Repository
 	unitRepo := postgres.NewUnitRepository(dbConn.DB)
+	tenantRepo := postgres.NewTenantRepository(dbConn.DB)
 
 	// Service
 	unitService := service.NewUnitService(unitRepo)
+	tenantService := service.NewTenantService(tenantRepo)
 
 	log.Println("✅ Serviços inicializados")
 
@@ -110,7 +114,7 @@ func main() {
 	))
 
 	// Registrar rotas da aplicação
-	handler.SetupRoutes(r, unitService)
+	handler.SetupRoutes(r, unitService, tenantService)
 
 	log.Println("✅ Rotas configuradas")
 	log.Printf("📚 Documentação Swagger: http://localhost:%s/swagger/index.html", cfg.Port)

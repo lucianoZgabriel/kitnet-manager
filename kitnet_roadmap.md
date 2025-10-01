@@ -197,15 +197,15 @@
 - [x] Adicionar validação de CPF no handler
 
 ### 1.12 Router - Tenants
-- [ ] Registrar rotas de tenants no router
-- [ ] Testar todas as rotas manualmente
+- [x] Registrar rotas de tenants no router
+- [x] Testar todas as rotas manualmente
 
 ### 1.13 Testes e Documentação
-- [ ] Testar fluxo completo de unidades
-- [ ] Testar fluxo completo de moradores
-- [ ] Documentar endpoints no README ou criar doc/api/
-- [ ] Commit: "feat: implement units and tenants CRUD"
-- [ ] Push para repositório
+- [x] Testar fluxo completo de unidades
+- [x] Testar fluxo completo de moradores
+- [x] Documentar endpoints no README ou criar doc/api/
+- [x] Commit: "feat: implement units and tenants CRUD"
+- [x] Push para repositório
 
 ---
 
