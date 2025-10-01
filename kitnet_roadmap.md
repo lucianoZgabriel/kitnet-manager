@@ -167,11 +167,11 @@
 - [ ] Adicionar schema no arquivo de referência SQLC
 
 ### 1.8 Domain Model - Tenant
-- [ ] Criar arquivo `internal/domain/tenant.go`
-- [ ] Definir struct Tenant
-- [ ] Adicionar método ValidateCPF()
-- [ ] Adicionar método FormatPhone()
-- [ ] Adicionar testes unitários
+- [x] Criar arquivo `internal/domain/tenant.go`
+- [x] Definir struct Tenant
+- [x] Adicionar método ValidateCPF()
+- [x] Adicionar método FormatPhone()
+- [x] Adicionar testes unitários
 
 ### 1.9 Repository - Tenant (SQLC)
 - [ ] Criar arquivo `internal/repository/queries/tenants.sql`
