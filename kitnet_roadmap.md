@@ -139,23 +139,23 @@
 - [x] Adicionar testes unitários do service
 
 ### 1.5 Handler - Unit
-- [ ] Criar arquivo `internal/handler/unit_handler.go`
-- [ ] Definir struct UnitHandler
-- [ ] Criar DTOs (CreateUnitRequest, UpdateUnitRequest, UnitResponse)
-- [ ] Implementar CreateUnit handler (POST /api/units)
-- [ ] Implementar GetUnit handler (GET /api/units/:id)
-- [ ] Implementar ListUnits handler (GET /api/units)
-- [ ] Implementar UpdateUnit handler (PUT /api/units/:id)
-- [ ] Implementar UpdateUnitStatus handler (PATCH /api/units/:id/status)
-- [ ] Implementar DeleteUnit handler (DELETE /api/units/:id)
-- [ ] Adicionar validação de inputs
+- [x] Criar arquivo `internal/handler/unit_handler.go`
+- [x] Definir struct UnitHandler
+- [x] Criar DTOs (CreateUnitRequest, UpdateUnitRequest, UnitResponse)
+- [x] Implementar CreateUnit handler (POST /api/units)
+- [x] Implementar GetUnit handler (GET /api/units/:id)
+- [x] Implementar ListUnits handler (GET /api/units)
+- [x] Implementar UpdateUnit handler (PUT /api/units/:id)
+- [x] Implementar UpdateUnitStatus handler (PATCH /api/units/:id/status)
+- [x] Implementar DeleteUnit handler (DELETE /api/units/:id)
+- [x] Adicionar validação de inputs
 
 ### 1.6 Router - Units
-- [ ] Criar ou atualizar `internal/handler/router.go`
-- [ ] Registrar rotas de units
-- [ ] Configurar middlewares básicos (logger, CORS)
-- [ ] Agrupar rotas sob /api/v1
-- [ ] Testar todas as rotas manualmente (Postman/cURL)
+- [x] Criar ou atualizar `internal/handler/router.go`
+- [x] Registrar rotas de units
+- [x] Configurar middlewares básicos (logger, CORS)
+- [x] Agrupar rotas sob /api/v1
+- [x] Testar todas as rotas manualmente (Postman/cURL)
 
 ### 1.7 Migration e Schema - Tenants
 - [ ] Criar migration `000002_create_tenants_table.up.sql`
@@ -508,18 +508,96 @@
 
 ---
 
-## Sprint 5: Sistema de Notificações
-**Duração:** 2-3 dias  
+## Sprint 5: Autenticação e Autorização
+**Duração:** 2-3 dias
+**Objetivo:** Implementar sistema de autenticação JWT e proteção de rotas
+
+### 5.1 Migration e Schema - Users
+- [ ] Criar migration `000005_create_users_table.up.sql`
+- [ ] Definir tabela users (id, username, password_hash, role, created_at)
+- [ ] Adicionar constraint UNIQUE no username
+- [ ] Criar índice no username
+- [ ] Seed inicial com usuário admin
+- [ ] Executar migration
+
+### 5.2 Domain Model - User
+- [ ] Criar arquivo `internal/domain/user.go`
+- [ ] Definir struct User
+- [ ] Definir enum UserRole (admin, manager, viewer)
+- [ ] Implementar método ValidatePassword()
+- [ ] Implementar método HashPassword()
+- [ ] Adicionar testes unitários
+
+### 5.3 Repository - User (SQLC)
+- [ ] Criar arquivo `internal/repository/queries/users.sql`
+- [ ] Query GetUserByUsername
+- [ ] Query CreateUser
+- [ ] Query UpdateUser
+- [ ] Gerar código SQLC
+- [ ] Implementar UserRepository
+
+### 5.4 Service - Auth
+- [ ] Criar arquivo `internal/service/auth_service.go`
+- [ ] Instalar dependências: `golang-jwt/jwt` e `golang.org/x/crypto/bcrypt`
+- [ ] Implementar GenerateToken (JWT)
+- [ ] Implementar ValidateToken
+- [ ] Implementar Login(username, password)
+- [ ] Implementar RefreshToken (opcional)
+- [ ] Adicionar testes
+
+### 5.5 Handler - Auth
+- [ ] Criar arquivo `internal/handler/auth_handler.go`
+- [ ] Criar DTOs (LoginRequest, LoginResponse, TokenResponse)
+- [ ] Implementar Login handler (POST /api/auth/login)
+- [ ] Implementar Refresh handler (POST /api/auth/refresh) - opcional
+- [ ] Implementar GetCurrentUser (GET /api/auth/me)
+
+### 5.6 Middleware - Authentication
+- [ ] Criar arquivo `internal/pkg/middleware/auth.go`
+- [ ] Implementar AuthMiddleware:
+  - Extrair token do header Authorization
+  - Validar token JWT
+  - Adicionar user info no context
+  - Retornar 401 se inválido
+- [ ] Implementar RequireRole(roles ...string)
+- [ ] Adicionar testes
+
+### 5.7 Proteger Rotas Existentes
+- [ ] Atualizar router.go para aplicar AuthMiddleware
+- [ ] Proteger todas as rotas de /api/v1/*
+- [ ] Deixar /health e /swagger públicos
+- [ ] Deixar /api/auth/login público
+- [ ] Testar autenticação em todas as rotas
+
+### 5.8 Atualizar Swagger
+- [ ] Adicionar securityDefinitions no main.go
+- [ ] Adicionar @Security tags nos handlers
+- [ ] Regenerar documentação Swagger
+- [ ] Testar autenticação via Swagger UI
+
+### 5.9 Testes e Documentação
+- [ ] Testar fluxo de login
+- [ ] Testar acesso sem token (401)
+- [ ] Testar token expirado
+- [ ] Testar token inválido
+- [ ] Documentar processo de autenticação
+- [ ] Commit: "feat: implement JWT authentication and authorization"
+- [ ] Push para repositório
+
+---
+
+## Sprint 6: Sistema de Notificações
+**Duração:** 2-3 dias
 **Objetivo:** Implementar lembretes e alertas internos
 
-### 5.1 Migration e Schema - Notifications
-- [ ] Criar migration `000005_create_notifications_table.up.sql`
+### 6.1 Migration e Schema - Notifications
+- [ ] Criar migration `000006_create_notifications_table.up.sql`
 - [ ] Definir tabela notifications
 - [ ] Adicionar foreign keys (lease_id, tenant_id)
 - [ ] Criar índices (status, scheduled_date)
 - [ ] Executar migration
 
-### 5.2 Domain Model - Notification
+### 6.2 Domain Model - Notification
 - [ ] Criar arquivo `internal/domain/notification.go`
 - [ ] Definir struct Notification
 - [ ] Definir enums: NotificationType, NotificationStatus
@@ -527,7 +605,7 @@
 - [ ] Implementar método MarkAsSent()
 - [ ] Adicionar testes
 
-### 5.3 Repository - Notification (SQLC)
+### 6.3 Repository - Notification (SQLC)
 - [ ] Criar arquivo `internal/repository/queries/notifications.sql`
 - [ ] Query CreateNotification
 - [ ] Query GetNotificationByID
@@ -537,7 +615,7 @@
 - [ ] Query MarkAsSent
 - [ ] Gerar código e implementar
 
-### 5.4 Service - Notification (Criação)
+### 6.4 Service - Notification (Criação)
 - [ ] Criar arquivo `internal/service/notification_service.go`
 - [ ] Implementar CreateRentReminderNotification:
   - Receber lease_id, due_date
@@ -550,7 +628,7 @@
   - Message_content personalizada
 - [ ] Adicionar testes
 
-### 5.5 Service - Notification (Processamento)
+### 6.5 Service - Notification (Processamento)
 - [ ] Implementar ProcessDailyNotifications:
   - Buscar leases ativos
   - Para cada lease, buscar payments pendentes/overdue
@@ -563,7 +641,7 @@
 - [ ] Implementar MarkNotificationAsSent
 - [ ] Adicionar testes
 
-### 5.6 Handler - Notification
+### 6.6 Handler - Notification
 - [ ] Criar arquivo `internal/handler/notification_handler.go`
 - [ ] Criar DTOs necessários
 - [ ] Implementar ListNotifications (GET /api/notifications)
@@ -571,7 +649,7 @@
 - [ ] Implementar MarkAsSent (PUT /api/notifications/:id/mark-sent)
 - [ ] Implementar TriggerDailyProcessing (POST /api/notifications/process) - endpoint administrativo
 
-### 5.7 Scheduler/Cronjob Básico
+### 6.7 Scheduler/Cronjob Básico
 - [ ] Criar arquivo `internal/pkg/scheduler/scheduler.go`
 - [ ] Implementar função DailyNotificationJob:
   - Executar NotificationService.ProcessDailyNotifications()
@@ -581,20 +659,20 @@
 - [ ] Integrar scheduler no main.go (executar a cada X horas ou usar time.Ticker)
 - [ ] Adicionar flag de enable/disable via config
 
-### 5.8 Router e Testes
+### 6.8 Router e Testes
 - [ ] Registrar rotas de notifications
 - [ ] Testar criação manual de notificação
 - [ ] Testar processamento diário (endpoint /process)
 - [ ] Verificar notificações sendo criadas automaticamente
 - [ ] Testar marcação como enviada
 
-### 5.9 Logs e Monitoramento
+### 6.9 Logs e Monitoramento
 - [ ] Adicionar logs detalhados no scheduler
 - [ ] Logar quantidade de notificações processadas
 - [ ] Logar erros de processamento
 - [ ] Adicionar métricas básicas (opcional)
 
-### 5.10 Documentação e Commit
+### 6.10 Documentação e Commit
 - [ ] Documentar sistema de notificações
 - [ ] Documentar cronjob e como funciona
 - [ ] Adicionar instruções para teste manual
@@ -603,11 +681,11 @@
 
 ---
 
-## Sprint 6: Refinamentos e MVP Final
-**Duração:** 3-4 dias  
+## Sprint 7: Refinamentos e MVP Final
+**Duração:** 3-4 dias
 **Objetivo:** Polir aplicação e preparar para uso
 
-### 6.1 Tratamento de Erros Global
+### 7.1 Tratamento de Erros Global
 - [ ] Criar middleware de error handling
 - [ ] Padronizar responses de erro (código, mensagem, detalhes)
 - [ ] Implementar error types customizados
@@ -713,8 +791,9 @@
 | Sprint 3 | 4-5 dias | Alta |
 | Sprint 4 | 3-4 dias | Média |
 | Sprint 5 | 2-3 dias | Média |
-| Sprint 6 | 3-4 dias | Baixa |
-| **TOTAL** | **8-10 semanas** | - |
+| Sprint 6 | 2-3 dias | Média |
+| Sprint 7 | 3-4 dias | Baixa |
+| **TOTAL** | **9-11 semanas** | - |
 
 ---
 

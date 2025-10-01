@@ -17,7 +17,32 @@ import (
 	"github.com/lucianoZgabriel/kitnet-manager/internal/pkg/response"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/repository/postgres"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/service"
+
+	httpSwagger "github.com/swaggo/http-swagger"
+	_ "github.com/lucianoZgabriel/kitnet-manager/docs" // Swagger docs
 )
+
+// @title           Kitnet Manager API
+// @version         1.0
+// @description     API para gestão de complexo de kitnets com 31 unidades
+// @description     Sistema completo de gerenciamento de unidades, moradores, contratos e pagamentos
+
+// @contact.name   Luciano Gabriel
+// @contact.email  contato@example.com
+
+// @license.name  MIT
+// @license.url   https://opensource.org/licenses/MIT
+
+// @host      localhost:8080
+// @BasePath  /api/v1
+
+// @schemes http https
+
+// @tag.name Units
+// @tag.description Operações relacionadas a unidades/kitnets
+
+// @tag.name Health
+// @tag.description Health check e status do sistema
 
 func main() {
 	// Carregar configurações
@@ -79,10 +104,16 @@ func main() {
 		})
 	})
 
+	// Swagger documentation
+	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:"+cfg.Port+"/swagger/doc.json"),
+	))
+
 	// Registrar rotas da aplicação
 	handler.SetupRoutes(r, unitService)
 
 	log.Println("✅ Rotas configuradas")
+	log.Printf("📚 Documentação Swagger: http://localhost:%s/swagger/index.html", cfg.Port)
 
 	// Configurar servidor
 	srv := &http.Server{

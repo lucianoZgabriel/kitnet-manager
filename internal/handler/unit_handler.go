@@ -31,7 +31,7 @@ func NewUnitHandler(unitService *service.UnitService) *UnitHandler {
 // CreateUnit godoc
 // @Summary      Criar nova unidade
 // @Description  Cria uma nova unidade no sistema
-// @Tags         units
+// @Tags         Units
 // @Accept       json
 // @Produce      json
 // @Param        unit body CreateUnitRequest true "Dados da unidade"
@@ -74,7 +74,7 @@ func (h *UnitHandler) CreateUnit(w http.ResponseWriter, r *http.Request) {
 // GetUnit godoc
 // @Summary      Buscar unidade por ID
 // @Description  Retorna os dados de uma unidade específica
-// @Tags         units
+// @Tags         Units
 // @Produce      json
 // @Param        id path string true "Unit ID (UUID)"
 // @Success      200 {object} UnitResponse
@@ -103,7 +103,7 @@ func (h *UnitHandler) GetUnit(w http.ResponseWriter, r *http.Request) {
 // ListUnits godoc
 // @Summary      Listar unidades
 // @Description  Retorna lista de unidades com filtros opcionais
-// @Tags         units
+// @Tags         Units
 // @Produce      json
 // @Param        status query string false "Filter by status" Enums(available, occupied, maintenance, renovation)
 // @Param        floor query int false "Filter by floor"
@@ -146,7 +146,7 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 // UpdateUnit godoc
 // @Summary      Atualizar unidade
 // @Description  Atualiza os dados de uma unidade existente
-// @Tags         units
+// @Tags         Units
 // @Accept       json
 // @Produce      json
 // @Param        id path string true "Unit ID (UUID)"
@@ -199,7 +199,7 @@ func (h *UnitHandler) UpdateUnit(w http.ResponseWriter, r *http.Request) {
 // UpdateUnitStatus godoc
 // @Summary      Atualizar status da unidade
 // @Description  Atualiza apenas o status de uma unidade
-// @Tags         units
+// @Tags         Units
 // @Accept       json
 // @Produce      json
 // @Param        id path string true "Unit ID (UUID)"
@@ -241,7 +241,7 @@ func (h *UnitHandler) UpdateUnitStatus(w http.ResponseWriter, r *http.Request) {
 // DeleteUnit godoc
 // @Summary      Deletar unidade
 // @Description  Remove uma unidade do sistema
-// @Tags         units
+// @Tags         Units
 // @Param        id path string true "Unit ID (UUID)"
 // @Success      200 {object} response.Response
 // @Failure      400 {object} response.ErrorResponse
@@ -268,7 +268,7 @@ func (h *UnitHandler) DeleteUnit(w http.ResponseWriter, r *http.Request) {
 // GetOccupancyStats godoc
 // @Summary      Estatísticas de ocupação
 // @Description  Retorna estatísticas de ocupação das unidades
-// @Tags         units
+// @Tags         Units
 // @Produce      json
 // @Success      200 {object} service.OccupancyStats
 // @Failure      500 {object} response.ErrorResponse

@@ -132,3 +132,13 @@ lint-fix: ## Executar linter com correções automáticas
 		exit 1; \
 	fi
 	@echo "$(GREEN)✓ Correções aplicadas$(NC)"
+
+.PHONY: swagger
+swagger: ## Gerar documentação Swagger
+	@echo "$(GREEN)Gerando documentação Swagger...$(NC)"
+	@swag init -g cmd/api/main.go -o docs
+	@echo "$(GREEN)✓ Documentação Swagger gerada em docs/$(NC)"
+
+.PHONY: swagger-serve
+swagger-serve: swagger run ## Gerar Swagger e rodar servidor
+	@echo "$(GREEN)Servidor rodando com Swagger$(NC)"

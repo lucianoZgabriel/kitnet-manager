@@ -40,3 +40,8 @@ dist/
 # Temporary files
 tmp/
 temp/
+
+# Swagger generated files
+docs/docs.go
+docs/swagger.json
+docs/swagger.yaml
