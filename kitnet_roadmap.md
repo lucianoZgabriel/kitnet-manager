@@ -158,12 +158,12 @@
 - [x] Testar todas as rotas manualmente (Postman/cURL)
 
 ### 1.7 Migration e Schema - Tenants
-- [ ] Criar migration `000002_create_tenants_table.up.sql`
-- [ ] Definir tabela tenants com todos os campos
-- [ ] Adicionar constraint UNIQUE no CPF
-- [ ] Criar índice no CPF
-- [ ] Criar migration down correspondente
-- [ ] Executar migration e verificar no Neon
+- [x] Criar migration `000002_create_tenants_table.up.sql`
+- [x] Definir tabela tenants com todos os campos
+- [x] Adicionar constraint UNIQUE no CPF
+- [x] Criar índice no CPF
+- [x] Criar migration down correspondente
+- [x] Executar migration e verificar no Neon
 - [ ] Adicionar schema no arquivo de referência SQLC
 
 ### 1.8 Domain Model - Tenant
