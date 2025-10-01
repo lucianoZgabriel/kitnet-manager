@@ -181,14 +181,14 @@
 - [x] Implementar interface TenantRepository
 
 ### 1.10 Service - Tenant
-- [ ] Criar arquivo `internal/service/tenant_service.go`
-- [ ] Implementar CreateTenant (validar CPF único)
-- [ ] Implementar GetTenantByID
-- [ ] Implementar GetTenantByCPF
-- [ ] Implementar ListTenants
-- [ ] Implementar UpdateTenant
-- [ ] Implementar DeleteTenant (validar se não tem contrato ativo)
-- [ ] Adicionar testes unitários
+- [x] Criar arquivo `internal/service/tenant_service.go`
+- [x] Implementar CreateTenant (validar CPF único)
+- [x] Implementar GetTenantByID
+- [x] Implementar GetTenantByCPF
+- [x] Implementar ListTenants
+- [x] Implementar UpdateTenant
+- [x] Implementar DeleteTenant (validar se não tem contrato ativo)
+- [x] Adicionar testes unitários
 
 ### 1.11 Handler - Tenant
 - [ ] Criar arquivo `internal/handler/tenant_handler.go`
