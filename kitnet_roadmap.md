@@ -191,10 +191,10 @@
 - [x] Adicionar testes unitários
 
 ### 1.11 Handler - Tenant
-- [ ] Criar arquivo `internal/handler/tenant_handler.go`
-- [ ] Criar DTOs necessários
-- [ ] Implementar handlers para todas as operações CRUD
-- [ ] Adicionar validação de CPF no handler
+- [x] Criar arquivo `internal/handler/tenant_handler.go`
+- [x] Criar DTOs necessários
+- [x] Implementar handlers para todas as operações CRUD
+- [x] Adicionar validação de CPF no handler
 
 ### 1.12 Router - Tenants
 - [ ] Registrar rotas de tenants no router
