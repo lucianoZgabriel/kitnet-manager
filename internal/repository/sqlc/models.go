@@ -58,6 +58,18 @@ func (ns NullUnitStatus) Value() (driver.Value, error) {
 	return string(ns.UnitStatus), nil
 }
 
+type Tenant struct {
+	ID               uuid.UUID      `json:"id"`
+	FullName         string         `json:"full_name"`
+	Cpf              string         `json:"cpf"`
+	Phone            string         `json:"phone"`
+	Email            sql.NullString `json:"email"`
+	IDDocumentType   sql.NullString `json:"id_document_type"`
+	IDDocumentNumber sql.NullString `json:"id_document_number"`
+	CreatedAt        time.Time      `json:"created_at"`
+	UpdatedAt        time.Time      `json:"updated_at"`
+}
+
 type Unit struct {
 	ID                 uuid.UUID       `json:"id"`
 	Number             string          `json:"number"`

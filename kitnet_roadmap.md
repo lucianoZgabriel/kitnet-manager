@@ -174,11 +174,11 @@
 - [x] Adicionar testes unitários
 
 ### 1.9 Repository - Tenant (SQLC)
-- [ ] Criar arquivo `internal/repository/queries/tenants.sql`
-- [ ] Escrever queries: Create, GetByID, GetByCPF, List, Update, Delete
-- [ ] Gerar código com SQLC
-- [ ] Criar `internal/repository/postgres/tenant_repo.go`
-- [ ] Implementar interface TenantRepository
+- [x] Criar arquivo `internal/repository/queries/tenants.sql`
+- [x] Escrever queries: Create, GetByID, GetByCPF, List, Update, Delete
+- [x] Gerar código com SQLC
+- [x] Criar `internal/repository/postgres/tenant_repo.go`
+- [x] Implementar interface TenantRepository
 
 ### 1.10 Service - Tenant
 - [ ] Criar arquivo `internal/service/tenant_service.go`

@@ -45,3 +45,33 @@ type UnitRepository interface {
 	// CountByStatus retorna o total de unidades por status
 	CountByStatus(ctx context.Context, status domain.UnitStatus) (int64, error)
 }
+
+// TenantRepository define o contrato para operações de persistência de Tenants
+type TenantRepository interface {
+	// Create cria um novo morador no banco de dados
+	Create(ctx context.Context, tenant *domain.Tenant) error
+
+	// GetByID busca um morador pelo ID
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.Tenant, error)
+
+	// GetByCPF busca um morador pelo CPF
+	GetByCPF(ctx context.Context, cpf string) (*domain.Tenant, error)
+
+	// List retorna todos os moradores ordenados por nome
+	List(ctx context.Context) ([]*domain.Tenant, error)
+
+	// SearchByName busca moradores por nome (case-insensitive)
+	SearchByName(ctx context.Context, name string) ([]*domain.Tenant, error)
+
+	// Update atualiza um morador existente
+	Update(ctx context.Context, tenant *domain.Tenant) error
+
+	// Delete remove um morador do banco de dados
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	// Count retorna o total de moradores
+	Count(ctx context.Context) (int64, error)
+
+	// ExistsByCPF verifica se já existe um morador com o CPF
+	ExistsByCPF(ctx context.Context, cpf string) (bool, error)
+}

@@ -6,21 +6,31 @@ package sqlc
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 )
 
 type Querier interface {
+	CountTenants(ctx context.Context) (int64, error)
 	CountUnits(ctx context.Context) (int64, error)
 	CountUnitsByStatus(ctx context.Context, status UnitStatus) (int64, error)
+	CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error)
 	CreateUnit(ctx context.Context, arg CreateUnitParams) (Unit, error)
+	DeleteTenant(ctx context.Context, id uuid.UUID) error
 	DeleteUnit(ctx context.Context, id uuid.UUID) error
+	GetTenantByCPF(ctx context.Context, cpf string) (Tenant, error)
+	GetTenantByID(ctx context.Context, id uuid.UUID) (Tenant, error)
 	GetUnitByID(ctx context.Context, id uuid.UUID) (Unit, error)
 	GetUnitByNumber(ctx context.Context, number string) (Unit, error)
 	ListAvailableUnits(ctx context.Context) ([]Unit, error)
+	ListTenants(ctx context.Context) ([]Tenant, error)
 	ListUnits(ctx context.Context) ([]Unit, error)
 	ListUnitsByFloor(ctx context.Context, floor int32) ([]Unit, error)
 	ListUnitsByStatus(ctx context.Context, status UnitStatus) ([]Unit, error)
+	SearchTenantsByName(ctx context.Context, dollar_1 sql.NullString) ([]Tenant, error)
+	TenantExistsByCPF(ctx context.Context, cpf string) (bool, error)
+	UpdateTenant(ctx context.Context, arg UpdateTenantParams) (Tenant, error)
 	UpdateUnit(ctx context.Context, arg UpdateUnitParams) (Unit, error)
 	UpdateUnitStatus(ctx context.Context, arg UpdateUnitStatusParams) (Unit, error)
 }
