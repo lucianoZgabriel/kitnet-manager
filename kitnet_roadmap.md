@@ -214,36 +214,36 @@
 **Objetivo:** Implementar sistema completo de contratos com regras de negócio
 
 ### 2.1 Migration e Schema - Leases
-- [ ] Criar migration `000003_create_leases_table.up.sql`
-- [ ] Definir tabela leases com todas as colunas
-- [ ] Adicionar foreign keys para units e tenants
-- [ ] Adicionar checks (payment_due_day entre 1-31, installments 1-3)
-- [ ] Criar índices necessários (unit_id, tenant_id, status)
-- [ ] Criar migration down
-- [ ] Executar e verificar
+- [x] Criar migration `000003_create_leases_table.up.sql`
+- [x] Definir tabela leases com todas as colunas
+- [x] Adicionar foreign keys para units e tenants
+- [x] Adicionar checks (payment_due_day entre 1-31, installments 1-4)
+- [x] Criar índices necessários (unit_id, tenant_id, status)
+- [x] Criar migration down
+- [x] Executar e verificar
 
 ### 2.2 Domain Model - Lease
-- [ ] Criar arquivo `internal/domain/lease.go`
-- [ ] Definir struct Lease completa
-- [ ] Definir enum LeaseStatus
-- [ ] Implementar método CalculateEndDate() (start + 6 meses)
-- [ ] Implementar método IsExpiringSoon() (< 45 dias)
-- [ ] Implementar método CanBeRenewed()
-- [ ] Implementar método RemainingPaintingFee()
-- [ ] Adicionar testes unitários de todos os métodos
+- [x] Criar arquivo `internal/domain/lease.go`
+- [x] Definir struct Lease completa
+- [x] Definir enum LeaseStatus
+- [x] Implementar método CalculateEndDate() (start + 6 meses)
+- [x] Implementar método IsExpiringSoon() (< 45 dias)
+- [x] Implementar método CanBeRenewed()
+- [x] Implementar método RemainingPaintingFee()
+- [x] Adicionar testes unitários de todos os métodos
 
 ### 2.3 Repository - Lease (SQLC)
-- [ ] Criar arquivo `internal/repository/queries/leases.sql`
-- [ ] Query CreateLease
-- [ ] Query GetLeaseByID (com JOIN de unit e tenant)
-- [ ] Query ListLeases (filtros: status, unit_id, tenant_id)
-- [ ] Query GetActiveLeaseByUnitID
-- [ ] Query GetActiveLeaseByTenantID
-- [ ] Query UpdateLease
-- [ ] Query UpdateLeaseStatus
-- [ ] Query GetExpiringSoonLeases (end_date < now + 45 days)
-- [ ] Gerar código SQLC
-- [ ] Implementar repository
+- [x] Criar arquivo `internal/repository/queries/leases.sql`
+- [x] Query CreateLease
+- [x] Query GetLeaseByID (com JOIN de unit e tenant)
+- [x] Query ListLeases (filtros: status, unit_id, tenant_id)
+- [x] Query GetActiveLeaseByUnitID
+- [x] Query GetActiveLeaseByTenantID
+- [x] Query UpdateLease
+- [x] Query UpdateLeaseStatus
+- [x] Query GetExpiringSoonLeases (end_date < now + 45 days)
+- [x] Gerar código SQLC
+- [x] Implementar repository
 
 ### 2.4 Service - Lease (Parte 1: Criação)
 - [ ] Criar arquivo `internal/service/lease_service.go`

@@ -42,3 +42,30 @@ CREATE TABLE tenants (
 CREATE INDEX idx_tenants_cpf ON tenants(cpf);
 CREATE INDEX idx_tenants_full_name ON tenants(full_name);
 CREATE INDEX idx_tenants_created_at ON tenants(created_at);
+
+-- Tabela leases 
+CREATE TABLE leases (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    unit_id UUID NOT NULL REFERENCES units(id) ON DELETE RESTRICT,
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT,
+    contract_signed_date DATE NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    payment_due_day INTEGER NOT NULL CHECK (payment_due_day BETWEEN 1 AND 31),
+    monthly_rent_value DECIMAL(10,2) NOT NULL CHECK (monthly_rent_value > 0),
+    painting_fee_total DECIMAL(10,2) NOT NULL DEFAULT 250.00 CHECK (painting_fee_total >= 0),
+    painting_fee_installments INTEGER NOT NULL CHECK (painting_fee_installments IN (1, 2, 3, 4)),
+    painting_fee_paid DECIMAL(10,2) NOT NULL DEFAULT 0.00 CHECK (painting_fee_paid >= 0),
+    status VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT chk_dates CHECK (start_date < end_date),
+    CONSTRAINT chk_painting_fee_paid CHECK (painting_fee_paid <= painting_fee_total)
+);
+
+CREATE INDEX idx_leases_unit_id ON leases(unit_id);
+CREATE INDEX idx_leases_tenant_id ON leases(tenant_id);
+CREATE INDEX idx_leases_status ON leases(status);
+CREATE INDEX idx_leases_end_date ON leases(end_date);
+CREATE INDEX idx_leases_unit_status ON leases(unit_id, status);
+CREATE INDEX idx_leases_tenant_status ON leases(tenant_id, status);
