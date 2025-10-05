@@ -175,3 +175,169 @@ func (s *LeaseService) GetExpiringSoonLeases(ctx context.Context) ([]*domain.Lea
 	}
 	return leases, nil
 }
+
+// CancelLease cancela um contrato de locação e libera a unidade
+func (s *LeaseService) CancelLease(ctx context.Context, id uuid.UUID) error {
+	// 1. Buscar o contrato
+	lease, err := s.GetLeaseByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("error getting lease: %w", err)
+	}
+	if lease == nil {
+		return ErrLeaseNotFound
+	}
+
+	// 2. Validar que o contrato pode ser cancelado (não expirou e não está cancelado)
+	if lease.Status == domain.LeaseStatusExpired {
+		return ErrLeaseAlreadyExpired
+	}
+	if lease.Status == domain.LeaseStatusCancelled {
+		return ErrCannotCancelLease
+	}
+
+	// 3. Marcar o contrato como cancelado
+	lease.MarkAsCancelled()
+
+	// 4. Persistir o contrato no banco
+	if err := s.leaseRepo.Update(ctx, lease); err != nil {
+		return fmt.Errorf("error updating lease: %w", err)
+	}
+
+	// 5. Atualizar o status da unidade para disponível
+	if err := s.unitRepo.UpdateStatus(ctx, lease.UnitID, domain.UnitStatusAvailable); err != nil {
+		return fmt.Errorf("error updating unit status: %w", err)
+	}
+
+	return nil
+}
+
+// UpdatePaintingFeePaid atualiza o valor pago da taxa de pintura
+func (s *LeaseService) UpdatePaintingFeePaid(ctx context.Context, leaseID uuid.UUID, amountPaid decimal.Decimal) error {
+	// 1. Buscar o contrato
+	lease, err := s.GetLeaseByID(ctx, leaseID)
+	if err != nil {
+		return fmt.Errorf("error getting lease: %w", err)
+	}
+	if lease == nil {
+		return ErrLeaseNotFound
+	}
+
+	// 2. Atualizar usando método do domain (valida se não excede o total)
+	if err := lease.UpdatePaintingFeePaid(amountPaid); err != nil {
+		return fmt.Errorf("error updating painting fee: %w", err)
+	}
+
+	// 3. Persistir no banco usando método específico do repository
+	if err := s.leaseRepo.UpdatePaintingFeePaid(ctx, leaseID, lease.PaintingFeePaid); err != nil {
+		return fmt.Errorf("error saving painting fee update: %w", err)
+	}
+
+	return nil
+}
+
+// CheckExpiringSoonLeases verifica contratos próximos de expirar e atualiza status
+// Este método será usado por um cronjob diário no futuro
+func (s *LeaseService) CheckExpiringSoonLeases(ctx context.Context) (int, error) {
+	// 1. Buscar contratos que expiram nos próximos 45 dias
+	leases, err := s.leaseRepo.GetExpiringSoon(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("error getting expiring soon leases: %w", err)
+	}
+
+	updatedCount := 0
+
+	// 2. Para cada contrato, atualizar status se necessário
+	for _, lease := range leases {
+		// Só atualiza se ainda estiver como 'active'
+		if lease.Status == domain.LeaseStatusActive && lease.IsExpiringSoon() {
+			lease.MarkAsExpiringSoon()
+
+			if err := s.leaseRepo.UpdateStatus(ctx, lease.ID, domain.LeaseStatusExpiringSoon); err != nil {
+				// Log do erro mas continua processando os outros
+				fmt.Printf("error updating lease %s status: %v\n", lease.ID, err)
+				continue
+			}
+
+			updatedCount++
+		}
+	}
+
+	return updatedCount, nil
+}
+
+// MarkLeaseAsExpired marca um contrato como expirado (usado quando a data passa)
+func (s *LeaseService) MarkLeaseAsExpired(ctx context.Context, id uuid.UUID) error {
+	// 1. Buscar o contrato
+	lease, err := s.GetLeaseByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("error getting lease: %w", err)
+	}
+	if lease == nil {
+		return ErrLeaseNotFound
+	}
+
+	// 2. Validar se já expirou a data
+	if !lease.IsExpired() {
+		return errors.New("lease has not expired yet")
+	}
+
+	// 3. Marcar como expirado
+	lease.MarkAsExpired()
+
+	// 4. Atualizar no banco
+	if err := s.leaseRepo.UpdateStatus(ctx, id, domain.LeaseStatusExpired); err != nil {
+		return fmt.Errorf("error marking lease as expired: %w", err)
+	}
+
+	// 5. Liberar a unidade (marcar como disponível)
+	if err := s.unitRepo.UpdateStatus(ctx, lease.UnitID, domain.UnitStatusAvailable); err != nil {
+		return fmt.Errorf("error updating unit status: %w", err)
+	}
+
+	return nil
+}
+
+// GetLeaseStats retorna estatísticas de contratos
+func (s *LeaseService) GetLeaseStats(ctx context.Context) (*LeaseStats, error) {
+	total, err := s.leaseRepo.Count(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error counting leases: %w", err)
+	}
+
+	active, err := s.leaseRepo.CountByStatus(ctx, domain.LeaseStatusActive)
+	if err != nil {
+		return nil, fmt.Errorf("error counting active leases: %w", err)
+	}
+
+	expiringSoon, err := s.leaseRepo.CountByStatus(ctx, domain.LeaseStatusExpiringSoon)
+	if err != nil {
+		return nil, fmt.Errorf("error counting expiring soon leases: %w", err)
+	}
+
+	expired, err := s.leaseRepo.CountByStatus(ctx, domain.LeaseStatusExpired)
+	if err != nil {
+		return nil, fmt.Errorf("error counting expired leases: %w", err)
+	}
+
+	cancelled, err := s.leaseRepo.CountByStatus(ctx, domain.LeaseStatusCancelled)
+	if err != nil {
+		return nil, fmt.Errorf("error counting cancelled leases: %w", err)
+	}
+
+	return &LeaseStats{
+		Total:        total,
+		Active:       active,
+		ExpiringSoon: expiringSoon,
+		Expired:      expired,
+		Cancelled:    cancelled,
+	}, nil
+}
+
+// LeaseStats representa estatísticas de contratos
+type LeaseStats struct {
+	Total        int64 `json:"total"`
+	Active       int64 `json:"active"`
+	ExpiringSoon int64 `json:"expiring_soon"`
+	Expired      int64 `json:"expired"`
+	Cancelled    int64 `json:"cancelled"`
+}

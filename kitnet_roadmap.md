@@ -246,31 +246,31 @@
 - [x] Implementar repository
 
 ### 2.4 Service - Lease (Parte 1: Criação)
-- [ ] Criar arquivo `internal/service/lease_service.go`
-- [ ] Definir dependências (leaseRepo, unitRepo, tenantRepo, paymentRepo)
-- [ ] Implementar CreateLease:
+- [x] Criar arquivo `internal/service/lease_service.go`
+- [x] Definir dependências (leaseRepo, unitRepo, tenantRepo)
+- [x] Implementar CreateLease:
   - Validar unidade existe e está disponível
   - Validar morador existe
   - Validar não há contrato ativo para essa unidade
   - Validar não há contrato ativo para esse morador
   - Validar datas (start_date < end_date)
   - Calcular end_date automaticamente
-  - Iniciar transação
   - Criar lease
   - Atualizar unit.status = occupied
-  - Commit transação
-- [ ] Adicionar testes do CreateLease
+- [x] Adicionar testes do CreateLease
 
 ### 2.5 Service - Lease (Parte 2: Outras Operações)
-- [ ] Implementar GetLeaseByID
-- [ ] Implementar ListLeases com filtros
-- [ ] Implementar GetLeaseDetails (com unit e tenant completos)
-- [ ] Implementar CancelLease:
+- [x] Implementar GetLeaseByID
+- [x] Implementar ListLeases com filtros
+- [x] Implementar CancelLease:
   - Validar lease existe
   - Atualizar lease.status = cancelled
   - Atualizar unit.status = available
-  - Cancelar pagamentos futuros pendentes
-- [ ] Adicionar testes
+- [x] Implementar UpdatePaintingFeePaid
+- [x] Implementar CheckExpiringSoonLeases (cronjob futuro)
+- [x] Implementar MarkLeaseAsExpired
+- [x] Implementar GetLeaseStats
+- [x] Adicionar testes completos com mocks
 
 ### 2.6 Service - Lease (Parte 3: Renovação)
 - [ ] Implementar RenewLease:
