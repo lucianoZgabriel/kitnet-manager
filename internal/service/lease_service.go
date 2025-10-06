@@ -341,3 +341,69 @@ type LeaseStats struct {
 	Expired      int64 `json:"expired"`
 	Cancelled    int64 `json:"cancelled"`
 }
+
+// RenewLease renova um contrato existente criando um novo contrato
+func (s *LeaseService) RenewLease(ctx context.Context, oldLeaseID uuid.UUID, paintingFeeTotal decimal.Decimal, paintingFeeInstallments int) (*domain.Lease, error) {
+	// 1. Buscar o contrato antigo
+	oldLease, err := s.GetLeaseByID(ctx, oldLeaseID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting old lease: %w", err)
+	}
+	if oldLease == nil {
+		return nil, ErrLeaseNotFound
+	}
+
+	// 2. Validar que o contrato pode ser renovado
+	if !oldLease.CanBeRenewed() {
+		return nil, ErrCannotRenewLease
+	}
+
+	// 3. Buscar dados atualizados da unidade
+	unit, err := s.unitRepo.GetByID(ctx, oldLease.UnitID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting unit: %w", err)
+	}
+	if unit == nil {
+		return nil, ErrUnitNotFound
+	}
+
+	// 4. Criar novo contrato
+	// Start date = 1 dia após a data de término do contrato antigo
+	newStartDate := oldLease.EndDate.AddDate(0, 0, 1)
+	newLease, err := domain.NewLease(
+		oldLease.UnitID,
+		oldLease.TenantID,
+		time.Now(),
+		newStartDate,
+		oldLease.PaymentDueDay,
+		unit.CurrentRentValue,
+		paintingFeeTotal,
+		paintingFeeInstallments,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error creating new lease: %w", err)
+	}
+
+	// 5. Marcar contrato antigo como expirado
+	oldLease.MarkAsExpired()
+
+	// 6. Persistir as mudanças (idealmente em uma transação)
+	if err := s.leaseRepo.Update(ctx, oldLease); err != nil {
+		return nil, fmt.Errorf("error updating old lease: %w", err)
+	}
+
+	if err := s.leaseRepo.Create(ctx, newLease); err != nil {
+		// TODO: Rollback do update do oldLease
+		return nil, fmt.Errorf("erro creating new lease: %w", err)
+	}
+
+	// Aqui a unidade já está como occupied, não precisa atualizar
+
+	return newLease, nil
+}
+
+// RenewLeaseRequest representa os dados para renovação de contrato
+type RenewLeaseRequest struct {
+	PaintingFeeTotal        decimal.Decimal `json:"painting_fee_total" validate:"required"`
+	PaintingFeeInstallments int             `json:"painting_fee_installments" validate:"required,min=1,max=4"`
+}

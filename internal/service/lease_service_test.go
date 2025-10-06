@@ -502,3 +502,95 @@ func TestGetLeaseStats_Success(t *testing.T) {
 	assert.Equal(t, int64(0), stats.Cancelled)
 	mockLeaseRepo.AssertExpectations(t)
 }
+
+func TestRenewLease_Success(t *testing.T) {
+	// Arrange
+	ctx := context.Background()
+	oldLeaseID := uuid.New()
+	unitID := uuid.New()
+	tenantID := uuid.New()
+
+	mockLeaseRepo := new(MockLeaseRepo)
+	mockUnitRepo := new(MockUnitRepo)
+	mockTenantRepo := new(MockTenantRepo)
+
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo)
+
+	// Contrato antigo que está expirando em breve
+	oldLease, _ := domain.NewLease(
+		unitID,
+		tenantID,
+		time.Now().AddDate(0, -6, 0), // Assinado há 6 meses
+		time.Now().AddDate(0, -6, 0), // Iniciou há 6 meses
+		5,
+		decimal.NewFromFloat(800),
+		decimal.NewFromFloat(250),
+		3,
+	)
+	oldLease.ID = oldLeaseID
+	oldLease.Status = domain.LeaseStatusExpiringSoon // Marcado como expirando
+
+	unit := createTestUnit(unitID, domain.UnitStatusOccupied)
+
+	paintingFeeTotal := decimal.NewFromFloat(250)
+	paintingFeeInstallments := 3
+
+	mockLeaseRepo.On("GetByID", ctx, oldLeaseID).Return(oldLease, nil)
+	mockUnitRepo.On("GetByID", ctx, unitID).Return(unit, nil)
+	mockLeaseRepo.On("Update", ctx, mock.AnythingOfType("*domain.Lease")).Return(nil)
+	mockLeaseRepo.On("Create", ctx, mock.AnythingOfType("*domain.Lease")).Return(nil)
+
+	// Act
+	newLease, err := service.RenewLease(ctx, oldLeaseID, paintingFeeTotal, paintingFeeInstallments)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.NotNil(t, newLease)
+	assert.Equal(t, unitID, newLease.UnitID)
+	assert.Equal(t, tenantID, newLease.TenantID)
+	assert.Equal(t, domain.LeaseStatusActive, newLease.Status)
+	assert.Equal(t, domain.LeaseStatusExpired, oldLease.Status) // Antigo marcado como expirado
+	assert.True(t, newLease.StartDate.After(oldLease.EndDate))  // Nova data de início após o fim do antigo
+	mockLeaseRepo.AssertExpectations(t)
+	mockUnitRepo.AssertExpectations(t)
+}
+
+func TestRenewLease_CannotRenewCancelled(t *testing.T) {
+	// Arrange
+	ctx := context.Background()
+	oldLeaseID := uuid.New()
+
+	mockLeaseRepo := new(MockLeaseRepo)
+	mockUnitRepo := new(MockUnitRepo)
+	mockTenantRepo := new(MockTenantRepo)
+
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo)
+
+	// Contrato cancelado
+	oldLease, _ := domain.NewLease(
+		uuid.New(),
+		uuid.New(),
+		time.Now(),
+		time.Now(),
+		5,
+		decimal.NewFromFloat(800),
+		decimal.NewFromFloat(250),
+		3,
+	)
+	oldLease.ID = oldLeaseID
+	oldLease.Status = domain.LeaseStatusCancelled // Cancelado - não pode renovar
+
+	paintingFeeTotal := decimal.NewFromFloat(250)
+	paintingFeeInstallments := 3
+
+	mockLeaseRepo.On("GetByID", ctx, oldLeaseID).Return(oldLease, nil)
+
+	// Act
+	newLease, err := service.RenewLease(ctx, oldLeaseID, paintingFeeTotal, paintingFeeInstallments)
+
+	// Assert
+	assert.Error(t, err)
+	assert.Nil(t, newLease)
+	assert.Equal(t, ErrCannotRenewLease, err)
+	mockLeaseRepo.AssertExpectations(t)
+}

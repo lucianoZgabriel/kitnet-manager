@@ -273,19 +273,17 @@
 - [x] Adicionar testes completos com mocks
 
 ### 2.6 Service - Lease (Parte 3: Renovação)
-- [ ] Implementar RenewLease:
+- [x] Implementar RenewLease:
   - Validar lease existe e está ativo ou expiring_soon
   - Criar novo lease com start_date = old.end_date + 1 dia
   - Calcular novo end_date (+ 6 meses)
-  - Manter mesmo unit_id, tenant_id, monthly_rent_value
+  - Manter mesmo unit_id, tenant_id, payment_due_day
+  - Usar valor atualizado da unidade (monthly_rent_value)
   - Nova taxa de pintura
   - Atualizar lease antigo para status = expired
   - Retornar novo lease
-- [ ] Implementar CheckExpiringSoonLeases (cronjob futuro):
-  - Buscar leases com end_date < 45 dias
-  - Atualizar status para expiring_soon
-  - Gerar notificação interna
-- [ ] Adicionar testes
+- [x] CheckExpiringSoonLeases já implementado na Task 2.5
+- [x] Adicionar testes de renovação
 
 ### 2.7 Handler - Lease (Parte 1: CRUD Básico)
 - [ ] Criar arquivo `internal/handler/lease_handler.go`
