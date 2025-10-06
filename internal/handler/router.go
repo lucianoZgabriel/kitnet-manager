@@ -6,10 +6,11 @@ import (
 )
 
 // SetupRoutes configura todas as rotas da aplicação
-func SetupRoutes(r chi.Router, unitService *service.UnitService, tenantService *service.TenantService) {
+func SetupRoutes(r chi.Router, unitService *service.UnitService, tenantService *service.TenantService, leaseService *service.LeaseService) {
 	// Criar handlers
 	unitHandler := NewUnitHandler(unitService)
 	tenantHandler := NewTenantHandler(tenantService)
+	leaseHandler := NewLeaseHandler(leaseService)
 
 	// Rotas de unidades sob /api/v1
 	r.Route("/api/v1", func(r chi.Router) {
@@ -32,6 +33,18 @@ func SetupRoutes(r chi.Router, unitService *service.UnitService, tenantService *
 			r.Get("/{id}", tenantHandler.GetTenant)
 			r.Put("/{id}", tenantHandler.UpdateTenant)
 			r.Delete("/{id}", tenantHandler.DeleteTenant)
+		})
+
+		// Rotas de contratos
+		r.Route("/leases", func(r chi.Router) {
+			r.Post("/", leaseHandler.CreateLease)
+			r.Get("/", leaseHandler.ListLeases)
+			r.Get("/stats", leaseHandler.GetLeaseStats)           // DEVE vir ANTES do /{id}
+			r.Get("/expiring-soon", leaseHandler.GetExpiringSoonLeases) // DEVE vir ANTES do /{id}
+			r.Get("/{id}", leaseHandler.GetLease)
+			r.Post("/{id}/renew", leaseHandler.RenewLease)
+			r.Post("/{id}/cancel", leaseHandler.CancelLease)
+			r.Patch("/{id}/painting-fee", leaseHandler.UpdatePaintingFeePaid)
 		})
 	})
 }

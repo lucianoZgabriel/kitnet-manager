@@ -303,19 +303,25 @@
 - [x] Mapear erros do service para HTTP status codes
 
 ### 2.9 Router e Testes
-- [ ] Registrar todas as rotas de leases
-- [ ] Testar criação de contrato manualmente
-- [ ] Testar cancelamento
-- [ ] Testar renovação
-- [ ] Testar filtros de listagem
-- [ ] Verificar alteração de status das unidades
+- [x] Registrar todas as rotas de leases no router.go
+- [x] Atualizar main.go com LeaseRepository e LeaseService
+- [x] Atualizar SetupRoutes com LeaseHandler
+- [x] Adicionar tag @tag.name Leases no Swagger
+- [x] Testar criação de contrato manualmente
+- [x] Testar cancelamento
+- [x] Testar renovação
+- [x] Testar filtros de listagem
+- [x] Verificar alteração de status das unidades
+- [x] Testar atualização de taxa de pintura
+- [x] Testar validações de negócio
 
 ### 2.10 Documentação e Commit
-- [ ] Documentar endpoints de leases
-- [ ] Adicionar exemplos de requests/responses
-- [ ] Atualizar README com regras de negócio implementadas
-- [ ] Commit: "feat: implement lease management"
-- [ ] Push para repositório
+- [x] Gerar documentação Swagger
+- [x] Corrigir mapeamento de erros (ErrPaintingFeePaidExceedsTotal)
+- [x] Testar todos os endpoints via Swagger/cURL
+- [x] Validar regras de negócio implementadas
+- [x] Commit final: "feat: complete lease management system"
+- [x] Push para repositório
 
 ---
 
