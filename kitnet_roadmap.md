@@ -303,19 +303,25 @@
 - [x] Mapear erros do service para HTTP status codes
 
 ### 2.9 Router e Testes
-- [ ] Registrar todas as rotas de leases
-- [ ] Testar criação de contrato manualmente
-- [ ] Testar cancelamento
-- [ ] Testar renovação
-- [ ] Testar filtros de listagem
-- [ ] Verificar alteração de status das unidades
+- [x] Registrar todas as rotas de leases no router.go
+- [x] Atualizar main.go com LeaseRepository e LeaseService
+- [x] Atualizar SetupRoutes com LeaseHandler
+- [x] Adicionar tag @tag.name Leases no Swagger
+- [x] Testar criação de contrato manualmente
+- [x] Testar cancelamento
+- [x] Testar renovação
+- [x] Testar filtros de listagem
+- [x] Verificar alteração de status das unidades
+- [x] Testar atualização de taxa de pintura
+- [x] Testar validações de negócio
 
 ### 2.10 Documentação e Commit
-- [ ] Documentar endpoints de leases
-- [ ] Adicionar exemplos de requests/responses
-- [ ] Atualizar README com regras de negócio implementadas
-- [ ] Commit: "feat: implement lease management"
-- [ ] Push para repositório
+- [x] Gerar documentação Swagger
+- [x] Corrigir mapeamento de erros (ErrPaintingFeePaidExceedsTotal)
+- [x] Testar todos os endpoints via Swagger/cURL
+- [x] Validar regras de negócio implementadas
+- [x] Commit final: "feat: complete lease management system"
+- [x] Push para repositório
 
 ---
 
@@ -324,22 +330,22 @@
 **Objetivo:** Implementar controle completo de pagamentos
 
 ### 3.1 Migration e Schema - Payments
-- [ ] Criar migration `000004_create_payments_table.up.sql`
-- [ ] Definir tabela payments
-- [ ] Adicionar foreign key para leases
-- [ ] Adicionar checks em payment_type
-- [ ] Criar índices (lease_id, status, due_date)
-- [ ] Criar índice composto (status, due_date) para queries de vencimento
-- [ ] Executar migration
+- [x] Criar migration `000004_create_payments_table.up.sql`
+- [x] Definir tabela payments
+- [x] Adicionar foreign key para leases
+- [x] Adicionar checks em payment_type
+- [x] Criar índices (lease_id, status, due_date)
+- [x] Criar índice composto (status, due_date) para queries de vencimento
+- [x] Executar migration
 
 ### 3.2 Domain Model - Payment
-- [ ] Criar arquivo `internal/domain/payment.go`
-- [ ] Definir struct Payment
-- [ ] Definir enums: PaymentType, PaymentStatus, PaymentMethod
-- [ ] Implementar método IsOverdue()
-- [ ] Implementar método CanBePaid()
-- [ ] Implementar método MarkAsPaid()
-- [ ] Adicionar testes unitários
+- [x] Criar arquivo `internal/domain/payment.go`
+- [x] Definir struct Payment
+- [x] Definir enums: PaymentType, PaymentStatus, PaymentMethod
+- [x] Implementar método IsOverdue()
+- [x] Implementar método CanBePaid()
+- [x] Implementar método MarkAsPaid()
+- [x] Adicionar testes unitários
 
 ### 3.3 Repository - Payment (SQLC)
 - [ ] Criar arquivo `internal/repository/queries/payments.sql`
