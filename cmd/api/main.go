@@ -42,6 +42,8 @@ import (
 // @tag.description Operações relacionadas a unidades/kitnets
 // @tag.name Tenants
 // @tag.description Operações relacionadas a moradores/inquilinos
+// @tag.name Leases
+// @tag.description Operações relacionadas a contratos de locação
 
 // @tag.name Health
 // @tag.description Health check e status do sistema
@@ -74,10 +76,12 @@ func main() {
 	// Repository
 	unitRepo := postgres.NewUnitRepository(dbConn.DB)
 	tenantRepo := postgres.NewTenantRepository(dbConn.DB)
+	leaseRepo := postgres.NewLeaseRepo(dbConn.DB)
 
 	// Service
 	unitService := service.NewUnitService(unitRepo)
 	tenantService := service.NewTenantService(tenantRepo)
+	leaseService := service.NewLeaseService(leaseRepo, unitRepo, tenantRepo)
 
 	log.Println("✅ Serviços inicializados")
 
@@ -114,7 +118,7 @@ func main() {
 	))
 
 	// Registrar rotas da aplicação
-	handler.SetupRoutes(r, unitService, tenantService)
+	handler.SetupRoutes(r, unitService, tenantService, leaseService)
 
 	log.Println("✅ Rotas configuradas")
 	log.Printf("📚 Documentação Swagger: http://localhost:%s/swagger/index.html", cfg.Port)

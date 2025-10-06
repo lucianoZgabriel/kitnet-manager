@@ -58,6 +58,23 @@ func (ns NullUnitStatus) Value() (driver.Value, error) {
 	return string(ns.UnitStatus), nil
 }
 
+type Lease struct {
+	ID                      uuid.UUID `json:"id"`
+	UnitID                  uuid.UUID `json:"unit_id"`
+	TenantID                uuid.UUID `json:"tenant_id"`
+	ContractSignedDate      time.Time `json:"contract_signed_date"`
+	StartDate               time.Time `json:"start_date"`
+	EndDate                 time.Time `json:"end_date"`
+	PaymentDueDay           int32     `json:"payment_due_day"`
+	MonthlyRentValue        string    `json:"monthly_rent_value"`
+	PaintingFeeTotal        string    `json:"painting_fee_total"`
+	PaintingFeeInstallments int32     `json:"painting_fee_installments"`
+	PaintingFeePaid         string    `json:"painting_fee_paid"`
+	Status                  string    `json:"status"`
+	CreatedAt               time.Time `json:"created_at"`
+	UpdatedAt               time.Time `json:"updated_at"`
+}
+
 type Tenant struct {
 	ID               uuid.UUID      `json:"id"`
 	FullName         string         `json:"full_name"`

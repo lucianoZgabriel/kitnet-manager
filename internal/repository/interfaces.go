@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/domain"
+	"github.com/shopspring/decimal"
 )
 
 // UnitRepository define o contrato para operações de persistência de Units
@@ -74,4 +75,23 @@ type TenantRepository interface {
 
 	// ExistsByCPF verifica se já existe um morador com o CPF
 	ExistsByCPF(ctx context.Context, cpf string) (bool, error)
+}
+
+// LeaseRepository define as operações de persistência para Lease
+type LeaseRepository interface {
+	Create(ctx context.Context, lease *domain.Lease) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.Lease, error)
+	List(ctx context.Context) ([]*domain.Lease, error)
+	ListByStatus(ctx context.Context, status domain.LeaseStatus) ([]*domain.Lease, error)
+	ListByUnitID(ctx context.Context, unitID uuid.UUID) ([]*domain.Lease, error)
+	ListByTenantID(ctx context.Context, tenantID uuid.UUID) ([]*domain.Lease, error)
+	GetActiveByUnitID(ctx context.Context, unitID uuid.UUID) (*domain.Lease, error)
+	GetActiveByTenantID(ctx context.Context, tenantID uuid.UUID) (*domain.Lease, error)
+	GetExpiringSoon(ctx context.Context) ([]*domain.Lease, error)
+	Update(ctx context.Context, lease *domain.Lease) error
+	UpdateStatus(ctx context.Context, id uuid.UUID, status domain.LeaseStatus) error
+	UpdatePaintingFeePaid(ctx context.Context, id uuid.UUID, paintingFeePaid decimal.Decimal) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	Count(ctx context.Context) (int64, error)
+	CountByStatus(ctx context.Context, status domain.LeaseStatus) (int64, error)
 }

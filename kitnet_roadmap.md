@@ -214,107 +214,114 @@
 **Objetivo:** Implementar sistema completo de contratos com regras de negócio
 
 ### 2.1 Migration e Schema - Leases
-- [ ] Criar migration `000003_create_leases_table.up.sql`
-- [ ] Definir tabela leases com todas as colunas
-- [ ] Adicionar foreign keys para units e tenants
-- [ ] Adicionar checks (payment_due_day entre 1-31, installments 1-3)
-- [ ] Criar índices necessários (unit_id, tenant_id, status)
-- [ ] Criar migration down
-- [ ] Executar e verificar
+- [x] Criar migration `000003_create_leases_table.up.sql`
+- [x] Definir tabela leases com todas as colunas
+- [x] Adicionar foreign keys para units e tenants
+- [x] Adicionar checks (payment_due_day entre 1-31, installments 1-4)
+- [x] Criar índices necessários (unit_id, tenant_id, status)
+- [x] Criar migration down
+- [x] Executar e verificar
 
 ### 2.2 Domain Model - Lease
-- [ ] Criar arquivo `internal/domain/lease.go`
-- [ ] Definir struct Lease completa
-- [ ] Definir enum LeaseStatus
-- [ ] Implementar método CalculateEndDate() (start + 6 meses)
-- [ ] Implementar método IsExpiringSoon() (< 45 dias)
-- [ ] Implementar método CanBeRenewed()
-- [ ] Implementar método RemainingPaintingFee()
-- [ ] Adicionar testes unitários de todos os métodos
+- [x] Criar arquivo `internal/domain/lease.go`
+- [x] Definir struct Lease completa
+- [x] Definir enum LeaseStatus
+- [x] Implementar método CalculateEndDate() (start + 6 meses)
+- [x] Implementar método IsExpiringSoon() (< 45 dias)
+- [x] Implementar método CanBeRenewed()
+- [x] Implementar método RemainingPaintingFee()
+- [x] Adicionar testes unitários de todos os métodos
 
 ### 2.3 Repository - Lease (SQLC)
-- [ ] Criar arquivo `internal/repository/queries/leases.sql`
-- [ ] Query CreateLease
-- [ ] Query GetLeaseByID (com JOIN de unit e tenant)
-- [ ] Query ListLeases (filtros: status, unit_id, tenant_id)
-- [ ] Query GetActiveLeaseByUnitID
-- [ ] Query GetActiveLeaseByTenantID
-- [ ] Query UpdateLease
-- [ ] Query UpdateLeaseStatus
-- [ ] Query GetExpiringSoonLeases (end_date < now + 45 days)
-- [ ] Gerar código SQLC
-- [ ] Implementar repository
+- [x] Criar arquivo `internal/repository/queries/leases.sql`
+- [x] Query CreateLease
+- [x] Query GetLeaseByID (com JOIN de unit e tenant)
+- [x] Query ListLeases (filtros: status, unit_id, tenant_id)
+- [x] Query GetActiveLeaseByUnitID
+- [x] Query GetActiveLeaseByTenantID
+- [x] Query UpdateLease
+- [x] Query UpdateLeaseStatus
+- [x] Query GetExpiringSoonLeases (end_date < now + 45 days)
+- [x] Gerar código SQLC
+- [x] Implementar repository
 
 ### 2.4 Service - Lease (Parte 1: Criação)
-- [ ] Criar arquivo `internal/service/lease_service.go`
-- [ ] Definir dependências (leaseRepo, unitRepo, tenantRepo, paymentRepo)
-- [ ] Implementar CreateLease:
+- [x] Criar arquivo `internal/service/lease_service.go`
+- [x] Definir dependências (leaseRepo, unitRepo, tenantRepo)
+- [x] Implementar CreateLease:
   - Validar unidade existe e está disponível
   - Validar morador existe
   - Validar não há contrato ativo para essa unidade
   - Validar não há contrato ativo para esse morador
   - Validar datas (start_date < end_date)
   - Calcular end_date automaticamente
-  - Iniciar transação
   - Criar lease
   - Atualizar unit.status = occupied
-  - Commit transação
-- [ ] Adicionar testes do CreateLease
+- [x] Adicionar testes do CreateLease
 
 ### 2.5 Service - Lease (Parte 2: Outras Operações)
-- [ ] Implementar GetLeaseByID
-- [ ] Implementar ListLeases com filtros
-- [ ] Implementar GetLeaseDetails (com unit e tenant completos)
-- [ ] Implementar CancelLease:
+- [x] Implementar GetLeaseByID
+- [x] Implementar ListLeases com filtros
+- [x] Implementar CancelLease:
   - Validar lease existe
   - Atualizar lease.status = cancelled
   - Atualizar unit.status = available
-  - Cancelar pagamentos futuros pendentes
-- [ ] Adicionar testes
+- [x] Implementar UpdatePaintingFeePaid
+- [x] Implementar CheckExpiringSoonLeases (cronjob futuro)
+- [x] Implementar MarkLeaseAsExpired
+- [x] Implementar GetLeaseStats
+- [x] Adicionar testes completos com mocks
 
 ### 2.6 Service - Lease (Parte 3: Renovação)
-- [ ] Implementar RenewLease:
+- [x] Implementar RenewLease:
   - Validar lease existe e está ativo ou expiring_soon
   - Criar novo lease com start_date = old.end_date + 1 dia
   - Calcular novo end_date (+ 6 meses)
-  - Manter mesmo unit_id, tenant_id, monthly_rent_value
+  - Manter mesmo unit_id, tenant_id, payment_due_day
+  - Usar valor atualizado da unidade (monthly_rent_value)
   - Nova taxa de pintura
   - Atualizar lease antigo para status = expired
   - Retornar novo lease
-- [ ] Implementar CheckExpiringSoonLeases (cronjob futuro):
-  - Buscar leases com end_date < 45 dias
-  - Atualizar status para expiring_soon
-  - Gerar notificação interna
-- [ ] Adicionar testes
+- [x] CheckExpiringSoonLeases já implementado na Task 2.5
+- [x] Adicionar testes de renovação
 
 ### 2.7 Handler - Lease (Parte 1: CRUD Básico)
-- [ ] Criar arquivo `internal/handler/lease_handler.go`
-- [ ] Criar DTOs (CreateLeaseRequest, LeaseResponse, LeaseDetailResponse)
-- [ ] Implementar CreateLease handler (POST /api/leases)
-- [ ] Implementar GetLease handler (GET /api/leases/:id)
-- [ ] Implementar ListLeases handler (GET /api/leases)
-- [ ] Adicionar query params para filtros (status, unit_id, tenant_id)
+- [x] Criar arquivo `internal/handler/lease_handler.go`
+- [x] Criar DTOs (CreateLeaseRequestDTO, LeaseResponse, etc)
+- [x] Implementar CreateLease handler (POST /api/leases)
+- [x] Implementar GetLease handler (GET /api/leases/:id)
+- [x] Implementar ListLeases handler (GET /api/leases)
+- [x] Adicionar query params para filtros (status, unit_id, tenant_id)
+- [x] Implementar GetLeaseStats handler (GET /api/leases/stats)
 
 ### 2.8 Handler - Lease (Parte 2: Operações Especiais)
-- [ ] Implementar RenewLease handler (POST /api/leases/:id/renew)
-- [ ] Implementar CancelLease handler (POST /api/leases/:id/cancel)
-- [ ] Implementar GetLeaseDetails handler (GET /api/leases/:id/details)
-- [ ] Validar inputs em todos os handlers
+- [x] Implementar RenewLease handler (POST /api/leases/:id/renew)
+- [x] Implementar CancelLease handler (POST /api/leases/:id/cancel)
+- [x] Implementar UpdatePaintingFeePaid handler (PATCH /api/leases/:id/painting-fee)
+- [x] Implementar GetExpiringSoonLeases handler (GET /api/leases/expiring-soon)
+- [x] Validar inputs em todos os handlers
+- [x] Mapear erros do service para HTTP status codes
 
 ### 2.9 Router e Testes
-- [ ] Registrar todas as rotas de leases
-- [ ] Testar criação de contrato manualmente
-- [ ] Testar cancelamento
-- [ ] Testar renovação
-- [ ] Testar filtros de listagem
-- [ ] Verificar alteração de status das unidades
+- [x] Registrar todas as rotas de leases no router.go
+- [x] Atualizar main.go com LeaseRepository e LeaseService
+- [x] Atualizar SetupRoutes com LeaseHandler
+- [x] Adicionar tag @tag.name Leases no Swagger
+- [x] Testar criação de contrato manualmente
+- [x] Testar cancelamento
+- [x] Testar renovação
+- [x] Testar filtros de listagem
+- [x] Verificar alteração de status das unidades
+- [x] Testar atualização de taxa de pintura
+- [x] Testar validações de negócio
 
 ### 2.10 Documentação e Commit
-- [ ] Documentar endpoints de leases
-- [ ] Adicionar exemplos de requests/responses
-- [ ] Atualizar README com regras de negócio implementadas
-- [ ] Commit: "feat: implement lease management"
-- [ ] Push para repositório
+- [x] Gerar documentação Swagger
+- [x] Corrigir mapeamento de erros (ErrPaintingFeePaidExceedsTotal)
+- [x] Testar todos os endpoints via Swagger/cURL
+- [x] Validar regras de negócio implementadas
+- [x] Commit final: "feat: complete lease management system"
+- [x] Push para repositório
 
 ---
 
