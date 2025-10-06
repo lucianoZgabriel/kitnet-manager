@@ -348,17 +348,17 @@
 - [x] Adicionar testes unitários
 
 ### 3.3 Repository - Payment (SQLC)
-- [ ] Criar arquivo `internal/repository/queries/payments.sql`
-- [ ] Query CreatePayment
-- [ ] Query GetPaymentByID
-- [ ] Query ListPaymentsByLeaseID
-- [ ] Query ListPaymentsByStatus
-- [ ] Query GetOverduePayments (status=pending AND due_date < now)
-- [ ] Query GetUpcomingPayments (due_date BETWEEN now AND now+X days)
-- [ ] Query UpdatePayment
-- [ ] Query UpdatePaymentStatus
-- [ ] Query MarkAsPaid
-- [ ] Gerar código e implementar repository
+- [x] Criar arquivo `internal/repository/queries/payments.sql`
+- [x] Query CreatePayment
+- [x] Query GetPaymentByID
+- [x] Query ListPaymentsByLeaseID
+- [x] Query ListPaymentsByStatus
+- [x] Query GetOverduePayments (status=pending AND due_date < now)
+- [x] Query GetUpcomingPayments (due_date BETWEEN now AND now+X days)
+- [x] Query UpdatePayment
+- [x] Query UpdatePaymentStatus
+- [x] Query MarkAsPaid
+- [x] Gerar código e implementar repository
 
 ### 3.4 Service - Payment (Parte 1: Geração)
 - [ ] Criar arquivo `internal/service/payment_service.go`

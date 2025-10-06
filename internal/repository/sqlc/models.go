@@ -75,6 +75,22 @@ type Lease struct {
 	UpdatedAt               time.Time `json:"updated_at"`
 }
 
+type Payment struct {
+	ID             uuid.UUID      `json:"id"`
+	LeaseID        uuid.UUID      `json:"lease_id"`
+	PaymentType    string         `json:"payment_type"`
+	ReferenceMonth time.Time      `json:"reference_month"`
+	Amount         string         `json:"amount"`
+	Status         string         `json:"status"`
+	DueDate        time.Time      `json:"due_date"`
+	PaymentDate    sql.NullTime   `json:"payment_date"`
+	PaymentMethod  sql.NullString `json:"payment_method"`
+	ProofUrl       sql.NullString `json:"proof_url"`
+	Notes          sql.NullString `json:"notes"`
+	CreatedAt      time.Time      `json:"created_at"`
+	UpdatedAt      time.Time      `json:"updated_at"`
+}
+
 type Tenant struct {
 	ID               uuid.UUID      `json:"id"`
 	FullName         string         `json:"full_name"`
