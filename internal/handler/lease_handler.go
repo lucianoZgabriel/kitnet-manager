@@ -33,7 +33,7 @@ func NewLeaseHandler(leaseService *service.LeaseService) *LeaseHandler {
 // @Tags         Leases
 // @Accept       json
 // @Produce      json
-// @Param        lease body CreateLeaseRequest true "Dados do contrato"
+// @Param        lease body CreateLeaseRequestDTO true "Dados do contrato"
 // @Success      201 {object} LeaseResponse
 // @Failure      400 {object} response.ErrorResponse
 // @Failure      500 {object} response.ErrorResponse
@@ -332,7 +332,8 @@ func (h *LeaseHandler) handleServiceError(w http.ResponseWriter, err error) {
 		errors.Is(err, domain.ErrInvalidPaymentDueDay),
 		errors.Is(err, domain.ErrInvalidPaintingFeeInstallments),
 		errors.Is(err, domain.ErrInvalidMonthlyRentValue),
-		errors.Is(err, domain.ErrInvalidDates):
+		errors.Is(err, domain.ErrInvalidDates),
+		errors.Is(err, domain.ErrPaintingFeePaidExceedsTotal):
 		response.Error(w, http.StatusBadRequest, err.Error())
 	default:
 		response.Error(w, http.StatusInternalServerError, "Internal server error")
