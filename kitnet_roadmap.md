@@ -286,18 +286,21 @@
 - [x] Adicionar testes de renovação
 
 ### 2.7 Handler - Lease (Parte 1: CRUD Básico)
-- [ ] Criar arquivo `internal/handler/lease_handler.go`
-- [ ] Criar DTOs (CreateLeaseRequest, LeaseResponse, LeaseDetailResponse)
-- [ ] Implementar CreateLease handler (POST /api/leases)
-- [ ] Implementar GetLease handler (GET /api/leases/:id)
-- [ ] Implementar ListLeases handler (GET /api/leases)
-- [ ] Adicionar query params para filtros (status, unit_id, tenant_id)
+- [x] Criar arquivo `internal/handler/lease_handler.go`
+- [x] Criar DTOs (CreateLeaseRequestDTO, LeaseResponse, etc)
+- [x] Implementar CreateLease handler (POST /api/leases)
+- [x] Implementar GetLease handler (GET /api/leases/:id)
+- [x] Implementar ListLeases handler (GET /api/leases)
+- [x] Adicionar query params para filtros (status, unit_id, tenant_id)
+- [x] Implementar GetLeaseStats handler (GET /api/leases/stats)
 
 ### 2.8 Handler - Lease (Parte 2: Operações Especiais)
-- [ ] Implementar RenewLease handler (POST /api/leases/:id/renew)
-- [ ] Implementar CancelLease handler (POST /api/leases/:id/cancel)
-- [ ] Implementar GetLeaseDetails handler (GET /api/leases/:id/details)
-- [ ] Validar inputs em todos os handlers
+- [x] Implementar RenewLease handler (POST /api/leases/:id/renew)
+- [x] Implementar CancelLease handler (POST /api/leases/:id/cancel)
+- [x] Implementar UpdatePaintingFeePaid handler (PATCH /api/leases/:id/painting-fee)
+- [x] Implementar GetExpiringSoonLeases handler (GET /api/leases/expiring-soon)
+- [x] Validar inputs em todos os handlers
+- [x] Mapear erros do service para HTTP status codes
 
 ### 2.9 Router e Testes
 - [ ] Registrar todas as rotas de leases
