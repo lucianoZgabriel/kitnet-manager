@@ -395,13 +395,13 @@
 - [x] Adicionar lógica para ser executado diariamente (scheduler futuro)
 
 ### 3.7 Integração Lease + Payment na Criação de Contrato
-- [ ] Atualizar LeaseService.CreateLease:
+- [x] Atualizar LeaseService.CreateLease:
   - Após criar lease, gerar primeiro pagamento de aluguel
   - Gerar pagamentos de taxa de pintura (1x ou 3x)
   - Retornar lease + lista de payments criados
-- [ ] Atualizar LeaseHandler.CreateLease:
+- [x] Atualizar LeaseHandler.CreateLease:
   - Retornar no response os payments gerados
-- [ ] Testar criação de contrato com geração automática de pagamentos
+- [x] Testar criação de contrato com geração automática de pagamentos
 
 ### 3.8 Handler - Payment
 - [ ] Criar arquivo `internal/handler/payment_handler.go`

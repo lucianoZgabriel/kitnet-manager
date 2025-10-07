@@ -77,11 +77,13 @@ func main() {
 	unitRepo := postgres.NewUnitRepository(dbConn.DB)
 	tenantRepo := postgres.NewTenantRepository(dbConn.DB)
 	leaseRepo := postgres.NewLeaseRepo(dbConn.DB)
+	paymentRepo := postgres.NewPaymentRepo(dbConn.DB)
 
 	// Service
 	unitService := service.NewUnitService(unitRepo)
 	tenantService := service.NewTenantService(tenantRepo)
-	leaseService := service.NewLeaseService(leaseRepo, unitRepo, tenantRepo)
+	paymentService := service.NewPaymentService(paymentRepo, leaseRepo)
+	leaseService := service.NewLeaseService(leaseRepo, unitRepo, tenantRepo, paymentService)
 
 	log.Println("✅ Serviços inicializados")
 

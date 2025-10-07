@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
@@ -66,14 +67,18 @@ func (h *LeaseHandler) CreateLease(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Chamar service
-	lease, err := h.leaseService.CreateLease(r.Context(), serviceReq)
+	result, err := h.leaseService.CreateLease(r.Context(), serviceReq)
 	if err != nil {
 		h.handleServiceError(w, err)
 		return
 	}
 
-	// Retornar resposta
-	response.Success(w, http.StatusCreated, "Lease created successfully", ToLeaseResponse(lease))
+	// Retornar resposta com lease e pagamentos gerados
+	responseData := map[string]interface{}{
+		"lease":    ToLeaseResponse(result.Lease),
+		"payments": ToPaymentResponseList(result.Payments),
+	}
+	response.Success(w, http.StatusCreated, "Lease created successfully with payments", responseData)
 }
 
 // GetLease godoc
@@ -338,4 +343,67 @@ func (h *LeaseHandler) handleServiceError(w http.ResponseWriter, err error) {
 	default:
 		response.Error(w, http.StatusInternalServerError, "Internal server error")
 	}
+}
+
+// PaymentResponse representa um pagamento na resposta HTTP
+type PaymentResponse struct {
+	ID             string  `json:"id"`
+	LeaseID        string  `json:"lease_id"`
+	PaymentType    string  `json:"payment_type"`
+	ReferenceMonth string  `json:"reference_month"`
+	Amount         float64 `json:"amount"`
+	Status         string  `json:"status"`
+	DueDate        string  `json:"due_date"`
+	PaymentDate    *string `json:"payment_date,omitempty"`
+	PaymentMethod  *string `json:"payment_method,omitempty"`
+	CreatedAt      string  `json:"created_at"`
+	UpdatedAt      string  `json:"updated_at"`
+}
+
+// ToPaymentResponse converte domain.Payment para PaymentResponse
+func ToPaymentResponse(p *domain.Payment) *PaymentResponse {
+	if p == nil {
+		return nil
+	}
+
+	amount, _ := p.Amount.Float64()
+	
+	var paymentDate *string
+	if p.PaymentDate != nil {
+		dateStr := p.PaymentDate.Format("2006-01-02")
+		paymentDate = &dateStr
+	}
+
+	var paymentMethod *string
+	if p.PaymentMethod != nil {
+		methodStr := string(*p.PaymentMethod)
+		paymentMethod = &methodStr
+	}
+
+	return &PaymentResponse{
+		ID:             p.ID.String(),
+		LeaseID:        p.LeaseID.String(),
+		PaymentType:    string(p.PaymentType),
+		ReferenceMonth: p.ReferenceMonth.Format("2006-01-02"),
+		Amount:         amount,
+		Status:         string(p.Status),
+		DueDate:        p.DueDate.Format("2006-01-02"),
+		PaymentDate:    paymentDate,
+		PaymentMethod:  paymentMethod,
+		CreatedAt:      p.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:      p.UpdatedAt.Format(time.RFC3339),
+	}
+}
+
+// ToPaymentResponseList converte slice de payments para slice de responses
+func ToPaymentResponseList(payments []*domain.Payment) []*PaymentResponse {
+	if payments == nil {
+		return []*PaymentResponse{}
+	}
+
+	responses := make([]*PaymentResponse, len(payments))
+	for i, payment := range payments {
+		responses[i] = ToPaymentResponse(payment)
+	}
+	return responses
 }

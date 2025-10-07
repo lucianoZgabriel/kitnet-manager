@@ -25,9 +25,10 @@ var (
 
 // LeaseService contém a lógica de negócio para gestão de contratos
 type LeaseService struct {
-	leaseRepo  repository.LeaseRepository
-	unitRepo   repository.UnitRepository
-	tenantRepo repository.TenantRepository
+	leaseRepo      repository.LeaseRepository
+	unitRepo       repository.UnitRepository
+	tenantRepo     repository.TenantRepository
+	paymentService *PaymentService
 }
 
 // NewLeaseService cria uma nova instância do serviço de contratos
@@ -35,11 +36,13 @@ func NewLeaseService(
 	leaseRepo repository.LeaseRepository,
 	unitRepo repository.UnitRepository,
 	tenantRepo repository.TenantRepository,
+	paymentService *PaymentService,
 ) *LeaseService {
 	return &LeaseService{
-		leaseRepo:  leaseRepo,
-		unitRepo:   unitRepo,
-		tenantRepo: tenantRepo,
+		leaseRepo:      leaseRepo,
+		unitRepo:       unitRepo,
+		tenantRepo:     tenantRepo,
+		paymentService: paymentService,
 	}
 }
 
@@ -55,8 +58,14 @@ type CreateLeaseRequest struct {
 	PaintingFeeInstallments int             `json:"painting_fee_installments" validate:"required,min=1,max=4"`
 }
 
+// CreateLeaseResponse representa o resultado da criação de um contrato com pagamentos
+type CreateLeaseResponse struct {
+	Lease    *domain.Lease     `json:"lease"`
+	Payments []*domain.Payment `json:"payments"`
+}
+
 // CreateLease cria um novo contrato de locação com todas as validações de negócio
-func (s *LeaseService) CreateLease(ctx context.Context, req CreateLeaseRequest) (*domain.Lease, error) {
+func (s *LeaseService) CreateLease(ctx context.Context, req CreateLeaseRequest) (*CreateLeaseResponse, error) {
 	// 1. Validar que a unidade existe
 	unit, err := s.unitRepo.GetByID(ctx, req.UnitID)
 	if err != nil {
@@ -115,7 +124,37 @@ func (s *LeaseService) CreateLease(ctx context.Context, req CreateLeaseRequest) 
 		return nil, fmt.Errorf("error updating unit status: %w", err)
 	}
 
-	return lease, nil
+	// 9. Gerar pagamentos automaticamente se paymentService estiver disponível
+	var payments []*domain.Payment
+	if s.paymentService != nil {
+		// Gerar primeiro pagamento de aluguel
+		rentPayment, err := s.paymentService.GenerateMonthlyRentPayment(ctx, GenerateMonthlyRentPaymentRequest{
+			LeaseID:        lease.ID,
+			ReferenceMonth: time.Date(lease.StartDate.Year(), lease.StartDate.Month(), 1, 0, 0, 0, 0, time.UTC),
+		})
+		if err != nil {
+			// Erro ao gerar não deve impedir criação de contrato
+			fmt.Printf("Warning: failed to generate rent payment: %v\n", err)
+		} else {
+			payments = append(payments, rentPayment)
+		}
+
+		// Gerar pagamentos de taxa de pintura
+		paintingFeePayments, err := s.paymentService.GeneratePaintingFeePayments(ctx, GeneratePaintingFeePaymentsRequest{
+			LeaseID:      lease.ID,
+			Installments: req.PaintingFeeInstallments,
+		})
+		if err != nil {
+			fmt.Printf("Warning: failed to generate painting fee payments: %v\n", err)
+		} else {
+			payments = append(payments, paintingFeePayments...)
+		}
+	}
+
+	return &CreateLeaseResponse{
+		Lease:    lease,
+		Payments: payments,
+	}, nil
 }
 
 // GetLeaseByID busca um contrato pelo ID
