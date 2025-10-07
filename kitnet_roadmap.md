@@ -377,15 +377,15 @@
 - [x] Adicionar testes
 
 ### 3.5 Service - Payment (Parte 2: Registro)
-- [ ] Implementar MarkPaymentAsPaid:
+- [x] Implementar MarkPaymentAsPaid:
   - Validar payment existe e está pending/overdue
   - Atualizar payment_date, status=paid, payment_method
   - Se type=painting_fee: atualizar lease.painting_fee_paid
   - Retornar payment atualizado
-- [ ] Implementar GetPaymentsByLease
-- [ ] Implementar GetOverduePayments
-- [ ] Implementar GetPaymentsDueSoon (próximos X dias)
-- [ ] Adicionar testes
+- [x] Implementar GetPaymentsByLease
+- [x] Implementar GetOverduePayments
+- [x] Implementar GetPaymentsDueSoon (próximos X dias)
+- [x] Adicionar testes
 
 ### 3.6 Service - Payment (Parte 3: Cronjob)
 - [ ] Implementar CheckOverduePayments:

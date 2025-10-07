@@ -535,3 +535,344 @@ func TestGetUpcomingPayments_Success(t *testing.T) {
 
 	mockPaymentRepo.AssertExpectations(t)
 }
+
+// Test MarkPaymentAsPaid - Success with Rent
+func TestMarkPaymentAsPaid_Success_Rent(t *testing.T) {
+	// Arrange
+	mockPaymentRepo := new(MockPaymentRepo)
+	mockLeaseRepo := new(MockLeaseRepo)
+	service := NewPaymentService(mockPaymentRepo, mockLeaseRepo)
+
+	ctx := context.Background()
+	paymentID := uuid.New()
+
+	existingPayment := &domain.Payment{
+		ID:             paymentID,
+		LeaseID:        uuid.New(),
+		PaymentType:    domain.PaymentTypeRent,
+		ReferenceMonth: time.Date(2024, 3, 1, 0, 0, 0, 0, time.UTC),
+		Amount:         decimal.NewFromInt(800),
+		Status:         domain.PaymentStatusPending,
+		DueDate:        time.Date(2024, 3, 10, 0, 0, 0, 0, time.UTC),
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
+
+	updatedPayment := &domain.Payment{
+		ID:             paymentID,
+		LeaseID:        existingPayment.LeaseID,
+		PaymentType:    domain.PaymentTypeRent,
+		ReferenceMonth: existingPayment.ReferenceMonth,
+		Amount:         existingPayment.Amount,
+		Status:         domain.PaymentStatusPaid,
+		DueDate:        existingPayment.DueDate,
+		PaymentDate:    &time.Time{},
+		CreatedAt:      existingPayment.CreatedAt,
+		UpdatedAt:      time.Now(),
+	}
+
+	req := MarkPaymentAsPaidRequest{
+		PaymentID:     paymentID,
+		PaymentDate:   time.Date(2024, 3, 10, 0, 0, 0, 0, time.UTC),
+		PaymentMethod: domain.PaymentMethodPix,
+	}
+
+	mockPaymentRepo.On("GetByID", ctx, paymentID).Return(existingPayment, nil).Once()
+	mockPaymentRepo.On("MarkAsPaid", ctx, paymentID, req.PaymentDate, req.PaymentMethod).Return(nil)
+	mockPaymentRepo.On("GetByID", ctx, paymentID).Return(updatedPayment, nil).Once()
+
+	// Act
+	payment, err := service.MarkPaymentAsPaid(ctx, req)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.NotNil(t, payment)
+	assert.Equal(t, domain.PaymentStatusPaid, payment.Status)
+
+	mockPaymentRepo.AssertExpectations(t)
+}
+
+// Test MarkPaymentAsPaid - Success with PaintingFee
+func TestMarkPaymentAsPaid_Success_PaintingFee(t *testing.T) {
+	// Arrange
+	mockPaymentRepo := new(MockPaymentRepo)
+	mockLeaseRepo := new(MockLeaseRepo)
+	service := NewPaymentService(mockPaymentRepo, mockLeaseRepo)
+
+	ctx := context.Background()
+	paymentID := uuid.New()
+	leaseID := uuid.New()
+
+	lease := createTestLease()
+	lease.ID = leaseID
+	lease.PaintingFeePaid = decimal.NewFromInt(100)
+	lease.PaintingFeeTotal = decimal.NewFromInt(300)
+
+	existingPayment := &domain.Payment{
+		ID:             paymentID,
+		LeaseID:        leaseID,
+		PaymentType:    domain.PaymentTypePaintingFee,
+		ReferenceMonth: time.Date(2024, 3, 1, 0, 0, 0, 0, time.UTC),
+		Amount:         decimal.NewFromInt(100),
+		Status:         domain.PaymentStatusPending,
+		DueDate:        time.Date(2024, 3, 10, 0, 0, 0, 0, time.UTC),
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
+
+	updatedPayment := &domain.Payment{
+		ID:             paymentID,
+		LeaseID:        leaseID,
+		PaymentType:    domain.PaymentTypePaintingFee,
+		ReferenceMonth: existingPayment.ReferenceMonth,
+		Amount:         existingPayment.Amount,
+		Status:         domain.PaymentStatusPaid,
+		DueDate:        existingPayment.DueDate,
+		CreatedAt:      existingPayment.CreatedAt,
+		UpdatedAt:      time.Now(),
+	}
+
+	req := MarkPaymentAsPaidRequest{
+		PaymentID:     paymentID,
+		PaymentDate:   time.Date(2024, 3, 10, 0, 0, 0, 0, time.UTC),
+		PaymentMethod: domain.PaymentMethodPix,
+	}
+
+	mockPaymentRepo.On("GetByID", ctx, paymentID).Return(existingPayment, nil).Once()
+	mockPaymentRepo.On("MarkAsPaid", ctx, paymentID, req.PaymentDate, req.PaymentMethod).Return(nil)
+	mockLeaseRepo.On("GetByID", ctx, leaseID).Return(lease, nil)
+	mockLeaseRepo.On("UpdatePaintingFeePaid", ctx, leaseID, decimal.NewFromInt(200)).Return(nil)
+	mockPaymentRepo.On("GetByID", ctx, paymentID).Return(updatedPayment, nil).Once()
+
+	// Act
+	payment, err := service.MarkPaymentAsPaid(ctx, req)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.NotNil(t, payment)
+	assert.Equal(t, domain.PaymentStatusPaid, payment.Status)
+
+	mockPaymentRepo.AssertExpectations(t)
+	mockLeaseRepo.AssertExpectations(t)
+}
+
+// Test MarkPaymentAsPaid - Payment Not Found
+func TestMarkPaymentAsPaid_PaymentNotFound(t *testing.T) {
+	// Arrange
+	mockPaymentRepo := new(MockPaymentRepo)
+	mockLeaseRepo := new(MockLeaseRepo)
+	service := NewPaymentService(mockPaymentRepo, mockLeaseRepo)
+
+	ctx := context.Background()
+	paymentID := uuid.New()
+
+	req := MarkPaymentAsPaidRequest{
+		PaymentID:     paymentID,
+		PaymentDate:   time.Now(),
+		PaymentMethod: domain.PaymentMethodPix,
+	}
+
+	mockPaymentRepo.On("GetByID", ctx, paymentID).Return(nil, nil)
+
+	// Act
+	payment, err := service.MarkPaymentAsPaid(ctx, req)
+
+	// Assert
+	assert.Error(t, err)
+	assert.Nil(t, payment)
+	assert.Equal(t, ErrPaymentNotFound, err)
+
+	mockPaymentRepo.AssertExpectations(t)
+}
+
+// Test MarkPaymentAsPaid - Payment Already Paid
+func TestMarkPaymentAsPaid_PaymentAlreadyPaid(t *testing.T) {
+	// Arrange
+	mockPaymentRepo := new(MockPaymentRepo)
+	mockLeaseRepo := new(MockLeaseRepo)
+	service := NewPaymentService(mockPaymentRepo, mockLeaseRepo)
+
+	ctx := context.Background()
+	paymentID := uuid.New()
+	paymentDate := time.Date(2024, 3, 10, 0, 0, 0, 0, time.UTC)
+
+	existingPayment := &domain.Payment{
+		ID:             paymentID,
+		LeaseID:        uuid.New(),
+		PaymentType:    domain.PaymentTypeRent,
+		ReferenceMonth: time.Date(2024, 3, 1, 0, 0, 0, 0, time.UTC),
+		Amount:         decimal.NewFromInt(800),
+		Status:         domain.PaymentStatusPaid, // Já pago
+		DueDate:        time.Date(2024, 3, 10, 0, 0, 0, 0, time.UTC),
+		PaymentDate:    &paymentDate,
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
+
+	req := MarkPaymentAsPaidRequest{
+		PaymentID:     paymentID,
+		PaymentDate:   time.Now(),
+		PaymentMethod: domain.PaymentMethodPix,
+	}
+
+	mockPaymentRepo.On("GetByID", ctx, paymentID).Return(existingPayment, nil)
+
+	// Act
+	payment, err := service.MarkPaymentAsPaid(ctx, req)
+
+	// Assert
+	assert.Error(t, err)
+	assert.Nil(t, payment)
+	assert.Equal(t, ErrPaymentCannotBePaid, err)
+
+	mockPaymentRepo.AssertExpectations(t)
+}
+
+// Test CancelPayment - Success
+func TestCancelPayment_Success(t *testing.T) {
+	// Arrange
+	mockPaymentRepo := new(MockPaymentRepo)
+	mockLeaseRepo := new(MockLeaseRepo)
+	service := NewPaymentService(mockPaymentRepo, mockLeaseRepo)
+
+	ctx := context.Background()
+	paymentID := uuid.New()
+
+	existingPayment := &domain.Payment{
+		ID:             paymentID,
+		LeaseID:        uuid.New(),
+		PaymentType:    domain.PaymentTypeRent,
+		ReferenceMonth: time.Date(2024, 3, 1, 0, 0, 0, 0, time.UTC),
+		Amount:         decimal.NewFromInt(800),
+		Status:         domain.PaymentStatusPending,
+		DueDate:        time.Date(2024, 3, 10, 0, 0, 0, 0, time.UTC),
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
+
+	mockPaymentRepo.On("GetByID", ctx, paymentID).Return(existingPayment, nil)
+	mockPaymentRepo.On("Cancel", ctx, paymentID).Return(nil)
+
+	// Act
+	err := service.CancelPayment(ctx, paymentID)
+
+	// Assert
+	assert.NoError(t, err)
+
+	mockPaymentRepo.AssertExpectations(t)
+}
+
+// Test CancelPayment - Payment Not Found
+func TestCancelPayment_PaymentNotFound(t *testing.T) {
+	// Arrange
+	mockPaymentRepo := new(MockPaymentRepo)
+	mockLeaseRepo := new(MockLeaseRepo)
+	service := NewPaymentService(mockPaymentRepo, mockLeaseRepo)
+
+	ctx := context.Background()
+	paymentID := uuid.New()
+
+	mockPaymentRepo.On("GetByID", ctx, paymentID).Return(nil, nil)
+
+	// Act
+	err := service.CancelPayment(ctx, paymentID)
+
+	// Assert
+	assert.Error(t, err)
+	assert.Equal(t, ErrPaymentNotFound, err)
+
+	mockPaymentRepo.AssertExpectations(t)
+}
+
+// Test CancelPayment - Payment Already Paid
+func TestCancelPayment_PaymentAlreadyPaid(t *testing.T) {
+	// Arrange
+	mockPaymentRepo := new(MockPaymentRepo)
+	mockLeaseRepo := new(MockLeaseRepo)
+	service := NewPaymentService(mockPaymentRepo, mockLeaseRepo)
+
+	ctx := context.Background()
+	paymentID := uuid.New()
+	paymentDate := time.Date(2024, 3, 10, 0, 0, 0, 0, time.UTC)
+
+	existingPayment := &domain.Payment{
+		ID:          paymentID,
+		LeaseID:     uuid.New(),
+		PaymentType: domain.PaymentTypeRent,
+		Status:      domain.PaymentStatusPaid,
+		PaymentDate: &paymentDate,
+		Amount:      decimal.NewFromInt(800),
+		DueDate:     time.Date(2024, 3, 10, 0, 0, 0, 0, time.UTC),
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+
+	mockPaymentRepo.On("GetByID", ctx, paymentID).Return(existingPayment, nil)
+
+	// Act
+	err := service.CancelPayment(ctx, paymentID)
+
+	// Assert
+	assert.Error(t, err)
+	assert.Equal(t, ErrPaymentAlreadyPaid, err)
+
+	mockPaymentRepo.AssertExpectations(t)
+}
+
+// Test GetPaymentStatsByLease - Success
+func TestGetPaymentStatsByLease_Success(t *testing.T) {
+	// Arrange
+	mockPaymentRepo := new(MockPaymentRepo)
+	mockLeaseRepo := new(MockLeaseRepo)
+	service := NewPaymentService(mockPaymentRepo, mockLeaseRepo)
+
+	lease := createTestLease()
+	ctx := context.Background()
+
+	mockLeaseRepo.On("GetByID", ctx, lease.ID).Return(lease, nil)
+	mockPaymentRepo.On("GetTotalPaidByLease", ctx, lease.ID).Return(decimal.NewFromInt(1600), nil)
+	mockPaymentRepo.On("GetPendingAmountByLease", ctx, lease.ID).Return(decimal.NewFromInt(800), nil)
+	mockPaymentRepo.On("CountByLeaseID", ctx, lease.ID).Return(int64(5), nil)
+	mockPaymentRepo.On("CountByStatus", ctx, domain.PaymentStatusPaid).Return(int64(2), nil)
+	mockPaymentRepo.On("CountByStatus", ctx, domain.PaymentStatusPending).Return(int64(2), nil)
+	mockPaymentRepo.On("CountByStatus", ctx, domain.PaymentStatusOverdue).Return(int64(1), nil)
+
+	// Act
+	stats, err := service.GetPaymentStatsByLease(ctx, lease.ID)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.NotNil(t, stats)
+	assert.True(t, decimal.NewFromInt(1600).Equal(stats.TotalPaid), "Expected total paid 1600, got %s", stats.TotalPaid)
+	assert.True(t, decimal.NewFromInt(800).Equal(stats.TotalPending), "Expected total pending 800, got %s", stats.TotalPending)
+	assert.Equal(t, int64(5), stats.TotalPayments)
+	assert.Equal(t, int64(2), stats.PaidCount)
+	assert.Equal(t, int64(2), stats.PendingCount)
+	assert.Equal(t, int64(1), stats.OverdueCount)
+
+	mockLeaseRepo.AssertExpectations(t)
+	mockPaymentRepo.AssertExpectations(t)
+}
+
+// Test GetPaymentStatsByLease - Lease Not Found
+func TestGetPaymentStatsByLease_LeaseNotFound(t *testing.T) {
+	// Arrange
+	mockPaymentRepo := new(MockPaymentRepo)
+	mockLeaseRepo := new(MockLeaseRepo)
+	service := NewPaymentService(mockPaymentRepo, mockLeaseRepo)
+
+	ctx := context.Background()
+	leaseID := uuid.New()
+
+	mockLeaseRepo.On("GetByID", ctx, leaseID).Return(nil, nil)
+
+	// Act
+	stats, err := service.GetPaymentStatsByLease(ctx, leaseID)
+
+	// Assert
+	assert.Error(t, err)
+	assert.Nil(t, stats)
+	assert.Equal(t, ErrLeaseNotFoundForPayment, err)
+
+	mockLeaseRepo.AssertExpectations(t)
+}
