@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -875,4 +876,96 @@ func TestGetPaymentStatsByLease_LeaseNotFound(t *testing.T) {
 	assert.Equal(t, ErrLeaseNotFoundForPayment, err)
 
 	mockLeaseRepo.AssertExpectations(t)
+}
+
+// Test CheckOverduePayments - Success
+func TestCheckOverduePayments_Success(t *testing.T) {
+	// Arrange
+	mockPaymentRepo := new(MockPaymentRepo)
+	mockLeaseRepo := new(MockLeaseRepo)
+	service := NewPaymentService(mockPaymentRepo, mockLeaseRepo)
+
+	ctx := context.Background()
+
+	overduePayments := []*domain.Payment{
+		{
+			ID:          uuid.New(),
+			LeaseID:     uuid.New(),
+			PaymentType: domain.PaymentTypeRent,
+			Amount:      decimal.NewFromInt(800),
+			Status:      domain.PaymentStatusOverdue,
+			DueDate:     time.Now().AddDate(0, 0, -5), // 5 dias atrás
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		},
+		{
+			ID:          uuid.New(),
+			LeaseID:     uuid.New(),
+			PaymentType: domain.PaymentTypeRent,
+			Amount:      decimal.NewFromInt(800),
+			Status:      domain.PaymentStatusOverdue,
+			DueDate:     time.Now().AddDate(0, 0, -10), // 10 dias atrás
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		},
+	}
+
+	mockPaymentRepo.On("MarkOverduePayments", ctx).Return(nil)
+	mockPaymentRepo.On("GetOverdue", ctx).Return(overduePayments, nil)
+
+	// Act
+	result, err := service.CheckOverduePayments(ctx)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, 2, result.UpdatedCount)
+	assert.NotNil(t, result.CheckedAt)
+
+	mockPaymentRepo.AssertExpectations(t)
+}
+
+// Test CheckOverduePayments - No Overdue Payments
+func TestCheckOverduePayments_NoOverduePayments(t *testing.T) {
+	// Arrange
+	mockPaymentRepo := new(MockPaymentRepo)
+	mockLeaseRepo := new(MockLeaseRepo)
+	service := NewPaymentService(mockPaymentRepo, mockLeaseRepo)
+
+	ctx := context.Background()
+
+	mockPaymentRepo.On("MarkOverduePayments", ctx).Return(nil)
+	mockPaymentRepo.On("GetOverdue", ctx).Return([]*domain.Payment{}, nil)
+
+	// Act
+	result, err := service.CheckOverduePayments(ctx)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, 0, result.UpdatedCount)
+
+	mockPaymentRepo.AssertExpectations(t)
+}
+
+// Test CheckOverduePayments - Error Marking Overdue
+func TestCheckOverduePayments_ErrorMarking(t *testing.T) {
+	// Arrange
+	mockPaymentRepo := new(MockPaymentRepo)
+	mockLeaseRepo := new(MockLeaseRepo)
+	service := NewPaymentService(mockPaymentRepo, mockLeaseRepo)
+
+	ctx := context.Background()
+
+	mockPaymentRepo.On("MarkOverduePayments", ctx).Return(errors.New("database error"))
+
+	// Act
+	result, err := service.CheckOverduePayments(ctx)
+
+	// Assert
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "error marking overdue payments")
+
+	mockPaymentRepo.AssertExpectations(t)
 }

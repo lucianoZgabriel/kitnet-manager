@@ -388,11 +388,11 @@
 - [x] Adicionar testes
 
 ### 3.6 Service - Payment (Parte 3: Cronjob)
-- [ ] Implementar CheckOverduePayments:
+- [x] Implementar CheckOverduePayments:
   - Buscar payments com status=pending e due_date < hoje
   - Atualizar status para overdue
   - Retornar quantidade atualizada
-- [ ] Adicionar lógica para ser executado diariamente (scheduler futuro)
+- [x] Adicionar lógica para ser executado diariamente (scheduler futuro)
 
 ### 3.7 Integração Lease + Payment na Criação de Contrato
 - [ ] Atualizar LeaseService.CreateLease:

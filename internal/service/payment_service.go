@@ -416,3 +416,30 @@ func (s *PaymentService) GetPaymentStatsByLease(ctx context.Context, leaseID uui
 		OverdueCount:  overdueCount,
 	}, nil
 }
+
+// CheckOverduePaymentsResult representa o resultado da verificação de pagamentos atrasados
+type CheckOverduePaymentsResult struct {
+	UpdatedCount int       `json:"updated_count"`
+	CheckedAt    time.Time `json:"checked_at"`
+}
+
+// CheckOverduePayments verifica e marca pagamentos pendentes vencidos como atrasados
+// Este método deve ser executado diariamente por um scheduler
+func (s *PaymentService) CheckOverduePayments(ctx context.Context) (*CheckOverduePaymentsResult, error) {
+	// Marcar todos pagamentos vencidos como overdue
+	// Query do repository filtra status=pending E due_date < current date
+	if err := s.paymentRepo.MarkOverduePayments(ctx); err != nil {
+		return nil, fmt.Errorf("error marking overdue payments: %w", err)
+	}
+
+	// Buscar quantos pagamentos estão atrasados agora
+	overduePayments, err := s.paymentRepo.GetOverdue(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error getting overdue payments: %w", err)
+	}
+
+	return &CheckOverduePaymentsResult{
+		UpdatedCount: len(overduePayments),
+		CheckedAt:    time.Now(),
+	}, nil
+}
