@@ -361,20 +361,20 @@
 - [x] Gerar código e implementar repository
 
 ### 3.4 Service - Payment (Parte 1: Geração)
-- [ ] Criar arquivo `internal/service/payment_service.go`
-- [ ] Implementar GenerateMonthlyRentPayment:
+- [x] Criar arquivo `internal/service/payment_service.go`
+- [x] Implementar GenerateMonthlyRentPayment:
   - Receber lease_id, reference_month
   - Calcular due_date baseado em payment_due_day
   - Criar Payment tipo "rent"
   - Amount = lease.monthly_rent_value
-- [ ] Implementar GeneratePaintingFeePayments:
+- [x] Implementar GeneratePaintingFeePayments:
   - Receber lease, installments
   - Se installments=1: 1 payment com amount=total
   - Se installments=2 ou 3: dividir amount igualmente
   - Calcular due_dates escalonadas
   - Criar múltiplos Payments
-- [ ] Implementar GenerateAdjustmentPayment (proporcional)
-- [ ] Adicionar testes
+- [x] Implementar GenerateAdjustmentPayment (proporcional)
+- [x] Adicionar testes
 
 ### 3.5 Service - Payment (Parte 2: Registro)
 - [ ] Implementar MarkPaymentAsPaid:
