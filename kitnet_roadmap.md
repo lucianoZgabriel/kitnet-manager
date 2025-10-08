@@ -460,17 +460,17 @@
 - [x] Adicionar testes
 
 ### 4.3 Service - Reports (Relatório Financeiro)
-- [ ] Criar arquivo `internal/service/report_service.go`
-- [ ] Implementar GetFinancialReport:
+- [x] Criar arquivo `internal/service/report_service.go`
+- [x] Implementar GetFinancialReport:
   - Filtros: start_date, end_date, payment_type
   - Receita total por tipo (rent, painting_fee)
   - Receita por mês
   - Detalhamento por unidade
   - Retornar estrutura agregada
-- [ ] Implementar GetPaymentHistoryReport:
+- [x] Implementar GetPaymentHistoryReport:
   - Histórico completo de pagamentos
   - Filtros: lease_id, tenant_id, status, date_range
-- [ ] Adicionar testes
+- [x] Adicionar testes
 
 ### 4.4 Handler - Dashboard
 - [ ] Criar arquivo `internal/handler/dashboard_handler.go`
