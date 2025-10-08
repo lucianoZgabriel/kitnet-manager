@@ -449,15 +449,15 @@
 - [x] Adicionar testes
 
 ### 4.2 Service - Dashboard (Contratos e Alertas)
-- [ ] Implementar GetContractMetrics:
+- [x] Implementar GetContractMetrics:
   - Total de contratos ativos
   - Contratos expirando em 45 dias
   - Contratos expirados
-- [ ] Implementar GetAlerts:
+- [x] Implementar GetAlerts:
   - Lista de pagamentos atrasados
   - Lista de contratos expirando
   - Unidades sem contrato há muito tempo
-- [ ] Adicionar testes
+- [x] Adicionar testes
 
 ### 4.3 Service - Reports (Relatório Financeiro)
 - [ ] Criar arquivo `internal/service/report_service.go`

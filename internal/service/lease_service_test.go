@@ -129,7 +129,11 @@ func (m *MockUnitRepo) List(ctx context.Context) ([]*domain.Unit, error) {
 	return nil, nil
 }
 func (m *MockUnitRepo) ListByStatus(ctx context.Context, status domain.UnitStatus) ([]*domain.Unit, error) {
-	return nil, nil
+	args := m.Called(ctx, status)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*domain.Unit), args.Error(1)
 }
 func (m *MockUnitRepo) ListByFloor(ctx context.Context, floor int) ([]*domain.Unit, error) {
 	return nil, nil

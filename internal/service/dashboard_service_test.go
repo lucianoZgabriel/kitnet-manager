@@ -3,7 +3,10 @@ package service
 import (
 	"context"
 	"testing"
+	"time"
 
+	"github.com/google/uuid"
+	"github.com/lucianoZgabriel/kitnet-manager/internal/domain"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/repository"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
@@ -49,7 +52,8 @@ func TestGetOccupancyMetrics_Success(t *testing.T) {
 	mockDashboardRepo := new(MockDashboardRepo)
 	mockLeaseRepo := new(MockLeaseRepo)
 	mockPaymentRepo := new(MockPaymentRepo)
-	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo)
+	mockUnitRepo := new(MockUnitRepo)
+	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo, mockUnitRepo)
 
 	ctx := context.Background()
 
@@ -91,7 +95,8 @@ func TestGetOccupancyMetrics_ZeroUnits(t *testing.T) {
 	mockDashboardRepo := new(MockDashboardRepo)
 	mockLeaseRepo := new(MockLeaseRepo)
 	mockPaymentRepo := new(MockPaymentRepo)
-	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo)
+	mockUnitRepo := new(MockUnitRepo)
+	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo, mockUnitRepo)
 
 	ctx := context.Background()
 
@@ -124,7 +129,8 @@ func TestGetOccupancyMetrics_RepositoryError(t *testing.T) {
 	mockDashboardRepo := new(MockDashboardRepo)
 	mockLeaseRepo := new(MockLeaseRepo)
 	mockPaymentRepo := new(MockPaymentRepo)
-	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo)
+	mockUnitRepo := new(MockUnitRepo)
+	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo, mockUnitRepo)
 
 	ctx := context.Background()
 
@@ -146,7 +152,8 @@ func TestGetFinancialMetrics_Success(t *testing.T) {
 	mockDashboardRepo := new(MockDashboardRepo)
 	mockLeaseRepo := new(MockLeaseRepo)
 	mockPaymentRepo := new(MockPaymentRepo)
-	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo)
+	mockUnitRepo := new(MockUnitRepo)
+	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo, mockUnitRepo)
 
 	ctx := context.Background()
 
@@ -188,7 +195,8 @@ func TestGetFinancialMetrics_ZeroProjectedRevenue(t *testing.T) {
 	mockDashboardRepo := new(MockDashboardRepo)
 	mockLeaseRepo := new(MockLeaseRepo)
 	mockPaymentRepo := new(MockPaymentRepo)
-	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo)
+	mockUnitRepo := new(MockUnitRepo)
+	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo, mockUnitRepo)
 
 	ctx := context.Background()
 
@@ -222,7 +230,8 @@ func TestGetFinancialMetrics_ErrorOnProjectedRevenue(t *testing.T) {
 	mockDashboardRepo := new(MockDashboardRepo)
 	mockLeaseRepo := new(MockLeaseRepo)
 	mockPaymentRepo := new(MockPaymentRepo)
-	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo)
+	mockUnitRepo := new(MockUnitRepo)
+	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo, mockUnitRepo)
 
 	ctx := context.Background()
 
@@ -244,7 +253,8 @@ func TestGetFinancialMetrics_ErrorOnRealizedRevenue(t *testing.T) {
 	mockDashboardRepo := new(MockDashboardRepo)
 	mockLeaseRepo := new(MockLeaseRepo)
 	mockPaymentRepo := new(MockPaymentRepo)
-	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo)
+	mockUnitRepo := new(MockUnitRepo)
+	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo, mockUnitRepo)
 
 	ctx := context.Background()
 
@@ -267,7 +277,8 @@ func TestGetFinancialMetrics_ErrorOnOverdueAmount(t *testing.T) {
 	mockDashboardRepo := new(MockDashboardRepo)
 	mockLeaseRepo := new(MockLeaseRepo)
 	mockPaymentRepo := new(MockPaymentRepo)
-	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo)
+	mockUnitRepo := new(MockUnitRepo)
+	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo, mockUnitRepo)
 
 	ctx := context.Background()
 
@@ -291,7 +302,8 @@ func TestGetFinancialMetrics_ErrorOnPendingAmount(t *testing.T) {
 	mockDashboardRepo := new(MockDashboardRepo)
 	mockLeaseRepo := new(MockLeaseRepo)
 	mockPaymentRepo := new(MockPaymentRepo)
-	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo)
+	mockUnitRepo := new(MockUnitRepo)
+	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo, mockUnitRepo)
 
 	ctx := context.Background()
 
@@ -308,4 +320,252 @@ func TestGetFinancialMetrics_ErrorOnPendingAmount(t *testing.T) {
 	assert.Nil(t, metrics)
 
 	mockDashboardRepo.AssertExpectations(t)
+}
+
+// Test GetContractMetrics - Success
+func TestGetContractMetrics_Success(t *testing.T) {
+	// Arrange
+	mockDashboardRepo := new(MockDashboardRepo)
+	mockLeaseRepo := new(MockLeaseRepo)
+	mockPaymentRepo := new(MockPaymentRepo)
+	mockUnitRepo := new(MockUnitRepo)
+	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo, mockUnitRepo)
+
+	ctx := context.Background()
+
+	mockLeaseRepo.On("CountByStatus", ctx, domain.LeaseStatusActive).Return(int64(20), nil)
+	mockLeaseRepo.On("CountByStatus", ctx, domain.LeaseStatusExpiringSoon).Return(int64(5), nil)
+	mockLeaseRepo.On("CountByStatus", ctx, domain.LeaseStatusExpired).Return(int64(3), nil)
+	mockLeaseRepo.On("CountByStatus", ctx, domain.LeaseStatusCancelled).Return(int64(2), nil)
+
+	// Act
+	metrics, err := service.GetContractMetrics(ctx)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.NotNil(t, metrics)
+	assert.Equal(t, int64(20), metrics.TotalActiveContracts)
+	assert.Equal(t, int64(5), metrics.ContractsExpiringSoon)
+	assert.Equal(t, int64(3), metrics.ExpiredContracts)
+	assert.Equal(t, int64(2), metrics.CancelledContracts)
+
+	mockLeaseRepo.AssertExpectations(t)
+}
+
+// Test GetContractMetrics - Error on active count
+func TestGetContractMetrics_ErrorOnActiveCount(t *testing.T) {
+	// Arrange
+	mockDashboardRepo := new(MockDashboardRepo)
+	mockLeaseRepo := new(MockLeaseRepo)
+	mockPaymentRepo := new(MockPaymentRepo)
+	mockUnitRepo := new(MockUnitRepo)
+	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo, mockUnitRepo)
+
+	ctx := context.Background()
+
+	mockLeaseRepo.On("CountByStatus", ctx, domain.LeaseStatusActive).Return(int64(0), assert.AnError)
+
+	// Act
+	metrics, err := service.GetContractMetrics(ctx)
+
+	// Assert
+	assert.Error(t, err)
+	assert.Nil(t, metrics)
+
+	mockLeaseRepo.AssertExpectations(t)
+}
+
+// Test GetAlerts - Success with overdue payments and expiring leases
+func TestGetAlerts_Success(t *testing.T) {
+	// Arrange
+	mockDashboardRepo := new(MockDashboardRepo)
+	mockLeaseRepo := new(MockLeaseRepo)
+	mockPaymentRepo := new(MockPaymentRepo)
+	mockUnitRepo := new(MockUnitRepo)
+	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo, mockUnitRepo)
+
+	ctx := context.Background()
+
+	// Mock overdue payments
+	overduePayment := &domain.Payment{
+		ID:      uuid.New(),
+		LeaseID: uuid.New(),
+		Amount:  decimal.NewFromInt(800),
+		DueDate: time.Now().AddDate(0, 0, -20), // 20 dias atrasado
+		Status:  domain.PaymentStatusOverdue,
+	}
+	mockPaymentRepo.On("GetOverdue", ctx).Return([]*domain.Payment{overduePayment}, nil)
+
+	// Mock expiring leases
+	expiringLease := &domain.Lease{
+		ID:      uuid.New(),
+		EndDate: time.Now().AddDate(0, 0, 20), // Expira em 20 dias
+		Status:  domain.LeaseStatusExpiringSoon,
+	}
+	mockLeaseRepo.On("GetExpiringSoon", ctx).Return([]*domain.Lease{expiringLease}, nil)
+
+	// Mock sem unidades vagas
+	mockUnitRepo.On("ListByStatus", ctx, domain.UnitStatusAvailable).Return([]*domain.Unit{}, nil)
+
+	// Act
+	alerts, err := service.GetAlerts(ctx)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.NotNil(t, alerts)
+	assert.Equal(t, 2, alerts.TotalAlerts)
+	assert.Len(t, alerts.OverduePayments, 1)
+	assert.Len(t, alerts.ExpiringLeases, 1)
+	assert.Len(t, alerts.VacantUnits, 0)
+
+	// Verificar alerta de pagamento atrasado
+	assert.Equal(t, "overdue_payment", alerts.OverduePayments[0].Type)
+	assert.Equal(t, "medium", alerts.OverduePayments[0].Severity)
+
+	// Verificar alerta de contrato expirando
+	assert.Equal(t, "expiring_lease", alerts.ExpiringLeases[0].Type)
+	assert.Equal(t, "medium", alerts.ExpiringLeases[0].Severity)
+
+	mockPaymentRepo.AssertExpectations(t)
+	mockLeaseRepo.AssertExpectations(t)
+	mockUnitRepo.AssertExpectations(t)
+}
+
+// Test GetAlerts - Vacant unit alert (> 30 days)
+func TestGetAlerts_VacantUnitAlert(t *testing.T) {
+	// Arrange
+	mockDashboardRepo := new(MockDashboardRepo)
+	mockLeaseRepo := new(MockLeaseRepo)
+	mockPaymentRepo := new(MockPaymentRepo)
+	mockUnitRepo := new(MockUnitRepo)
+	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo, mockUnitRepo)
+
+	ctx := context.Background()
+
+	// Mock sem pagamentos atrasados e contratos expirando
+	mockPaymentRepo.On("GetOverdue", mock.Anything).Return([]*domain.Payment{}, nil)
+	mockLeaseRepo.On("GetExpiringSoon", mock.Anything).Return([]*domain.Lease{}, nil)
+
+	// Mock unidade disponível há 35 dias completos (mais de 30 dias)
+	// Usar 35*24 horas para garantir claramente que > 30 dias
+	thirtyFiveDaysAgo := time.Now().Add(-35 * 24 * time.Hour)
+	vacantUnit := &domain.Unit{
+		ID:               uuid.New(),
+		Number:           "101",
+		Floor:            1,
+		Status:           domain.UnitStatusAvailable,
+		CurrentRentValue: decimal.NewFromInt(800),
+		UpdatedAt:        thirtyFiveDaysAgo,
+	}
+	mockUnitRepo.On("ListByStatus", mock.Anything, domain.UnitStatusAvailable).Return([]*domain.Unit{vacantUnit}, nil)
+
+	// Act
+	alerts, err := service.GetAlerts(ctx)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.NotNil(t, alerts)
+	assert.Equal(t, 1, alerts.TotalAlerts)
+	assert.Len(t, alerts.VacantUnits, 1)
+
+	// Verificar alerta de unidade vaga
+	assert.Equal(t, "vacant_unit", alerts.VacantUnits[0].Type)
+	assert.Equal(t, "low", alerts.VacantUnits[0].Severity) // 35 dias = low severity
+	assert.Contains(t, alerts.VacantUnits[0].Title, "101")
+	assert.Contains(t, alerts.VacantUnits[0].Title, "vaga há")
+
+	mockPaymentRepo.AssertExpectations(t)
+	mockLeaseRepo.AssertExpectations(t)
+	mockUnitRepo.AssertExpectations(t)
+}
+
+// Test GetAlerts - No alerts
+func TestGetAlerts_NoAlerts(t *testing.T) {
+	// Arrange
+	mockDashboardRepo := new(MockDashboardRepo)
+	mockLeaseRepo := new(MockLeaseRepo)
+	mockPaymentRepo := new(MockPaymentRepo)
+	mockUnitRepo := new(MockUnitRepo)
+	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo, mockUnitRepo)
+
+	ctx := context.Background()
+
+	mockPaymentRepo.On("GetOverdue", ctx).Return([]*domain.Payment{}, nil)
+	mockLeaseRepo.On("GetExpiringSoon", ctx).Return([]*domain.Lease{}, nil)
+	mockUnitRepo.On("ListByStatus", ctx, domain.UnitStatusAvailable).Return([]*domain.Unit{}, nil)
+
+	// Act
+	alerts, err := service.GetAlerts(ctx)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.NotNil(t, alerts)
+	assert.Equal(t, 0, alerts.TotalAlerts)
+	assert.Len(t, alerts.OverduePayments, 0)
+	assert.Len(t, alerts.ExpiringLeases, 0)
+	assert.Len(t, alerts.VacantUnits, 0)
+
+	mockPaymentRepo.AssertExpectations(t)
+	mockLeaseRepo.AssertExpectations(t)
+	mockUnitRepo.AssertExpectations(t)
+}
+
+// Test GetAlerts - High severity overdue payment (>30 days)
+func TestGetAlerts_HighSeverityOverduePayment(t *testing.T) {
+	// Arrange
+	mockDashboardRepo := new(MockDashboardRepo)
+	mockLeaseRepo := new(MockLeaseRepo)
+	mockPaymentRepo := new(MockPaymentRepo)
+	mockUnitRepo := new(MockUnitRepo)
+	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo, mockUnitRepo)
+
+	ctx := context.Background()
+
+	// Pagamento atrasado há 35 dias (high severity)
+	overduePayment := &domain.Payment{
+		ID:      uuid.New(),
+		LeaseID: uuid.New(),
+		Amount:  decimal.NewFromInt(800),
+		DueDate: time.Now().AddDate(0, 0, -35),
+		Status:  domain.PaymentStatusOverdue,
+	}
+	mockPaymentRepo.On("GetOverdue", ctx).Return([]*domain.Payment{overduePayment}, nil)
+	mockLeaseRepo.On("GetExpiringSoon", ctx).Return([]*domain.Lease{}, nil)
+	mockUnitRepo.On("ListByStatus", ctx, domain.UnitStatusAvailable).Return([]*domain.Unit{}, nil)
+
+	// Act
+	alerts, err := service.GetAlerts(ctx)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.NotNil(t, alerts)
+	assert.Len(t, alerts.OverduePayments, 1)
+	assert.Equal(t, "high", alerts.OverduePayments[0].Severity)
+
+	mockPaymentRepo.AssertExpectations(t)
+	mockLeaseRepo.AssertExpectations(t)
+	mockUnitRepo.AssertExpectations(t)
+}
+
+// Test GetAlerts - Error on GetOverdue
+func TestGetAlerts_ErrorOnGetOverdue(t *testing.T) {
+	// Arrange
+	mockDashboardRepo := new(MockDashboardRepo)
+	mockLeaseRepo := new(MockLeaseRepo)
+	mockPaymentRepo := new(MockPaymentRepo)
+	mockUnitRepo := new(MockUnitRepo)
+	service := NewDashboardService(mockDashboardRepo, mockLeaseRepo, mockPaymentRepo, mockUnitRepo)
+
+	ctx := context.Background()
+
+	mockPaymentRepo.On("GetOverdue", ctx).Return([]*domain.Payment{}, assert.AnError)
+
+	// Act
+	alerts, err := service.GetAlerts(ctx)
+
+	// Assert
+	assert.Error(t, err)
+	assert.Nil(t, alerts)
+
+	mockPaymentRepo.AssertExpectations(t)
 }
