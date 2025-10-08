@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/domain"
@@ -94,4 +95,27 @@ type LeaseRepository interface {
 	Delete(ctx context.Context, id uuid.UUID) error
 	Count(ctx context.Context) (int64, error)
 	CountByStatus(ctx context.Context, status domain.LeaseStatus) (int64, error)
+}
+
+// PaymentRepository define as operações de persistência para Payment
+type PaymentRepository interface {
+	Create(ctx context.Context, payment *domain.Payment) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.Payment, error)
+	List(ctx context.Context) ([]*domain.Payment, error)
+	ListByLeaseID(ctx context.Context, leaseID uuid.UUID) ([]*domain.Payment, error)
+	ListByStatus(ctx context.Context, status domain.PaymentStatus) ([]*domain.Payment, error)
+	GetOverdue(ctx context.Context) ([]*domain.Payment, error)
+	GetUpcoming(ctx context.Context, days int) ([]*domain.Payment, error)
+	Update(ctx context.Context, payment *domain.Payment) error
+	UpdateStatus(ctx context.Context, id uuid.UUID, status domain.PaymentStatus) error
+	MarkAsPaid(ctx context.Context, id uuid.UUID, paymentDate time.Time, method domain.PaymentMethod) error
+	MarkOverduePayments(ctx context.Context) error
+	Cancel(ctx context.Context, id uuid.UUID) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	Count(ctx context.Context) (int64, error)
+	CountByStatus(ctx context.Context, status domain.PaymentStatus) (int64, error)
+	CountByLeaseIDAndStatus(ctx context.Context, leaseID uuid.UUID, status domain.PaymentStatus) (int64, error)
+	CountByLeaseID(ctx context.Context, leaseID uuid.UUID) (int64, error)
+	GetTotalPaidByLease(ctx context.Context, leaseID uuid.UUID) (decimal.Decimal, error)
+	GetPendingAmountByLease(ctx context.Context, leaseID uuid.UUID) (decimal.Decimal, error)
 }

@@ -69,3 +69,27 @@ CREATE INDEX idx_leases_status ON leases(status);
 CREATE INDEX idx_leases_end_date ON leases(end_date);
 CREATE INDEX idx_leases_unit_status ON leases(unit_id, status);
 CREATE INDEX idx_leases_tenant_status ON leases(tenant_id, status);
+
+-- Payments table
+CREATE TABLE payments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    lease_id UUID NOT NULL REFERENCES leases(id) ON DELETE RESTRICT,
+    payment_type VARCHAR(20) NOT NULL CHECK (payment_type IN ('rent', 'painting_fee', 'adjustment')),
+    reference_month DATE NOT NULL,
+    amount DECIMAL(10,2) NOT NULL CHECK (amount > 0),
+    status VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'paid', 'overdue', 'cancelled')),
+    due_date DATE NOT NULL,
+    payment_date DATE,
+    payment_method VARCHAR(20),
+    proof_url TEXT,
+    notes TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_payments_lease_id ON payments(lease_id);
+CREATE INDEX idx_payments_status ON payments(status);
+CREATE INDEX idx_payments_due_date ON payments(due_date);
+CREATE INDEX idx_payments_payment_type ON payments(payment_type);
+CREATE INDEX idx_payments_status_due_date ON payments(status, due_date);
+CREATE INDEX idx_payments_lease_status ON payments(lease_id, status);

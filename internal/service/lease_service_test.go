@@ -234,7 +234,7 @@ func TestCreateLease_Success(t *testing.T) {
 	mockUnitRepo := new(MockUnitRepo)
 	mockTenantRepo := new(MockTenantRepo)
 
-	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo)
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil)
 
 	unit := createTestUnit(unitID, domain.UnitStatusAvailable)
 	tenant := createTestTenant(tenantID)
@@ -259,14 +259,17 @@ func TestCreateLease_Success(t *testing.T) {
 	mockUnitRepo.On("UpdateStatus", ctx, unitID, domain.UnitStatusOccupied).Return(nil)
 
 	// Act
-	lease, err := service.CreateLease(ctx, req)
+	result, err := service.CreateLease(ctx, req)
 
 	// Assert
 	assert.NoError(t, err)
-	assert.NotNil(t, lease)
-	assert.Equal(t, unitID, lease.UnitID)
-	assert.Equal(t, tenantID, lease.TenantID)
-	assert.Equal(t, domain.LeaseStatusActive, lease.Status)
+	assert.NotNil(t, result)
+	assert.NotNil(t, result.Lease)
+	assert.Equal(t, unitID, result.Lease.UnitID)
+	assert.Equal(t, tenantID, result.Lease.TenantID)
+	assert.Equal(t, domain.LeaseStatusActive, result.Lease.Status)
+	// Payments vazios pois paymentService é nil
+	assert.Empty(t, result.Payments)
 	mockLeaseRepo.AssertExpectations(t)
 	mockUnitRepo.AssertExpectations(t)
 	mockTenantRepo.AssertExpectations(t)
@@ -282,7 +285,7 @@ func TestCreateLease_UnitNotAvailable(t *testing.T) {
 	mockUnitRepo := new(MockUnitRepo)
 	mockTenantRepo := new(MockTenantRepo)
 
-	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo)
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil)
 
 	// Unidade ocupada
 	unit := createTestUnit(unitID, domain.UnitStatusOccupied)
@@ -320,7 +323,7 @@ func TestCreateLease_UnitAlreadyHasActiveLease(t *testing.T) {
 	mockUnitRepo := new(MockUnitRepo)
 	mockTenantRepo := new(MockTenantRepo)
 
-	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo)
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil)
 
 	unit := createTestUnit(unitID, domain.UnitStatusAvailable)
 	existingLease, _ := domain.NewLease(
@@ -370,7 +373,7 @@ func TestCancelLease_Success(t *testing.T) {
 	mockUnitRepo := new(MockUnitRepo)
 	mockTenantRepo := new(MockTenantRepo)
 
-	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo)
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil)
 
 	lease, _ := domain.NewLease(
 		unitID,
@@ -407,7 +410,7 @@ func TestCancelLease_AlreadyExpired(t *testing.T) {
 	mockUnitRepo := new(MockUnitRepo)
 	mockTenantRepo := new(MockTenantRepo)
 
-	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo)
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil)
 
 	lease, _ := domain.NewLease(
 		uuid.New(),
@@ -442,7 +445,7 @@ func TestUpdatePaintingFeePaid_Success(t *testing.T) {
 	mockUnitRepo := new(MockUnitRepo)
 	mockTenantRepo := new(MockTenantRepo)
 
-	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo)
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil)
 
 	lease, _ := domain.NewLease(
 		uuid.New(),
@@ -481,7 +484,7 @@ func TestGetLeaseStats_Success(t *testing.T) {
 	mockUnitRepo := new(MockUnitRepo)
 	mockTenantRepo := new(MockTenantRepo)
 
-	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo)
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil)
 
 	mockLeaseRepo.On("Count", ctx).Return(int64(10), nil)
 	mockLeaseRepo.On("CountByStatus", ctx, domain.LeaseStatusActive).Return(int64(7), nil)
@@ -514,7 +517,7 @@ func TestRenewLease_Success(t *testing.T) {
 	mockUnitRepo := new(MockUnitRepo)
 	mockTenantRepo := new(MockTenantRepo)
 
-	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo)
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil)
 
 	// Contrato antigo que está expirando em breve
 	oldLease, _ := domain.NewLease(
@@ -564,7 +567,7 @@ func TestRenewLease_CannotRenewCancelled(t *testing.T) {
 	mockUnitRepo := new(MockUnitRepo)
 	mockTenantRepo := new(MockTenantRepo)
 
-	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo)
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil)
 
 	// Contrato cancelado
 	oldLease, _ := domain.NewLease(

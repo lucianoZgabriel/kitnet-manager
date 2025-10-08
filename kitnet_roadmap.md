@@ -330,102 +330,102 @@
 **Objetivo:** Implementar controle completo de pagamentos
 
 ### 3.1 Migration e Schema - Payments
-- [ ] Criar migration `000004_create_payments_table.up.sql`
-- [ ] Definir tabela payments
-- [ ] Adicionar foreign key para leases
-- [ ] Adicionar checks em payment_type
-- [ ] Criar índices (lease_id, status, due_date)
-- [ ] Criar índice composto (status, due_date) para queries de vencimento
-- [ ] Executar migration
+- [x] Criar migration `000004_create_payments_table.up.sql`
+- [x] Definir tabela payments
+- [x] Adicionar foreign key para leases
+- [x] Adicionar checks em payment_type
+- [x] Criar índices (lease_id, status, due_date)
+- [x] Criar índice composto (status, due_date) para queries de vencimento
+- [x] Executar migration
 
 ### 3.2 Domain Model - Payment
-- [ ] Criar arquivo `internal/domain/payment.go`
-- [ ] Definir struct Payment
-- [ ] Definir enums: PaymentType, PaymentStatus, PaymentMethod
-- [ ] Implementar método IsOverdue()
-- [ ] Implementar método CanBePaid()
-- [ ] Implementar método MarkAsPaid()
-- [ ] Adicionar testes unitários
+- [x] Criar arquivo `internal/domain/payment.go`
+- [x] Definir struct Payment
+- [x] Definir enums: PaymentType, PaymentStatus, PaymentMethod
+- [x] Implementar método IsOverdue()
+- [x] Implementar método CanBePaid()
+- [x] Implementar método MarkAsPaid()
+- [x] Adicionar testes unitários
 
 ### 3.3 Repository - Payment (SQLC)
-- [ ] Criar arquivo `internal/repository/queries/payments.sql`
-- [ ] Query CreatePayment
-- [ ] Query GetPaymentByID
-- [ ] Query ListPaymentsByLeaseID
-- [ ] Query ListPaymentsByStatus
-- [ ] Query GetOverduePayments (status=pending AND due_date < now)
-- [ ] Query GetUpcomingPayments (due_date BETWEEN now AND now+X days)
-- [ ] Query UpdatePayment
-- [ ] Query UpdatePaymentStatus
-- [ ] Query MarkAsPaid
-- [ ] Gerar código e implementar repository
+- [x] Criar arquivo `internal/repository/queries/payments.sql`
+- [x] Query CreatePayment
+- [x] Query GetPaymentByID
+- [x] Query ListPaymentsByLeaseID
+- [x] Query ListPaymentsByStatus
+- [x] Query GetOverduePayments (status=pending AND due_date < now)
+- [x] Query GetUpcomingPayments (due_date BETWEEN now AND now+X days)
+- [x] Query UpdatePayment
+- [x] Query UpdatePaymentStatus
+- [x] Query MarkAsPaid
+- [x] Gerar código e implementar repository
 
 ### 3.4 Service - Payment (Parte 1: Geração)
-- [ ] Criar arquivo `internal/service/payment_service.go`
-- [ ] Implementar GenerateMonthlyRentPayment:
+- [x] Criar arquivo `internal/service/payment_service.go`
+- [x] Implementar GenerateMonthlyRentPayment:
   - Receber lease_id, reference_month
   - Calcular due_date baseado em payment_due_day
   - Criar Payment tipo "rent"
   - Amount = lease.monthly_rent_value
-- [ ] Implementar GeneratePaintingFeePayments:
+- [x] Implementar GeneratePaintingFeePayments:
   - Receber lease, installments
   - Se installments=1: 1 payment com amount=total
   - Se installments=2 ou 3: dividir amount igualmente
   - Calcular due_dates escalonadas
   - Criar múltiplos Payments
-- [ ] Implementar GenerateAdjustmentPayment (proporcional)
-- [ ] Adicionar testes
+- [x] Implementar GenerateAdjustmentPayment (proporcional)
+- [x] Adicionar testes
 
 ### 3.5 Service - Payment (Parte 2: Registro)
-- [ ] Implementar MarkPaymentAsPaid:
+- [x] Implementar MarkPaymentAsPaid:
   - Validar payment existe e está pending/overdue
   - Atualizar payment_date, status=paid, payment_method
   - Se type=painting_fee: atualizar lease.painting_fee_paid
   - Retornar payment atualizado
-- [ ] Implementar GetPaymentsByLease
-- [ ] Implementar GetOverduePayments
-- [ ] Implementar GetPaymentsDueSoon (próximos X dias)
-- [ ] Adicionar testes
+- [x] Implementar GetPaymentsByLease
+- [x] Implementar GetOverduePayments
+- [x] Implementar GetPaymentsDueSoon (próximos X dias)
+- [x] Adicionar testes
 
 ### 3.6 Service - Payment (Parte 3: Cronjob)
-- [ ] Implementar CheckOverduePayments:
+- [x] Implementar CheckOverduePayments:
   - Buscar payments com status=pending e due_date < hoje
   - Atualizar status para overdue
   - Retornar quantidade atualizada
-- [ ] Adicionar lógica para ser executado diariamente (scheduler futuro)
+- [x] Adicionar lógica para ser executado diariamente (scheduler futuro)
 
 ### 3.7 Integração Lease + Payment na Criação de Contrato
-- [ ] Atualizar LeaseService.CreateLease:
+- [x] Atualizar LeaseService.CreateLease:
   - Após criar lease, gerar primeiro pagamento de aluguel
   - Gerar pagamentos de taxa de pintura (1x ou 3x)
   - Retornar lease + lista de payments criados
-- [ ] Atualizar LeaseHandler.CreateLease:
+- [x] Atualizar LeaseHandler.CreateLease:
   - Retornar no response os payments gerados
-- [ ] Testar criação de contrato com geração automática de pagamentos
+- [x] Testar criação de contrato com geração automática de pagamentos
 
 ### 3.8 Handler - Payment
-- [ ] Criar arquivo `internal/handler/payment_handler.go`
-- [ ] Criar DTOs (MarkPaymentAsPaidRequest, PaymentResponse)
-- [ ] Implementar GetPaymentsByLease (GET /api/leases/:id/payments)
-- [ ] Implementar GetPayment (GET /api/payments/:id)
-- [ ] Implementar MarkAsPaid (PUT /api/payments/:id/pay)
-- [ ] Implementar ListOverduePayments (GET /api/payments/overdue)
-- [ ] Implementar ListUpcomingPayments (GET /api/payments/upcoming)
+- [x] Criar arquivo `internal/handler/payment_handler.go`
+- [x] Criar DTOs (MarkPaymentAsPaidRequest, PaymentResponse)
+- [x] Implementar GetPaymentsByLease (GET /api/leases/:id/payments)
+- [x] Implementar GetPayment (GET /api/payments/:id)
+- [x] Implementar MarkAsPaid (PUT /api/payments/:id/pay)
+- [x] Implementar ListOverduePayments (GET /api/payments/overdue)
+- [x] Implementar ListUpcomingPayments (GET /api/payments/upcoming)
 
 ### 3.9 Router e Testes Manuais
-- [ ] Registrar rotas de payments
-- [ ] Testar criação de contrato e verificar payments gerados
-- [ ] Testar marcação de pagamento como pago
-- [ ] Testar listagem de atrasados
-- [ ] Testar listagem de próximos vencimentos
-- [ ] Verificar atualização de painting_fee_paid no lease
+- [x] Registrar rotas de payments
+- [x] Testar criação de contrato e verificar payments gerados
+- [x] Testar marcação de pagamento como pago
+- [x] Testar listagem de atrasados
+- [x] Testar listagem de próximos vencimentos
+- [x] Verificar atualização de painting_fee_paid no lease
 
 ### 3.10 Documentação e Commit
-- [ ] Documentar endpoints de payments
-- [ ] Documentar lógica de geração de pagamentos
-- [ ] Adicionar exemplos no README
-- [ ] Commit: "feat: implement payment management"
-- [ ] Push para repositório
+- [x] Documentar endpoints de payments (via Swagger)
+- [x] Documentar lógica de geração de pagamentos
+- [x] Adicionar exemplos no README
+- [x] Commit: "feat: implement payment management"
+- [x] Push para repositório
 
 ---
 
