@@ -96,6 +96,11 @@ func (m *MockPaymentRepo) CountByStatus(ctx context.Context, status domain.Payme
 	return args.Get(0).(int64), args.Error(1)
 }
 
+func (m *MockPaymentRepo) CountByLeaseIDAndStatus(ctx context.Context, leaseID uuid.UUID, status domain.PaymentStatus) (int64, error) {
+	args := m.Called(ctx, leaseID, status)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 func (m *MockPaymentRepo) CountByLeaseID(ctx context.Context, leaseID uuid.UUID) (int64, error) {
 	args := m.Called(ctx, leaseID)
 	return args.Get(0).(int64), args.Error(1)
@@ -834,9 +839,9 @@ func TestGetPaymentStatsByLease_Success(t *testing.T) {
 	mockPaymentRepo.On("GetTotalPaidByLease", ctx, lease.ID).Return(decimal.NewFromInt(1600), nil)
 	mockPaymentRepo.On("GetPendingAmountByLease", ctx, lease.ID).Return(decimal.NewFromInt(800), nil)
 	mockPaymentRepo.On("CountByLeaseID", ctx, lease.ID).Return(int64(5), nil)
-	mockPaymentRepo.On("CountByStatus", ctx, domain.PaymentStatusPaid).Return(int64(2), nil)
-	mockPaymentRepo.On("CountByStatus", ctx, domain.PaymentStatusPending).Return(int64(2), nil)
-	mockPaymentRepo.On("CountByStatus", ctx, domain.PaymentStatusOverdue).Return(int64(1), nil)
+	mockPaymentRepo.On("CountByLeaseIDAndStatus", ctx, lease.ID, domain.PaymentStatusPaid).Return(int64(2), nil)
+	mockPaymentRepo.On("CountByLeaseIDAndStatus", ctx, lease.ID, domain.PaymentStatusPending).Return(int64(2), nil)
+	mockPaymentRepo.On("CountByLeaseIDAndStatus", ctx, lease.ID, domain.PaymentStatusOverdue).Return(int64(1), nil)
 
 	// Act
 	stats, err := service.GetPaymentStatsByLease(ctx, lease.ID)

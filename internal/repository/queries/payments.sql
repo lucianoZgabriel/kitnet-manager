@@ -145,13 +145,13 @@ INNER JOIN tenants t ON l.tenant_id = t.id
 ORDER BY p.due_date DESC;
 
 -- name: GetTotalPaidByLease :one
-SELECT COALESCE(SUM(amount), 0) as total
+SELECT COALESCE(SUM(amount), 0)::TEXT as total
 FROM payments
 WHERE lease_id = $1
   AND status = 'paid';
 
 -- name: GetPendingAmountByLease :one
-SELECT COALESCE(SUM(amount), 0) as total
+SELECT COALESCE(SUM(amount), 0)::TEXT as total
 FROM payments
 WHERE lease_id = $1
   AND status IN ('pending', 'overdue');

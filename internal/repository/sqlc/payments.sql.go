@@ -299,29 +299,29 @@ func (q *Queries) GetPaymentWithLeaseDetails(ctx context.Context, id uuid.UUID) 
 }
 
 const getPendingAmountByLease = `-- name: GetPendingAmountByLease :one
-SELECT COALESCE(SUM(amount), 0) as total
+SELECT COALESCE(SUM(amount), 0)::TEXT as total
 FROM payments
 WHERE lease_id = $1
   AND status IN ('pending', 'overdue')
 `
 
-func (q *Queries) GetPendingAmountByLease(ctx context.Context, leaseID uuid.UUID) (interface{}, error) {
+func (q *Queries) GetPendingAmountByLease(ctx context.Context, leaseID uuid.UUID) (string, error) {
 	row := q.db.QueryRowContext(ctx, getPendingAmountByLease, leaseID)
-	var total interface{}
+	var total string
 	err := row.Scan(&total)
 	return total, err
 }
 
 const getTotalPaidByLease = `-- name: GetTotalPaidByLease :one
-SELECT COALESCE(SUM(amount), 0) as total
+SELECT COALESCE(SUM(amount), 0)::TEXT as total
 FROM payments
 WHERE lease_id = $1
   AND status = 'paid'
 `
 
-func (q *Queries) GetTotalPaidByLease(ctx context.Context, leaseID uuid.UUID) (interface{}, error) {
+func (q *Queries) GetTotalPaidByLease(ctx context.Context, leaseID uuid.UUID) (string, error) {
 	row := q.db.QueryRowContext(ctx, getTotalPaidByLease, leaseID)
-	var total interface{}
+	var total string
 	err := row.Scan(&total)
 	return total, err
 }

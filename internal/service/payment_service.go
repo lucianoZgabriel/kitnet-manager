@@ -392,17 +392,17 @@ func (s *PaymentService) GetPaymentStatsByLease(ctx context.Context, leaseID uui
 		return nil, fmt.Errorf("error counting payments: %w", err)
 	}
 
-	paidCount, err := s.paymentRepo.CountByStatus(ctx, domain.PaymentStatusPaid)
+	paidCount, err := s.paymentRepo.CountByLeaseIDAndStatus(ctx, leaseID, domain.PaymentStatusPaid)
 	if err != nil {
 		return nil, fmt.Errorf("error counting paid payments: %w", err)
 	}
 
-	pendingCount, err := s.paymentRepo.CountByStatus(ctx, domain.PaymentStatusPending)
+	pendingCount, err := s.paymentRepo.CountByLeaseIDAndStatus(ctx, leaseID, domain.PaymentStatusPending)
 	if err != nil {
 		return nil, fmt.Errorf("error counting pending payments: %w", err)
 	}
 
-	overdueCount, err := s.paymentRepo.CountByStatus(ctx, domain.PaymentStatusOverdue)
+	overdueCount, err := s.paymentRepo.CountByLeaseIDAndStatus(ctx, leaseID, domain.PaymentStatusOverdue)
 	if err != nil {
 		return nil, fmt.Errorf("error counting overdue payments: %w", err)
 	}

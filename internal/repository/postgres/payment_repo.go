@@ -240,6 +240,19 @@ func (r *PaymentRepo) CountByLeaseID(ctx context.Context, leaseID uuid.UUID) (in
 	return count, nil
 }
 
+// CountByLeaseIDAndStatus retorna o total de pagamentos de um contrato por status
+func (r *PaymentRepo) CountByLeaseIDAndStatus(ctx context.Context, leaseID uuid.UUID, status domain.PaymentStatus) (int64, error) {
+	query := `SELECT COUNT(*) FROM payments WHERE lease_id = $1 AND status = $2`
+
+	var count int64
+	err := r.db.QueryRowContext(ctx, query, leaseID, status).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 // GetTotalPaidByLease retorna o valor total pago de um contrato
 func (r *PaymentRepo) GetTotalPaidByLease(ctx context.Context, leaseID uuid.UUID) (decimal.Decimal, error) {
 	total, err := r.queries.GetTotalPaidByLease(ctx, leaseID)
@@ -247,13 +260,11 @@ func (r *PaymentRepo) GetTotalPaidByLease(ctx context.Context, leaseID uuid.UUID
 		return decimal.Zero, fmt.Errorf("failed to get total paid by lease: %w", err)
 	}
 
-	// Converter interface{} para string
-	totalStr, ok := total.(string)
-	if !ok {
-		return decimal.Zero, fmt.Errorf("unexpected type for total: %T", total)
+	// Converter string para decimal
+	result, err := decimal.NewFromString(total)
+	if err != nil {
+		return decimal.Zero, fmt.Errorf("failed to parse total: %w", err)
 	}
-
-	result, _ := decimal.NewFromString(totalStr)
 	return result, nil
 }
 
@@ -264,13 +275,11 @@ func (r *PaymentRepo) GetPendingAmountByLease(ctx context.Context, leaseID uuid.
 		return decimal.Zero, fmt.Errorf("failed to get pending amount by lease: %w", err)
 	}
 
-	// Converter interface{} para string
-	totalStr, ok := total.(string)
-	if !ok {
-		return decimal.Zero, fmt.Errorf("unexpected type for total: %T", total)
+	// Converter string para decimal
+	result, err := decimal.NewFromString(total)
+	if err != nil {
+		return decimal.Zero, fmt.Errorf("failed to parse total: %w", err)
 	}
-
-	result, _ := decimal.NewFromString(totalStr)
 	return result, nil
 }
 
@@ -303,4 +312,3 @@ func (r *PaymentRepo) toDomainList(rows []sqlc.Payment) []*domain.Payment {
 	}
 	return payments
 }
-

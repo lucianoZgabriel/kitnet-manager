@@ -6,11 +6,12 @@ import (
 )
 
 // SetupRoutes configura todas as rotas da aplicação
-func SetupRoutes(r chi.Router, unitService *service.UnitService, tenantService *service.TenantService, leaseService *service.LeaseService) {
+func SetupRoutes(r chi.Router, unitService *service.UnitService, tenantService *service.TenantService, leaseService *service.LeaseService, paymentService *service.PaymentService) {
 	// Criar handlers
 	unitHandler := NewUnitHandler(unitService)
 	tenantHandler := NewTenantHandler(tenantService)
 	leaseHandler := NewLeaseHandler(leaseService)
+	paymentHandler := NewPaymentHandler(paymentService)
 
 	// Rotas de unidades sob /api/v1
 	r.Route("/api/v1", func(r chi.Router) {
@@ -45,6 +46,18 @@ func SetupRoutes(r chi.Router, unitService *service.UnitService, tenantService *
 			r.Post("/{id}/renew", leaseHandler.RenewLease)
 			r.Post("/{id}/cancel", leaseHandler.CancelLease)
 			r.Patch("/{id}/painting-fee", leaseHandler.UpdatePaintingFeePaid)
+			// Rotas de pagamentos por contrato
+			r.Get("/{lease_id}/payments", paymentHandler.GetPaymentsByLease)
+			r.Get("/{lease_id}/payments/stats", paymentHandler.GetPaymentStatsByLease)
+		})
+
+		// Rotas de pagamentos
+		r.Route("/payments", func(r chi.Router) {
+			r.Get("/overdue", paymentHandler.GetOverduePayments)   // DEVE vir ANTES do /{id}
+			r.Get("/upcoming", paymentHandler.GetUpcomingPayments) // DEVE vir ANTES do /{id}
+			r.Get("/{id}", paymentHandler.GetPayment)
+			r.Put("/{id}/pay", paymentHandler.MarkPaymentAsPaid)
+			r.Post("/{id}/cancel", paymentHandler.CancelPayment)
 		})
 	})
 }

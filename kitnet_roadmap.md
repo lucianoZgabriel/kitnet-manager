@@ -404,28 +404,28 @@
 - [x] Testar criação de contrato com geração automática de pagamentos
 
 ### 3.8 Handler - Payment
-- [ ] Criar arquivo `internal/handler/payment_handler.go`
-- [ ] Criar DTOs (MarkPaymentAsPaidRequest, PaymentResponse)
-- [ ] Implementar GetPaymentsByLease (GET /api/leases/:id/payments)
-- [ ] Implementar GetPayment (GET /api/payments/:id)
-- [ ] Implementar MarkAsPaid (PUT /api/payments/:id/pay)
-- [ ] Implementar ListOverduePayments (GET /api/payments/overdue)
-- [ ] Implementar ListUpcomingPayments (GET /api/payments/upcoming)
+- [x] Criar arquivo `internal/handler/payment_handler.go`
+- [x] Criar DTOs (MarkPaymentAsPaidRequest, PaymentResponse)
+- [x] Implementar GetPaymentsByLease (GET /api/leases/:id/payments)
+- [x] Implementar GetPayment (GET /api/payments/:id)
+- [x] Implementar MarkAsPaid (PUT /api/payments/:id/pay)
+- [x] Implementar ListOverduePayments (GET /api/payments/overdue)
+- [x] Implementar ListUpcomingPayments (GET /api/payments/upcoming)
 
 ### 3.9 Router e Testes Manuais
-- [ ] Registrar rotas de payments
-- [ ] Testar criação de contrato e verificar payments gerados
-- [ ] Testar marcação de pagamento como pago
-- [ ] Testar listagem de atrasados
-- [ ] Testar listagem de próximos vencimentos
-- [ ] Verificar atualização de painting_fee_paid no lease
+- [x] Registrar rotas de payments
+- [x] Testar criação de contrato e verificar payments gerados
+- [x] Testar marcação de pagamento como pago
+- [x] Testar listagem de atrasados
+- [x] Testar listagem de próximos vencimentos
+- [x] Verificar atualização de painting_fee_paid no lease
 
 ### 3.10 Documentação e Commit
-- [ ] Documentar endpoints de payments
-- [ ] Documentar lógica de geração de pagamentos
-- [ ] Adicionar exemplos no README
-- [ ] Commit: "feat: implement payment management"
-- [ ] Push para repositório
+- [x] Documentar endpoints de payments (via Swagger)
+- [x] Documentar lógica de geração de pagamentos
+- [x] Adicionar exemplos no README
+- [x] Commit: "feat: implement payment management"
+- [x] Push para repositório
 
 ---
 

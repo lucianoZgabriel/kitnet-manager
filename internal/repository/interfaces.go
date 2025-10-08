@@ -114,6 +114,7 @@ type PaymentRepository interface {
 	Delete(ctx context.Context, id uuid.UUID) error
 	Count(ctx context.Context) (int64, error)
 	CountByStatus(ctx context.Context, status domain.PaymentStatus) (int64, error)
+	CountByLeaseIDAndStatus(ctx context.Context, leaseID uuid.UUID, status domain.PaymentStatus) (int64, error)
 	CountByLeaseID(ctx context.Context, leaseID uuid.UUID) (int64, error)
 	GetTotalPaidByLease(ctx context.Context, leaseID uuid.UUID) (decimal.Decimal, error)
 	GetPendingAmountByLease(ctx context.Context, leaseID uuid.UUID) (decimal.Decimal, error)
