@@ -434,19 +434,19 @@
 **Objetivo:** Criar visão executiva e relatórios financeiros
 
 ### 4.1 Service - Dashboard (Métricas Gerais)
-- [ ] Criar arquivo `internal/service/dashboard_service.go`
-- [ ] Implementar GetOccupancyMetrics:
+- [x] Criar arquivo `internal/service/dashboard_service.go`
+- [x] Implementar GetOccupancyMetrics:
   - Total de unidades
   - Unidades ocupadas
   - Unidades disponíveis
   - Unidades em manutenção/reforma
   - Taxa de ocupação (%)
-- [ ] Implementar GetFinancialMetrics:
+- [x] Implementar GetFinancialMetrics:
   - Receita mensal projetada (soma de todos alugueis ativos)
   - Receita mensal realizada (pagamentos pagos no mês)
   - Inadimplência (pagamentos overdue)
   - Taxa de inadimplência (%)
-- [ ] Adicionar testes
+- [x] Adicionar testes
 
 ### 4.2 Service - Dashboard (Contratos e Alertas)
 - [ ] Implementar GetContractMetrics:
