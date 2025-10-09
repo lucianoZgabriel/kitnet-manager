@@ -520,20 +520,20 @@
 **Objetivo:** Implementar sistema de autenticação JWT e proteção de rotas
 
 ### 5.1 Migration e Schema - Users
-- [ ] Criar migration `000005_create_users_table.up.sql`
-- [ ] Definir tabela users (id, username, password_hash, role, created_at)
-- [ ] Adicionar constraint UNIQUE no username
-- [ ] Criar índice no username
-- [ ] Seed inicial com usuário admin
-- [ ] Executar migration
+- [x] Criar migration `000005_create_users_table.up.sql`
+- [x] Definir tabela users (id, username, password_hash, role, created_at)
+- [x] Adicionar constraint UNIQUE no username
+- [x] Criar índice no username
+- [x] Seed inicial com usuário admin
+- [x] Executar migration
 
 ### 5.2 Domain Model - User
-- [ ] Criar arquivo `internal/domain/user.go`
-- [ ] Definir struct User
-- [ ] Definir enum UserRole (admin, manager, viewer)
-- [ ] Implementar método ValidatePassword()
-- [ ] Implementar método HashPassword()
-- [ ] Adicionar testes unitários
+- [x] Criar arquivo `internal/domain/user.go`
+- [x] Definir struct User
+- [x] Definir enum UserRole (admin, manager, viewer)
+- [x] Implementar método ValidatePassword()
+- [x] Implementar método HashPassword()
+- [x] Adicionar testes unitários
 
 ### 5.3 Repository - User (SQLC)
 - [ ] Criar arquivo `internal/repository/queries/users.sql`
