@@ -119,3 +119,21 @@ type PaymentRepository interface {
 	GetTotalPaidByLease(ctx context.Context, leaseID uuid.UUID) (decimal.Decimal, error)
 	GetPendingAmountByLease(ctx context.Context, leaseID uuid.UUID) (decimal.Decimal, error)
 }
+
+// DashboardRepository define as operações de persistência para Dashboard metrics
+type DashboardRepository interface {
+	GetOccupancyMetrics(ctx context.Context) (*OccupancyMetrics, error)
+	GetMonthlyProjectedRevenue(ctx context.Context) (decimal.Decimal, error)
+	GetMonthlyRealizedRevenue(ctx context.Context) (decimal.Decimal, error)
+	GetOverdueAmount(ctx context.Context) (decimal.Decimal, error)
+	GetTotalPendingAmount(ctx context.Context) (decimal.Decimal, error)
+}
+
+// OccupancyMetrics representa as métricas de ocupação
+type OccupancyMetrics struct {
+	TotalUnits       int64
+	OccupiedUnits    int64
+	AvailableUnits   int64
+	MaintenanceUnits int64
+	RenovationUnits  int64
+}

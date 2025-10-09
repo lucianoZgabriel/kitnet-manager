@@ -434,84 +434,84 @@
 **Objetivo:** Criar visão executiva e relatórios financeiros
 
 ### 4.1 Service - Dashboard (Métricas Gerais)
-- [ ] Criar arquivo `internal/service/dashboard_service.go`
-- [ ] Implementar GetOccupancyMetrics:
+- [x] Criar arquivo `internal/service/dashboard_service.go`
+- [x] Implementar GetOccupancyMetrics:
   - Total de unidades
   - Unidades ocupadas
   - Unidades disponíveis
   - Unidades em manutenção/reforma
   - Taxa de ocupação (%)
-- [ ] Implementar GetFinancialMetrics:
+- [x] Implementar GetFinancialMetrics:
   - Receita mensal projetada (soma de todos alugueis ativos)
   - Receita mensal realizada (pagamentos pagos no mês)
   - Inadimplência (pagamentos overdue)
   - Taxa de inadimplência (%)
-- [ ] Adicionar testes
+- [x] Adicionar testes
 
 ### 4.2 Service - Dashboard (Contratos e Alertas)
-- [ ] Implementar GetContractMetrics:
+- [x] Implementar GetContractMetrics:
   - Total de contratos ativos
   - Contratos expirando em 45 dias
   - Contratos expirados
-- [ ] Implementar GetAlerts:
+- [x] Implementar GetAlerts:
   - Lista de pagamentos atrasados
   - Lista de contratos expirando
   - Unidades sem contrato há muito tempo
-- [ ] Adicionar testes
+- [x] Adicionar testes
 
 ### 4.3 Service - Reports (Relatório Financeiro)
-- [ ] Criar arquivo `internal/service/report_service.go`
-- [ ] Implementar GetFinancialReport:
+- [x] Criar arquivo `internal/service/report_service.go`
+- [x] Implementar GetFinancialReport:
   - Filtros: start_date, end_date, payment_type
   - Receita total por tipo (rent, painting_fee)
   - Receita por mês
   - Detalhamento por unidade
   - Retornar estrutura agregada
-- [ ] Implementar GetPaymentHistoryReport:
+- [x] Implementar GetPaymentHistoryReport:
   - Histórico completo de pagamentos
   - Filtros: lease_id, tenant_id, status, date_range
-- [ ] Adicionar testes
+- [x] Adicionar testes
 
 ### 4.4 Handler - Dashboard
-- [ ] Criar arquivo `internal/handler/dashboard_handler.go`
-- [ ] Criar DTO DashboardResponse com todas as métricas
-- [ ] Implementar GetDashboard (GET /api/dashboard)
-- [ ] Consolidar dados de múltiplos services
-- [ ] Retornar JSON estruturado
+- [x] Criar arquivo `internal/handler/dashboard_handler.go`
+- [x] Criar DTO DashboardResponse com todas as métricas
+- [x] Implementar GetDashboard (GET /api/dashboard)
+- [x] Consolidar dados de múltiplos services
+- [x] Retornar JSON estruturado
 
 ### 4.5 Handler - Reports
-- [ ] Criar arquivo `internal/handler/report_handler.go`
-- [ ] Criar DTOs para requests e responses
-- [ ] Implementar GetFinancialReport (GET /api/reports/financial)
-- [ ] Adicionar query params para filtros
-- [ ] Implementar GetPaymentHistory (GET /api/reports/payments)
-- [ ] Validar filtros de data
+- [x] Criar arquivo `internal/handler/report_handler.go`
+- [x] Criar DTOs para requests e responses
+- [x] Implementar GetFinancialReport (GET /api/reports/financial)
+- [x] Adicionar query params para filtros
+- [x] Implementar GetPaymentHistory (GET /api/reports/payments)
+- [x] Validar filtros de data
 
 ### 4.6 Queries SQL Otimizadas
-- [ ] Criar queries agregadas no SQLC para dashboard
-- [ ] Query para receita mensal agrupada
-- [ ] Query para contagem de unidades por status
-- [ ] Query para pagamentos atrasados com detalhes
-- [ ] Gerar código e testar performance
+- [x] Criar queries agregadas no SQLC para dashboard
+- [x] Query para receita mensal agrupada
+- [x] Query para contagem de unidades por status
+- [x] Query para pagamentos atrasados com detalhes
+- [x] Gerar código e testar performance
 
 ### 4.7 Router e Testes
-- [ ] Registrar rotas de dashboard e reports
-- [ ] Testar dashboard com dados reais
-- [ ] Verificar cálculos de taxas e percentuais
-- [ ] Testar filtros de relatórios
-- [ ] Validar formato JSON das respostas
+- [x] Registrar rotas de dashboard e reports
+- [x] Testar dashboard com dados reais
+- [x] Verificar cálculos de taxas e percentuais
+- [x] Testar filtros de relatórios
+- [x] Validar formato JSON das respostas
 
 ### 4.8 Melhorias de Performance (Opcional)
-- [ ] Adicionar cache em memória para dashboard (5 minutos)
-- [ ] Implementar paginação nos relatórios
-- [ ] Adicionar campo de ordenação
+- [ ] Adicionar cache em memória para dashboard (5 minutos) - Não necessário no MVP
+- [ ] Implementar paginação nos relatórios - Postergar para frontend
+- [ ] Adicionar campo de ordenação - Postergar para frontend
 
 ### 4.9 Documentação e Commit
-- [ ] Documentar endpoints de dashboard
-- [ ] Documentar estrutura dos relatórios
-- [ ] Adicionar exemplos de responses
-- [ ] Commit: "feat: implement dashboard and reports"
-- [ ] Push para repositório
+- [x] Documentar endpoints de dashboard
+- [x] Documentar estrutura dos relatórios
+- [x] Adicionar exemplos de responses
+- [x] Commit: "feat: implement dashboard and reports"
+- [x] Push para repositório
 
 ---
 
