@@ -473,26 +473,26 @@
 - [x] Adicionar testes
 
 ### 4.4 Handler - Dashboard
-- [ ] Criar arquivo `internal/handler/dashboard_handler.go`
-- [ ] Criar DTO DashboardResponse com todas as métricas
-- [ ] Implementar GetDashboard (GET /api/dashboard)
-- [ ] Consolidar dados de múltiplos services
-- [ ] Retornar JSON estruturado
+- [x] Criar arquivo `internal/handler/dashboard_handler.go`
+- [x] Criar DTO DashboardResponse com todas as métricas
+- [x] Implementar GetDashboard (GET /api/dashboard)
+- [x] Consolidar dados de múltiplos services
+- [x] Retornar JSON estruturado
 
 ### 4.5 Handler - Reports
-- [ ] Criar arquivo `internal/handler/report_handler.go`
-- [ ] Criar DTOs para requests e responses
-- [ ] Implementar GetFinancialReport (GET /api/reports/financial)
-- [ ] Adicionar query params para filtros
-- [ ] Implementar GetPaymentHistory (GET /api/reports/payments)
-- [ ] Validar filtros de data
+- [x] Criar arquivo `internal/handler/report_handler.go`
+- [x] Criar DTOs para requests e responses
+- [x] Implementar GetFinancialReport (GET /api/reports/financial)
+- [x] Adicionar query params para filtros
+- [x] Implementar GetPaymentHistory (GET /api/reports/payments)
+- [x] Validar filtros de data
 
 ### 4.6 Queries SQL Otimizadas
-- [ ] Criar queries agregadas no SQLC para dashboard
-- [ ] Query para receita mensal agrupada
-- [ ] Query para contagem de unidades por status
-- [ ] Query para pagamentos atrasados com detalhes
-- [ ] Gerar código e testar performance
+- [x] Criar queries agregadas no SQLC para dashboard
+- [x] Query para receita mensal agrupada
+- [x] Query para contagem de unidades por status
+- [x] Query para pagamentos atrasados com detalhes
+- [x] Gerar código e testar performance
 
 ### 4.7 Router e Testes
 - [ ] Registrar rotas de dashboard e reports

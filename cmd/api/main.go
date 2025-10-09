@@ -46,6 +46,10 @@ import (
 // @tag.description Operações relacionadas a contratos de locação
 // @tag.name Payments
 // @tag.description Operações relacionadas a pagamentos
+// @tag.name Dashboard
+// @tag.description Métricas consolidadas e visão executiva
+// @tag.name Reports
+// @tag.description Relatórios financeiros e de pagamentos
 
 // @tag.name Health
 // @tag.description Health check e status do sistema
@@ -80,12 +84,15 @@ func main() {
 	tenantRepo := postgres.NewTenantRepository(dbConn.DB)
 	leaseRepo := postgres.NewLeaseRepo(dbConn.DB)
 	paymentRepo := postgres.NewPaymentRepo(dbConn.DB)
+	dashboardRepo := postgres.NewDashboardRepo(dbConn.DB)
 
 	// Service
 	unitService := service.NewUnitService(unitRepo)
 	tenantService := service.NewTenantService(tenantRepo)
 	paymentService := service.NewPaymentService(paymentRepo, leaseRepo)
 	leaseService := service.NewLeaseService(leaseRepo, unitRepo, tenantRepo, paymentService)
+	dashboardService := service.NewDashboardService(dashboardRepo, leaseRepo, paymentRepo, unitRepo)
+	reportService := service.NewReportService(paymentRepo, leaseRepo, unitRepo, tenantRepo)
 
 	log.Println("✅ Serviços inicializados")
 
@@ -122,7 +129,7 @@ func main() {
 	))
 
 	// Registrar rotas da aplicação
-	handler.SetupRoutes(r, unitService, tenantService, leaseService, paymentService)
+	handler.SetupRoutes(r, unitService, tenantService, leaseService, paymentService, dashboardService, reportService)
 
 	log.Println("✅ Rotas configuradas")
 	log.Printf("📚 Documentação Swagger: http://localhost:%s/swagger/index.html", cfg.Port)
