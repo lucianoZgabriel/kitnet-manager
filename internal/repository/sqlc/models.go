@@ -58,6 +58,49 @@ func (ns NullUnitStatus) Value() (driver.Value, error) {
 	return string(ns.UnitStatus), nil
 }
 
+type UserRole string
+
+const (
+	UserRoleAdmin   UserRole = "admin"
+	UserRoleManager UserRole = "manager"
+	UserRoleViewer  UserRole = "viewer"
+)
+
+func (e *UserRole) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = UserRole(s)
+	case string:
+		*e = UserRole(s)
+	default:
+		return fmt.Errorf("unsupported scan type for UserRole: %T", src)
+	}
+	return nil
+}
+
+type NullUserRole struct {
+	UserRole UserRole `json:"user_role"`
+	Valid    bool     `json:"valid"` // Valid is true if UserRole is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullUserRole) Scan(value interface{}) error {
+	if value == nil {
+		ns.UserRole, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.UserRole.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullUserRole) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.UserRole), nil
+}
+
 type Lease struct {
 	ID                      uuid.UUID `json:"id"`
 	UnitID                  uuid.UUID `json:"unit_id"`
@@ -115,4 +158,15 @@ type Unit struct {
 	Notes              sql.NullString  `json:"notes"`
 	CreatedAt          time.Time       `json:"created_at"`
 	UpdatedAt          time.Time       `json:"updated_at"`
+}
+
+type User struct {
+	ID           uuid.UUID    `json:"id"`
+	Username     string       `json:"username"`
+	PasswordHash string       `json:"password_hash"`
+	Role         UserRole     `json:"role"`
+	IsActive     bool         `json:"is_active"`
+	LastLoginAt  sql.NullTime `json:"last_login_at"`
+	CreatedAt    time.Time    `json:"created_at"`
+	UpdatedAt    time.Time    `json:"updated_at"`
 }

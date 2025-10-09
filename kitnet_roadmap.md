@@ -536,12 +536,12 @@
 - [x] Adicionar testes unitários
 
 ### 5.3 Repository - User (SQLC)
-- [ ] Criar arquivo `internal/repository/queries/users.sql`
-- [ ] Query GetUserByUsername
-- [ ] Query CreateUser
-- [ ] Query UpdateUser
-- [ ] Gerar código SQLC
-- [ ] Implementar UserRepository
+- [x] Criar arquivo `internal/repository/queries/users.sql`
+- [x] Query GetUserByUsername
+- [x] Query CreateUser
+- [x] Query UpdateUser
+- [x] Gerar código SQLC
+- [x] Implementar UserRepository
 
 ### 5.4 Service - Auth
 - [ ] Criar arquivo `internal/service/auth_service.go`

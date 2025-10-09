@@ -137,3 +137,48 @@ type OccupancyMetrics struct {
 	MaintenanceUnits int64
 	RenovationUnits  int64
 }
+
+// UserRepository define o contrato para operações de persistência de Users
+type UserRepository interface {
+	// Create cria um novo usuário no banco de dados
+	Create(ctx context.Context, user *domain.User) error
+
+	// GetByID busca um usuário pelo ID
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.User, error)
+
+	// GetByUsername busca um usuário pelo username
+	GetByUsername(ctx context.Context, username string) (*domain.User, error)
+
+	// List retorna todos os usuários ordenados por data de criação
+	List(ctx context.Context) ([]*domain.User, error)
+
+	// ListByRole retorna usuários filtrados por role
+	ListByRole(ctx context.Context, role domain.UserRole) ([]*domain.User, error)
+
+	// Update atualiza um usuário existente (role e is_active)
+	Update(ctx context.Context, user *domain.User) error
+
+	// UpdatePassword atualiza apenas a senha do usuário
+	UpdatePassword(ctx context.Context, id uuid.UUID, passwordHash string) error
+
+	// UpdateLastLogin atualiza o timestamp do último login
+	UpdateLastLogin(ctx context.Context, id uuid.UUID, lastLogin time.Time) error
+
+	// Deactivate desativa um usuário
+	Deactivate(ctx context.Context, id uuid.UUID) error
+
+	// Activate ativa um usuário
+	Activate(ctx context.Context, id uuid.UUID) error
+
+	// Delete remove um usuário do banco de dados
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	// ExistsByUsername verifica se já existe um usuário com o username
+	ExistsByUsername(ctx context.Context, username string) (bool, error)
+
+	// Count retorna o total de usuários
+	Count(ctx context.Context) (int64, error)
+
+	// CountActive retorna o total de usuários ativos
+	CountActive(ctx context.Context) (int64, error)
+}
