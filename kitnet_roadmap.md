@@ -495,23 +495,23 @@
 - [x] Gerar código e testar performance
 
 ### 4.7 Router e Testes
-- [ ] Registrar rotas de dashboard e reports
-- [ ] Testar dashboard com dados reais
-- [ ] Verificar cálculos de taxas e percentuais
-- [ ] Testar filtros de relatórios
-- [ ] Validar formato JSON das respostas
+- [x] Registrar rotas de dashboard e reports
+- [x] Testar dashboard com dados reais
+- [x] Verificar cálculos de taxas e percentuais
+- [x] Testar filtros de relatórios
+- [x] Validar formato JSON das respostas
 
 ### 4.8 Melhorias de Performance (Opcional)
-- [ ] Adicionar cache em memória para dashboard (5 minutos)
-- [ ] Implementar paginação nos relatórios
-- [ ] Adicionar campo de ordenação
+- [ ] Adicionar cache em memória para dashboard (5 minutos) - Não necessário no MVP
+- [ ] Implementar paginação nos relatórios - Postergar para frontend
+- [ ] Adicionar campo de ordenação - Postergar para frontend
 
 ### 4.9 Documentação e Commit
-- [ ] Documentar endpoints de dashboard
-- [ ] Documentar estrutura dos relatórios
-- [ ] Adicionar exemplos de responses
-- [ ] Commit: "feat: implement dashboard and reports"
-- [ ] Push para repositório
+- [x] Documentar endpoints de dashboard
+- [x] Documentar estrutura dos relatórios
+- [x] Adicionar exemplos de responses
+- [x] Commit: "feat: implement dashboard and reports"
+- [x] Push para repositório
 
 ---
 

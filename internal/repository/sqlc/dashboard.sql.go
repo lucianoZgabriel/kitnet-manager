@@ -82,7 +82,7 @@ func (q *Queries) GetOverdueAmount(ctx context.Context) (string, error) {
 }
 
 const getTotalPendingAmount = `-- name: GetTotalPendingAmount :one
-SELECT COALESP(SUM(amount), 0)::TEXT as total
+SELECT COALESCE(SUM(amount), 0)::TEXT as total
 FROM payments
 WHERE status IN ('pending', 'overdue')
 `

@@ -25,6 +25,6 @@ FROM payments
 WHERE status = 'overdue';
 
 -- name: GetTotalPendingAmount :one
-SELECT COALESP(SUM(amount), 0)::TEXT as total
+SELECT COALESCE(SUM(amount), 0)::TEXT as total
 FROM payments
 WHERE status IN ('pending', 'overdue');
