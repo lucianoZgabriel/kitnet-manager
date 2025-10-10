@@ -544,13 +544,13 @@
 - [x] Implementar UserRepository
 
 ### 5.4 Service - Auth
-- [ ] Criar arquivo `internal/service/auth_service.go`
-- [ ] Instalar dependências: `golang-jwt/jwt` e `golang.org/x/crypto/bcrypt`
-- [ ] Implementar GenerateToken (JWT)
-- [ ] Implementar ValidateToken
-- [ ] Implementar Login(username, password)
-- [ ] Implementar RefreshToken (opcional)
-- [ ] Adicionar testes
+- [x] Criar arquivo `internal/service/auth_service.go`
+- [x] Instalar dependências: `golang-jwt/jwt` e `golang.org/x/crypto/bcrypt`
+- [x] Implementar GenerateToken (JWT)
+- [x] Implementar ValidateToken
+- [x] Implementar Login(username, password)
+- [x] Implementar RefreshToken (opcional)
+- [x] Adicionar testes
 
 ### 5.5 Handler - Auth
 - [ ] Criar arquivo `internal/handler/auth_handler.go`
