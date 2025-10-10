@@ -553,21 +553,21 @@
 - [x] Adicionar testes
 
 ### 5.5 Handler - Auth
-- [ ] Criar arquivo `internal/handler/auth_handler.go`
-- [ ] Criar DTOs (LoginRequest, LoginResponse, TokenResponse)
-- [ ] Implementar Login handler (POST /api/auth/login)
-- [ ] Implementar Refresh handler (POST /api/auth/refresh) - opcional
-- [ ] Implementar GetCurrentUser (GET /api/auth/me)
+- [x] Criar arquivo `internal/handler/auth_handler.go`
+- [x] Criar DTOs (LoginRequest, LoginResponse, TokenResponse)
+- [x] Implementar Login handler (POST /api/auth/login)
+- [x] Implementar Refresh handler (POST /api/auth/refresh) - opcional
+- [x] Implementar GetCurrentUser (GET /api/auth/me)
 
 ### 5.6 Middleware - Authentication
-- [ ] Criar arquivo `internal/pkg/middleware/auth.go`
-- [ ] Implementar AuthMiddleware:
+- [x] Criar arquivo `internal/pkg/middleware/auth.go`
+- [x] Implementar AuthMiddleware:
   - Extrair token do header Authorization
   - Validar token JWT
   - Adicionar user info no context
   - Retornar 401 se inválido
-- [ ] Implementar RequireRole(roles ...string)
-- [ ] Adicionar testes
+- [x] Implementar RequireRole(roles ...string)
+- [x] Adicionar testes
 
 ### 5.7 Proteger Rotas Existentes
 - [ ] Atualizar router.go para aplicar AuthMiddleware
