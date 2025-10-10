@@ -37,6 +37,7 @@ func NewReportHandler(reportService *service.ReportService) *ReportHandler {
 // @Success      200 {object} service.FinancialReportResponse
 // @Failure      400 {object} response.ErrorResponse
 // @Failure      500 {object} response.ErrorResponse
+// @Security     BearerAuth
 // @Router       /reports/financial [get]
 func (h *ReportHandler) GetFinancialReport(w http.ResponseWriter, r *http.Request) {
 	// 1. Extrair query params
@@ -104,6 +105,7 @@ func (h *ReportHandler) GetFinancialReport(w http.ResponseWriter, r *http.Reques
 // @Success      200 {object} service.PaymentHistoryResponse
 // @Failure      400 {object} response.ErrorResponse
 // @Failure      500 {object} response.ErrorResponse
+// @Security     BearerAuth
 // @Router       /reports/payments [get]
 func (h *ReportHandler) GetPaymentHistoryReport(w http.ResponseWriter, r *http.Request) {
 	// 1. Extrair query params

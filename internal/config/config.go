@@ -14,6 +14,13 @@ type Config struct {
 	Port        string
 	Environment string
 	Database    DatabaseConfig
+	JWT         JWTConfig
+}
+
+// JWTConfig contém configurações de autenticação JWT
+type JWTConfig struct {
+	Secret string
+	Expiry time.Duration
 }
 
 // DatabaseConfig contém configurações do banco
@@ -39,6 +46,10 @@ func Load() *Config {
 			MaxConnections: getEnvAsInt("DB_MAX_CONNECTIONS", 25),
 			MaxIdleConns:   getEnvAsInt("DB_MAX_IDLE_CONNECTIONS", 5),
 			MaxLifetime:    time.Duration(getEnvAsInt("DB_MAX_LIFETIME_MINUTES", 5)) * time.Minute,
+		},
+		JWT: JWTConfig{
+			Secret: getEnvOrDefault("JWT_SECRET", "your-secret-key-change-in-production"),
+			Expiry: time.Duration(getEnvAsInt("JWT_EXPIRY_HOURS", 24)) * time.Hour,
 		},
 	}
 }

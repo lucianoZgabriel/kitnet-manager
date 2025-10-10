@@ -520,76 +520,80 @@
 **Objetivo:** Implementar sistema de autenticação JWT e proteção de rotas
 
 ### 5.1 Migration e Schema - Users
-- [ ] Criar migration `000005_create_users_table.up.sql`
-- [ ] Definir tabela users (id, username, password_hash, role, created_at)
-- [ ] Adicionar constraint UNIQUE no username
-- [ ] Criar índice no username
-- [ ] Seed inicial com usuário admin
-- [ ] Executar migration
+- [x] Criar migration `000005_create_users_table.up.sql`
+- [x] Definir tabela users (id, username, password_hash, role, created_at)
+- [x] Adicionar constraint UNIQUE no username
+- [x] Criar índice no username
+- [x] Seed inicial com usuário admin
+- [x] Executar migration
 
 ### 5.2 Domain Model - User
-- [ ] Criar arquivo `internal/domain/user.go`
-- [ ] Definir struct User
-- [ ] Definir enum UserRole (admin, manager, viewer)
-- [ ] Implementar método ValidatePassword()
-- [ ] Implementar método HashPassword()
-- [ ] Adicionar testes unitários
+- [x] Criar arquivo `internal/domain/user.go`
+- [x] Definir struct User
+- [x] Definir enum UserRole (admin, manager, viewer)
+- [x] Implementar método ValidatePassword()
+- [x] Implementar método HashPassword()
+- [x] Adicionar testes unitários
 
 ### 5.3 Repository - User (SQLC)
-- [ ] Criar arquivo `internal/repository/queries/users.sql`
-- [ ] Query GetUserByUsername
-- [ ] Query CreateUser
-- [ ] Query UpdateUser
-- [ ] Gerar código SQLC
-- [ ] Implementar UserRepository
+- [x] Criar arquivo `internal/repository/queries/users.sql`
+- [x] Query GetUserByUsername
+- [x] Query CreateUser
+- [x] Query UpdateUser
+- [x] Gerar código SQLC
+- [x] Implementar UserRepository
 
 ### 5.4 Service - Auth
-- [ ] Criar arquivo `internal/service/auth_service.go`
-- [ ] Instalar dependências: `golang-jwt/jwt` e `golang.org/x/crypto/bcrypt`
-- [ ] Implementar GenerateToken (JWT)
-- [ ] Implementar ValidateToken
-- [ ] Implementar Login(username, password)
-- [ ] Implementar RefreshToken (opcional)
-- [ ] Adicionar testes
+- [x] Criar arquivo `internal/service/auth_service.go`
+- [x] Instalar dependências: `golang-jwt/jwt` e `golang.org/x/crypto/bcrypt`
+- [x] Implementar GenerateToken (JWT)
+- [x] Implementar ValidateToken
+- [x] Implementar Login(username, password)
+- [x] Implementar RefreshToken (opcional)
+- [x] Adicionar testes
 
 ### 5.5 Handler - Auth
-- [ ] Criar arquivo `internal/handler/auth_handler.go`
-- [ ] Criar DTOs (LoginRequest, LoginResponse, TokenResponse)
-- [ ] Implementar Login handler (POST /api/auth/login)
-- [ ] Implementar Refresh handler (POST /api/auth/refresh) - opcional
-- [ ] Implementar GetCurrentUser (GET /api/auth/me)
+- [x] Criar arquivo `internal/handler/auth_handler.go`
+- [x] Criar DTOs (LoginRequest, LoginResponse, TokenResponse)
+- [x] Implementar Login handler (POST /api/auth/login)
+- [x] Implementar Refresh handler (POST /api/auth/refresh) - opcional
+- [x] Implementar GetCurrentUser (GET /api/auth/me)
 
 ### 5.6 Middleware - Authentication
-- [ ] Criar arquivo `internal/pkg/middleware/auth.go`
-- [ ] Implementar AuthMiddleware:
+- [x] Criar arquivo `internal/pkg/middleware/auth.go`
+- [x] Implementar AuthMiddleware:
   - Extrair token do header Authorization
   - Validar token JWT
   - Adicionar user info no context
   - Retornar 401 se inválido
-- [ ] Implementar RequireRole(roles ...string)
-- [ ] Adicionar testes
+- [x] Implementar RequireRole(roles ...string)
+- [x] Adicionar testes
 
 ### 5.7 Proteger Rotas Existentes
-- [ ] Atualizar router.go para aplicar AuthMiddleware
-- [ ] Proteger todas as rotas de /api/v1/*
-- [ ] Deixar /health e /swagger públicos
-- [ ] Deixar /api/auth/login público
-- [ ] Testar autenticação em todas as rotas
+- [x] Atualizar router.go para aplicar AuthMiddleware
+- [x] Proteger todas as rotas de /api/v1/*
+- [x] Deixar /health e /swagger públicos
+- [x] Deixar /api/auth/login público
+- [x] Testar autenticação em todas as rotas
 
 ### 5.8 Atualizar Swagger
-- [ ] Adicionar securityDefinitions no main.go
-- [ ] Adicionar @Security tags nos handlers
-- [ ] Regenerar documentação Swagger
-- [ ] Testar autenticação via Swagger UI
+- [x] Adicionar securityDefinitions no main.go
+- [x] Adicionar @Security tags nos handlers
+- [x] Regenerar documentação Swagger
+- [x] Testar autenticação via Swagger UI
 
 ### 5.9 Testes e Documentação
-- [ ] Testar fluxo de login
-- [ ] Testar acesso sem token (401)
-- [ ] Testar token expirado
-- [ ] Testar token inválido
-- [ ] Documentar processo de autenticação
-- [ ] Commit: "feat: implement JWT authentication and authorization"
-- [ ] Push para repositório
+- [x] Testar fluxo de login
+- [x] Testar acesso sem token (401)
+- [x] Testar criação de usuários (admin, manager, viewer)
+- [x] Testar listagem e busca de usuários
+- [x] Testar mudança de role
+- [x] Testar ativação/desativação de usuários
+- [x] Testar mudança de senha
+- [x] Testar refresh token
+- [x] Validar todas as rotas protegidas no Swagger
+- [x] Commit: "feat: complete JWT authentication and authorization system"
+- [x] Push para repositório
 
 ---
 

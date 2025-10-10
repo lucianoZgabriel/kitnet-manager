@@ -93,3 +93,26 @@ CREATE INDEX idx_payments_due_date ON payments(due_date);
 CREATE INDEX idx_payments_payment_type ON payments(payment_type);
 CREATE INDEX idx_payments_status_due_date ON payments(status, due_date);
 CREATE INDEX idx_payments_lease_status ON payments(lease_id, status);
+
+-- User roles enum
+CREATE TYPE user_role AS ENUM (
+    'admin',
+    'manager',
+    'viewer'
+);
+
+-- Users table
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role user_role NOT NULL DEFAULT 'viewer',
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    last_login_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_users_username ON users(username);
+CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX idx_users_is_active ON users(is_active);

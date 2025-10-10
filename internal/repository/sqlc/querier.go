@@ -12,7 +12,9 @@ import (
 )
 
 type Querier interface {
+	ActivateUser(ctx context.Context, arg ActivateUserParams) error
 	CancelPayment(ctx context.Context, arg CancelPaymentParams) (Payment, error)
+	CountActiveUsers(ctx context.Context) (int64, error)
 	CountLeases(ctx context.Context) (int64, error)
 	CountLeasesByStatus(ctx context.Context, status string) (int64, error)
 	CountPayments(ctx context.Context) (int64, error)
@@ -21,14 +23,18 @@ type Querier interface {
 	CountTenants(ctx context.Context) (int64, error)
 	CountUnits(ctx context.Context) (int64, error)
 	CountUnitsByStatus(ctx context.Context, status UnitStatus) (int64, error)
+	CountUsers(ctx context.Context) (int64, error)
 	CreateLease(ctx context.Context, arg CreateLeaseParams) (Lease, error)
 	CreatePayment(ctx context.Context, arg CreatePaymentParams) (Payment, error)
 	CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error)
 	CreateUnit(ctx context.Context, arg CreateUnitParams) (Unit, error)
+	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeactivateUser(ctx context.Context, arg DeactivateUserParams) error
 	DeleteLease(ctx context.Context, id uuid.UUID) error
 	DeletePayment(ctx context.Context, id uuid.UUID) error
 	DeleteTenant(ctx context.Context, id uuid.UUID) error
 	DeleteUnit(ctx context.Context, id uuid.UUID) error
+	DeleteUser(ctx context.Context, id uuid.UUID) error
 	GetActiveLeaseByTenantID(ctx context.Context, tenantID uuid.UUID) (Lease, error)
 	GetActiveLeaseByUnitID(ctx context.Context, unitID uuid.UUID) (Lease, error)
 	GetExpiringSoonLeases(ctx context.Context) ([]Lease, error)
@@ -49,6 +55,8 @@ type Querier interface {
 	GetUnitByID(ctx context.Context, id uuid.UUID) (Unit, error)
 	GetUnitByNumber(ctx context.Context, number string) (Unit, error)
 	GetUpcomingPayments(ctx context.Context, dollar_1 int32) ([]Payment, error)
+	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
+	GetUserByUsername(ctx context.Context, username string) (User, error)
 	ListAvailableUnits(ctx context.Context) ([]Unit, error)
 	ListLeases(ctx context.Context) ([]Lease, error)
 	ListLeasesByStatus(ctx context.Context, status string) ([]Lease, error)
@@ -63,10 +71,13 @@ type Querier interface {
 	ListUnits(ctx context.Context) ([]Unit, error)
 	ListUnitsByFloor(ctx context.Context, floor int32) ([]Unit, error)
 	ListUnitsByStatus(ctx context.Context, status UnitStatus) ([]Unit, error)
+	ListUsers(ctx context.Context) ([]User, error)
+	ListUsersByRole(ctx context.Context, role UserRole) ([]User, error)
 	MarkPaymentAsPaid(ctx context.Context, arg MarkPaymentAsPaidParams) (Payment, error)
 	MarkPaymentsAsOverdue(ctx context.Context) error
 	SearchTenantsByName(ctx context.Context, dollar_1 sql.NullString) ([]Tenant, error)
 	TenantExistsByCPF(ctx context.Context, cpf string) (bool, error)
+	UpdateLastLogin(ctx context.Context, arg UpdateLastLoginParams) (User, error)
 	UpdateLease(ctx context.Context, arg UpdateLeaseParams) (Lease, error)
 	UpdateLeaseStatus(ctx context.Context, arg UpdateLeaseStatusParams) (Lease, error)
 	UpdatePaintingFeePaid(ctx context.Context, arg UpdatePaintingFeePaidParams) (Lease, error)
@@ -75,6 +86,9 @@ type Querier interface {
 	UpdateTenant(ctx context.Context, arg UpdateTenantParams) (Tenant, error)
 	UpdateUnit(ctx context.Context, arg UpdateUnitParams) (Unit, error)
 	UpdateUnitStatus(ctx context.Context, arg UpdateUnitStatusParams) (Unit, error)
+	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
+	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (User, error)
+	UserExistsByUsername(ctx context.Context, username string) (bool, error)
 }
 
 var _ Querier = (*Queries)(nil)

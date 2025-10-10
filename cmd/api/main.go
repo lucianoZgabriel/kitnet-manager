@@ -14,6 +14,7 @@ import (
 	"github.com/lucianoZgabriel/kitnet-manager/internal/config"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/handler"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/pkg/database"
+	authMiddleware "github.com/lucianoZgabriel/kitnet-manager/internal/pkg/middleware"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/pkg/response"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/repository/postgres"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/service"
@@ -38,6 +39,13 @@ import (
 
 // @schemes http https
 
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
+
+// @tag.name Auth
+// @tag.description Autenticação e gerenciamento de usuários
 // @tag.name Units
 // @tag.description Operações relacionadas a unidades/kitnets
 // @tag.name Tenants
@@ -85,6 +93,7 @@ func main() {
 	leaseRepo := postgres.NewLeaseRepo(dbConn.DB)
 	paymentRepo := postgres.NewPaymentRepo(dbConn.DB)
 	dashboardRepo := postgres.NewDashboardRepo(dbConn.DB)
+	userRepo := postgres.NewUserRepository(dbConn.DB)
 
 	// Service
 	unitService := service.NewUnitService(unitRepo)
@@ -93,6 +102,10 @@ func main() {
 	leaseService := service.NewLeaseService(leaseRepo, unitRepo, tenantRepo, paymentService)
 	dashboardService := service.NewDashboardService(dashboardRepo, leaseRepo, paymentRepo, unitRepo)
 	reportService := service.NewReportService(paymentRepo, leaseRepo, unitRepo, tenantRepo)
+	authService := service.NewAuthService(userRepo, cfg.JWT.Secret, cfg.JWT.Expiry)
+
+	// Criar middleware de autenticação
+	authMiddleware := authMiddleware.NewAuthMiddleware(authService)
 
 	log.Println("✅ Serviços inicializados")
 
@@ -129,7 +142,7 @@ func main() {
 	))
 
 	// Registrar rotas da aplicação
-	handler.SetupRoutes(r, unitService, tenantService, leaseService, paymentService, dashboardService, reportService)
+	handler.SetupRoutes(r, unitService, tenantService, leaseService, paymentService, dashboardService, reportService, authService, authMiddleware)
 
 	log.Println("✅ Rotas configuradas")
 	log.Printf("📚 Documentação Swagger: http://localhost:%s/swagger/index.html", cfg.Port)
