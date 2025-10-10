@@ -570,10 +570,10 @@
 - [x] Adicionar testes
 
 ### 5.7 Proteger Rotas Existentes
-- [ ] Atualizar router.go para aplicar AuthMiddleware
-- [ ] Proteger todas as rotas de /api/v1/*
-- [ ] Deixar /health e /swagger públicos
-- [ ] Deixar /api/auth/login público
+- [x] Atualizar router.go para aplicar AuthMiddleware
+- [x] Proteger todas as rotas de /api/v1/*
+- [x] Deixar /health e /swagger públicos
+- [x] Deixar /api/auth/login público
 - [ ] Testar autenticação em todas as rotas
 
 ### 5.8 Atualizar Swagger
