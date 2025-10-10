@@ -41,9 +41,9 @@ COMMENT ON COLUMN users.is_active IS 'Whether user account is active';
 COMMENT ON COLUMN users.last_login_at IS 'Timestamp of last successful login';
 
 -- Insert default admin user
--- Password: admin123 (bcrypt hash)
--- IMPORTANTE: Trocar a senha após primeiro login!
-INSERT INTO users (username, password_hash, role) VALUES 
-    ('admin', '$2a$10$rQ3Kj7qX5gxV.1Y7hN5qUO5vW0H2KXY8qZ3nJ9wN5xM4pL7kJ6vQi', 'admin');
+-- Password: admin123 (bcrypt hash with cost 10)
+-- IMPORTANTE: Trocar a senha após primeiro login em produção!
+INSERT INTO users (username, password_hash, role) VALUES
+    ('admin', '$2a$10$Ul1DkXvg7rI3gZFDPCkt8u0BvEzeMuVKKSzHWoaQHFkENCCbD2a0a', 'admin');
 
 COMMENT ON TABLE users IS 'Usuário admin padrão criado com senha: admin123';
