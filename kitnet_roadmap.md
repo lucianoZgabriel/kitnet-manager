@@ -574,22 +574,26 @@
 - [x] Proteger todas as rotas de /api/v1/*
 - [x] Deixar /health e /swagger públicos
 - [x] Deixar /api/auth/login público
-- [ ] Testar autenticação em todas as rotas
+- [x] Testar autenticação em todas as rotas
 
 ### 5.8 Atualizar Swagger
 - [x] Adicionar securityDefinitions no main.go
 - [x] Adicionar @Security tags nos handlers
 - [x] Regenerar documentação Swagger
-- [ ] Testar autenticação via Swagger UI
+- [x] Testar autenticação via Swagger UI
 
 ### 5.9 Testes e Documentação
-- [ ] Testar fluxo de login
-- [ ] Testar acesso sem token (401)
-- [ ] Testar token expirado
-- [ ] Testar token inválido
-- [ ] Documentar processo de autenticação
-- [ ] Commit: "feat: implement JWT authentication and authorization"
-- [ ] Push para repositório
+- [x] Testar fluxo de login
+- [x] Testar acesso sem token (401)
+- [x] Testar criação de usuários (admin, manager, viewer)
+- [x] Testar listagem e busca de usuários
+- [x] Testar mudança de role
+- [x] Testar ativação/desativação de usuários
+- [x] Testar mudança de senha
+- [x] Testar refresh token
+- [x] Validar todas as rotas protegidas no Swagger
+- [x] Commit: "feat: complete JWT authentication and authorization system"
+- [x] Push para repositório
 
 ---
 
