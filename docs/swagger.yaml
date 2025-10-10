@@ -671,7 +671,6 @@ definitions:
       unit_number:
         type: string
     type: object
-host: localhost:8080
 info:
   contact:
     email: contato@example.com
@@ -1944,8 +1943,8 @@ paths:
       tags:
       - Units
 schemes:
-- http
 - https
+- http
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and JWT token.

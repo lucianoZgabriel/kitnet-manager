@@ -3030,9 +3030,9 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "",
 	BasePath:         "/api/v1",
-	Schemes:          []string{"http", "https"},
+	Schemes:          []string{"https", "http"},
 	Title:            "Kitnet Manager API",
 	Description:      "API para gestão de complexo de kitnets com 31 unidades\nSistema completo de gerenciamento de unidades, moradores, contratos e pagamentos",
 	InfoInstanceName: "swagger",
