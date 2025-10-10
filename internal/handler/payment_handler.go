@@ -37,6 +37,7 @@ func NewPaymentHandler(paymentService *service.PaymentService) *PaymentHandler {
 // @Success      200 {object} PaymentResponse
 // @Failure      400 {object} response.ErrorResponse
 // @Failure      404 {object} response.ErrorResponse
+// @Security     BearerAuth
 // @Router       /payments/{id} [get]
 func (h *PaymentHandler) GetPayment(w http.ResponseWriter, r *http.Request) {
 	// Extrair ID da URL
@@ -66,6 +67,7 @@ func (h *PaymentHandler) GetPayment(w http.ResponseWriter, r *http.Request) {
 // @Success      200 {array} PaymentResponse
 // @Failure      400 {object} response.ErrorResponse
 // @Failure      404 {object} response.ErrorResponse
+// @Security     BearerAuth
 // @Router       /leases/{lease_id}/payments [get]
 func (h *PaymentHandler) GetPaymentsByLease(w http.ResponseWriter, r *http.Request) {
 	// Extrair lease_id da URL
@@ -93,6 +95,7 @@ func (h *PaymentHandler) GetPaymentsByLease(w http.ResponseWriter, r *http.Reque
 // @Produce      json
 // @Success      200 {array} PaymentResponse
 // @Failure      500 {object} response.ErrorResponse
+// @Security     BearerAuth
 // @Router       /payments/overdue [get]
 func (h *PaymentHandler) GetOverduePayments(w http.ResponseWriter, r *http.Request) {
 	payments, err := h.paymentService.GetOverduePayments(r.Context())
@@ -112,6 +115,7 @@ func (h *PaymentHandler) GetOverduePayments(w http.ResponseWriter, r *http.Reque
 // @Param        days query int false "Número de dias à frente (padrão: 7)"
 // @Success      200 {array} PaymentResponse
 // @Failure      500 {object} response.ErrorResponse
+// @Security     BearerAuth
 // @Router       /payments/upcoming [get]
 func (h *PaymentHandler) GetUpcomingPayments(w http.ResponseWriter, r *http.Request) {
 	// Obter parâmetro 'days' da query string (padrão: 7)
@@ -147,6 +151,7 @@ func (h *PaymentHandler) GetUpcomingPayments(w http.ResponseWriter, r *http.Requ
 // @Success      200 {object} PaymentResponse
 // @Failure      400 {object} response.ErrorResponse
 // @Failure      404 {object} response.ErrorResponse
+// @Security     BearerAuth
 // @Router       /payments/{id}/pay [put]
 func (h *PaymentHandler) MarkPaymentAsPaid(w http.ResponseWriter, r *http.Request) {
 	// Extrair ID da URL
@@ -195,6 +200,7 @@ func (h *PaymentHandler) MarkPaymentAsPaid(w http.ResponseWriter, r *http.Reques
 // @Success      200 {object} response.Response
 // @Failure      400 {object} response.ErrorResponse
 // @Failure      404 {object} response.ErrorResponse
+// @Security     BearerAuth
 // @Router       /payments/{id}/cancel [post]
 func (h *PaymentHandler) CancelPayment(w http.ResponseWriter, r *http.Request) {
 	// Extrair ID da URL
@@ -223,6 +229,7 @@ func (h *PaymentHandler) CancelPayment(w http.ResponseWriter, r *http.Request) {
 // @Success      200 {object} PaymentStatsResponse
 // @Failure      400 {object} response.ErrorResponse
 // @Failure      404 {object} response.ErrorResponse
+// @Security     BearerAuth
 // @Router       /leases/{lease_id}/payments/stats [get]
 func (h *PaymentHandler) GetPaymentStatsByLease(w http.ResponseWriter, r *http.Request) {
 	// Extrair lease_id da URL

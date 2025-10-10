@@ -38,6 +38,7 @@ func NewLeaseHandler(leaseService *service.LeaseService) *LeaseHandler {
 // @Success      201 {object} LeaseResponse
 // @Failure      400 {object} response.ErrorResponse
 // @Failure      500 {object} response.ErrorResponse
+// @Security     BearerAuth
 // @Router       /leases [post]
 func (h *LeaseHandler) CreateLease(w http.ResponseWriter, r *http.Request) {
 	var req CreateLeaseRequestDTO
@@ -90,6 +91,7 @@ func (h *LeaseHandler) CreateLease(w http.ResponseWriter, r *http.Request) {
 // @Success      200 {object} LeaseResponse
 // @Failure      400 {object} response.ErrorResponse
 // @Failure      404 {object} response.ErrorResponse
+// @Security     BearerAuth
 // @Router       /leases/{id} [get]
 func (h *LeaseHandler) GetLease(w http.ResponseWriter, r *http.Request) {
 	// Extrair ID da URL
@@ -120,6 +122,7 @@ func (h *LeaseHandler) GetLease(w http.ResponseWriter, r *http.Request) {
 // @Param        tenant_id query string false "Filter by tenant ID (UUID)"
 // @Success      200 {array} LeaseResponse
 // @Failure      500 {object} response.ErrorResponse
+// @Security     BearerAuth
 // @Router       /leases [get]
 func (h *LeaseHandler) ListLeases(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -169,6 +172,7 @@ func (h *LeaseHandler) ListLeases(w http.ResponseWriter, r *http.Request) {
 // @Produce      json
 // @Success      200 {object} service.LeaseStats
 // @Failure      500 {object} response.ErrorResponse
+// @Security     BearerAuth
 // @Router       /leases/stats [get]
 func (h *LeaseHandler) GetLeaseStats(w http.ResponseWriter, r *http.Request) {
 	stats, err := h.leaseService.GetLeaseStats(r.Context())
@@ -191,6 +195,7 @@ func (h *LeaseHandler) GetLeaseStats(w http.ResponseWriter, r *http.Request) {
 // @Success      201 {object} LeaseResponse
 // @Failure      400 {object} response.ErrorResponse
 // @Failure      404 {object} response.ErrorResponse
+// @Security     BearerAuth
 // @Router       /leases/{id}/renew [post]
 func (h *LeaseHandler) RenewLease(w http.ResponseWriter, r *http.Request) {
 	// Extrair ID da URL
@@ -238,6 +243,7 @@ func (h *LeaseHandler) RenewLease(w http.ResponseWriter, r *http.Request) {
 // @Success      200 {object} response.Response
 // @Failure      400 {object} response.ErrorResponse
 // @Failure      404 {object} response.ErrorResponse
+// @Security     BearerAuth
 // @Router       /leases/{id}/cancel [post]
 func (h *LeaseHandler) CancelLease(w http.ResponseWriter, r *http.Request) {
 	// Extrair ID da URL
@@ -268,6 +274,7 @@ func (h *LeaseHandler) CancelLease(w http.ResponseWriter, r *http.Request) {
 // @Success      200 {object} response.Response
 // @Failure      400 {object} response.ErrorResponse
 // @Failure      404 {object} response.ErrorResponse
+// @Security     BearerAuth
 // @Router       /leases/{id}/painting-fee [patch]
 func (h *LeaseHandler) UpdatePaintingFeePaid(w http.ResponseWriter, r *http.Request) {
 	// Extrair ID da URL
@@ -307,6 +314,7 @@ func (h *LeaseHandler) UpdatePaintingFeePaid(w http.ResponseWriter, r *http.Requ
 // @Produce      json
 // @Success      200 {array} LeaseResponse
 // @Failure      500 {object} response.ErrorResponse
+// @Security     BearerAuth
 // @Router       /leases/expiring-soon [get]
 func (h *LeaseHandler) GetExpiringSoonLeases(w http.ResponseWriter, r *http.Request) {
 	leases, err := h.leaseService.GetExpiringSoonLeases(r.Context())

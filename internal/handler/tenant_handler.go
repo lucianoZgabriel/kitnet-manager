@@ -33,6 +33,7 @@ func NewTenantHandler(tenantService *service.TenantService) *TenantHandler {
 // @Tags         Tenants
 // @Accept       json
 // @Produce      json
+// @Security     BearerAuth
 // @Param        tenant body CreateTenantRequest true "Dados do morador"
 // @Success      201 {object} TenantResponse
 // @Failure      400 {object} response.ErrorResponse
@@ -78,6 +79,7 @@ func (h *TenantHandler) CreateTenant(w http.ResponseWriter, r *http.Request) {
 // @Description  Retorna os dados de um morador específico
 // @Tags         Tenants
 // @Produce      json
+// @Security     BearerAuth
 // @Param        id path string true "Tenant ID (UUID)"
 // @Success      200 {object} TenantResponse
 // @Failure      400 {object} response.ErrorResponse
@@ -107,6 +109,7 @@ func (h *TenantHandler) GetTenant(w http.ResponseWriter, r *http.Request) {
 // @Description  Retorna os dados de um morador pelo CPF
 // @Tags         Tenants
 // @Produce      json
+// @Security     BearerAuth
 // @Param        cpf query string true "CPF (formato: XXX.XXX.XXX-XX)"
 // @Success      200 {object} TenantResponse
 // @Failure      400 {object} response.ErrorResponse
@@ -135,6 +138,7 @@ func (h *TenantHandler) GetTenantByCPF(w http.ResponseWriter, r *http.Request) {
 // @Description  Retorna lista de moradores com opção de busca por nome
 // @Tags         Tenants
 // @Produce      json
+// @Security     BearerAuth
 // @Param        name query string false "Search by name (case-insensitive)"
 // @Success      200 {array} TenantResponse
 // @Failure      500 {object} response.ErrorResponse
@@ -169,6 +173,7 @@ func (h *TenantHandler) ListTenants(w http.ResponseWriter, r *http.Request) {
 // @Tags         Tenants
 // @Accept       json
 // @Produce      json
+// @Security     BearerAuth
 // @Param        id path string true "Tenant ID (UUID)"
 // @Param        tenant body UpdateTenantRequest true "Dados atualizados"
 // @Success      200 {object} TenantResponse
@@ -219,6 +224,7 @@ func (h *TenantHandler) UpdateTenant(w http.ResponseWriter, r *http.Request) {
 // @Summary      Deletar morador
 // @Description  Remove um morador do sistema
 // @Tags         Tenants
+// @Security     BearerAuth
 // @Param        id path string true "Tenant ID (UUID)"
 // @Success      200 {object} response.Response
 // @Failure      400 {object} response.ErrorResponse

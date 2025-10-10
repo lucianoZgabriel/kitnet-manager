@@ -26,6 +26,7 @@ func NewDashboardHandler(dashboardService *service.DashboardService) *DashboardH
 // @Produce      json
 // @Success      200 {object} DashboardResponse
 // @Failure      500 {object} response.ErrorResponse
+// @Security     BearerAuth
 // @Router       /dashboard [get]
 func (h *DashboardHandler) GetDashboard(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

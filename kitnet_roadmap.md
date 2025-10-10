@@ -577,9 +577,9 @@
 - [ ] Testar autenticação em todas as rotas
 
 ### 5.8 Atualizar Swagger
-- [ ] Adicionar securityDefinitions no main.go
-- [ ] Adicionar @Security tags nos handlers
-- [ ] Regenerar documentação Swagger
+- [x] Adicionar securityDefinitions no main.go
+- [x] Adicionar @Security tags nos handlers
+- [x] Regenerar documentação Swagger
 - [ ] Testar autenticação via Swagger UI
 
 ### 5.9 Testes e Documentação

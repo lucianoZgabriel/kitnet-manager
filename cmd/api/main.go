@@ -39,6 +39,13 @@ import (
 
 // @schemes http https
 
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
+
+// @tag.name Auth
+// @tag.description Autenticação e gerenciamento de usuários
 // @tag.name Units
 // @tag.description Operações relacionadas a unidades/kitnets
 // @tag.name Tenants

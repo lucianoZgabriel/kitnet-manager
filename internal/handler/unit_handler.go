@@ -34,6 +34,7 @@ func NewUnitHandler(unitService *service.UnitService) *UnitHandler {
 // @Tags         Units
 // @Accept       json
 // @Produce      json
+// @Security     BearerAuth
 // @Param        unit body CreateUnitRequest true "Dados da unidade"
 // @Success      201 {object} UnitResponse
 // @Failure      400 {object} response.ErrorResponse
@@ -76,6 +77,7 @@ func (h *UnitHandler) CreateUnit(w http.ResponseWriter, r *http.Request) {
 // @Description  Retorna os dados de uma unidade específica
 // @Tags         Units
 // @Produce      json
+// @Security     BearerAuth
 // @Param        id path string true "Unit ID (UUID)"
 // @Success      200 {object} UnitResponse
 // @Failure      400 {object} response.ErrorResponse
@@ -105,6 +107,7 @@ func (h *UnitHandler) GetUnit(w http.ResponseWriter, r *http.Request) {
 // @Description  Retorna lista de unidades com filtros opcionais
 // @Tags         Units
 // @Produce      json
+// @Security     BearerAuth
 // @Param        status query string false "Filter by status" Enums(available, occupied, maintenance, renovation)
 // @Param        floor query int false "Filter by floor"
 // @Success      200 {array} UnitResponse
@@ -149,6 +152,7 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 // @Tags         Units
 // @Accept       json
 // @Produce      json
+// @Security     BearerAuth
 // @Param        id path string true "Unit ID (UUID)"
 // @Param        unit body UpdateUnitRequest true "Dados atualizados"
 // @Success      200 {object} UnitResponse
@@ -202,6 +206,7 @@ func (h *UnitHandler) UpdateUnit(w http.ResponseWriter, r *http.Request) {
 // @Tags         Units
 // @Accept       json
 // @Produce      json
+// @Security     BearerAuth
 // @Param        id path string true "Unit ID (UUID)"
 // @Param        status body UpdateUnitStatusRequest true "Novo status"
 // @Success      200 {object} response.Response
@@ -242,6 +247,7 @@ func (h *UnitHandler) UpdateUnitStatus(w http.ResponseWriter, r *http.Request) {
 // @Summary      Deletar unidade
 // @Description  Remove uma unidade do sistema
 // @Tags         Units
+// @Security     BearerAuth
 // @Param        id path string true "Unit ID (UUID)"
 // @Success      200 {object} response.Response
 // @Failure      400 {object} response.ErrorResponse
@@ -270,6 +276,7 @@ func (h *UnitHandler) DeleteUnit(w http.ResponseWriter, r *http.Request) {
 // @Description  Retorna estatísticas de ocupação das unidades
 // @Tags         Units
 // @Produce      json
+// @Security     BearerAuth
 // @Success      200 {object} service.OccupancyStats
 // @Failure      500 {object} response.ErrorResponse
 // @Router       /units/stats/occupancy [get]
