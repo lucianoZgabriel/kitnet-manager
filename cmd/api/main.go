@@ -138,7 +138,7 @@ func main() {
 
 	// Swagger documentation
 	r.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:"+cfg.Port+"/swagger/doc.json"),
+		httpSwagger.URL("/swagger/doc.json"), // Relative URL works in all environments
 	))
 
 	// Registrar rotas da aplicação
