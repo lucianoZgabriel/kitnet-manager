@@ -41,7 +41,7 @@ dist/
 tmp/
 temp/
 
-# Swagger generated files
-docs/docs.go
-docs/swagger.json
-docs/swagger.yaml
+# Swagger generated files (committed for production builds)
+# docs/docs.go
+# docs/swagger.json
+# docs/swagger.yaml

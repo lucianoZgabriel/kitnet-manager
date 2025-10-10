@@ -1,0 +1,1972 @@
+basePath: /api/v1
+definitions:
+  domain.PaymentMethod:
+    enum:
+    - pix
+    - cash
+    - bank_transfer
+    - credit_card
+    type: string
+    x-enum-varnames:
+    - PaymentMethodPix
+    - PaymentMethodCash
+    - PaymentMethodBankTransfer
+    - PaymentMethodCreditCard
+  domain.PaymentStatus:
+    enum:
+    - pending
+    - paid
+    - overdue
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - PaymentStatusPending
+    - PaymentStatusPaid
+    - PaymentStatusOverdue
+    - PaymentStatusCancelled
+  domain.PaymentType:
+    enum:
+    - rent
+    - painting_fee
+    - adjustment
+    type: string
+    x-enum-varnames:
+    - PaymentTypeRent
+    - PaymentTypePaintingFee
+    - PaymentTypeAdjustment
+  handler.ChangePasswordRequest:
+    properties:
+      new_password:
+        minLength: 6
+        type: string
+      old_password:
+        minLength: 6
+        type: string
+    required:
+    - new_password
+    - old_password
+    type: object
+  handler.ChangeRoleRequest:
+    properties:
+      role:
+        enum:
+        - admin
+        - manager
+        - viewer
+        type: string
+    required:
+    - role
+    type: object
+  handler.CreateLeaseRequestDTO:
+    properties:
+      contract_signed_date:
+        type: string
+      monthly_rent_value:
+        type: number
+      painting_fee_installments:
+        maximum: 4
+        minimum: 1
+        type: integer
+      painting_fee_total:
+        type: number
+      payment_due_day:
+        maximum: 31
+        minimum: 1
+        type: integer
+      start_date:
+        type: string
+      tenant_id:
+        type: string
+      unit_id:
+        type: string
+    required:
+    - contract_signed_date
+    - monthly_rent_value
+    - painting_fee_installments
+    - painting_fee_total
+    - payment_due_day
+    - start_date
+    - tenant_id
+    - unit_id
+    type: object
+  handler.CreateTenantRequest:
+    properties:
+      cpf:
+        description: 'Formato: XXX.XXX.XXX-XX'
+        type: string
+      email:
+        maxLength: 255
+        type: string
+      full_name:
+        maxLength: 255
+        minLength: 3
+        type: string
+      id_document_number:
+        maxLength: 50
+        type: string
+      id_document_type:
+        maxLength: 10
+        type: string
+      phone:
+        maxLength: 20
+        minLength: 10
+        type: string
+    required:
+    - cpf
+    - full_name
+    - phone
+    type: object
+  handler.CreateUnitRequest:
+    properties:
+      base_rent_value:
+        type: number
+      floor:
+        minimum: 1
+        type: integer
+      number:
+        maxLength: 10
+        minLength: 1
+        type: string
+      renovated_rent_value:
+        type: number
+    required:
+    - base_rent_value
+    - floor
+    - number
+    - renovated_rent_value
+    type: object
+  handler.CreateUserRequest:
+    properties:
+      password:
+        minLength: 6
+        type: string
+      role:
+        enum:
+        - admin
+        - manager
+        - viewer
+        type: string
+      username:
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - password
+    - role
+    - username
+    type: object
+  handler.DashboardResponse:
+    properties:
+      alerts:
+        $ref: '#/definitions/service.DashboardAlerts'
+      contracts:
+        $ref: '#/definitions/service.ContractMetrics'
+      financial:
+        $ref: '#/definitions/service.FinancialMetrics'
+      occupancy:
+        $ref: '#/definitions/service.OccupancyMetrics'
+    type: object
+  handler.LeaseResponse:
+    properties:
+      contract_signed_date:
+        type: string
+      created_at:
+        type: string
+      days_until_expiry:
+        type: integer
+      end_date:
+        type: string
+      id:
+        type: string
+      is_expiring_soon:
+        type: boolean
+      monthly_rent_value:
+        type: number
+      painting_fee_installments:
+        type: integer
+      painting_fee_paid:
+        type: number
+      painting_fee_total:
+        type: number
+      payment_due_day:
+        type: integer
+      start_date:
+        type: string
+      status:
+        type: string
+      tenant_id:
+        type: string
+      unit_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.LoginRequest:
+    properties:
+      password:
+        minLength: 6
+        type: string
+      username:
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  handler.LoginResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/handler.UserResponse'
+    type: object
+  handler.MarkPaymentAsPaidRequestDTO:
+    properties:
+      payment_date:
+        type: string
+      payment_method:
+        $ref: '#/definitions/domain.PaymentMethod'
+    required:
+    - payment_date
+    - payment_method
+    type: object
+  handler.PaymentResponse:
+    properties:
+      amount:
+        type: number
+      created_at:
+        type: string
+      due_date:
+        type: string
+      id:
+        type: string
+      lease_id:
+        type: string
+      payment_date:
+        type: string
+      payment_method:
+        type: string
+      payment_type:
+        type: string
+      reference_month:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.PaymentStatsResponse:
+    properties:
+      overdue_count:
+        type: integer
+      paid_count:
+        type: integer
+      pending_count:
+        type: integer
+      total_paid:
+        type: number
+      total_payments:
+        type: integer
+      total_pending:
+        type: number
+    type: object
+  handler.RefreshTokenRequest:
+    properties:
+      token:
+        type: string
+    required:
+    - token
+    type: object
+  handler.RefreshTokenResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  handler.RenewLeaseRequestDTO:
+    properties:
+      painting_fee_installments:
+        maximum: 4
+        minimum: 1
+        type: integer
+      painting_fee_total:
+        type: number
+    required:
+    - painting_fee_installments
+    - painting_fee_total
+    type: object
+  handler.TenantResponse:
+    properties:
+      cpf:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: string
+      id_document_number:
+        type: string
+      id_document_type:
+        type: string
+      phone:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.UnitResponse:
+    properties:
+      base_rent_value:
+        type: number
+      created_at:
+        type: string
+      current_rent_value:
+        type: number
+      floor:
+        type: integer
+      id:
+        type: string
+      is_renovated:
+        type: boolean
+      notes:
+        type: string
+      number:
+        type: string
+      renovated_rent_value:
+        type: number
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.UpdatePaintingFeePaidRequestDTO:
+    properties:
+      amount_paid:
+        type: number
+    required:
+    - amount_paid
+    type: object
+  handler.UpdateTenantRequest:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      full_name:
+        maxLength: 255
+        minLength: 3
+        type: string
+      id_document_number:
+        maxLength: 50
+        type: string
+      id_document_type:
+        maxLength: 10
+        type: string
+      phone:
+        maxLength: 20
+        minLength: 10
+        type: string
+    required:
+    - full_name
+    - phone
+    type: object
+  handler.UpdateUnitRequest:
+    properties:
+      base_rent_value:
+        type: number
+      floor:
+        minimum: 1
+        type: integer
+      is_renovated:
+        type: boolean
+      notes:
+        maxLength: 500
+        type: string
+      number:
+        maxLength: 10
+        minLength: 1
+        type: string
+      renovated_rent_value:
+        type: number
+    required:
+    - base_rent_value
+    - floor
+    - number
+    - renovated_rent_value
+    type: object
+  handler.UpdateUnitStatusRequest:
+    properties:
+      status:
+        enum:
+        - available
+        - occupied
+        - maintenance
+        - renovation
+        type: string
+    required:
+    - status
+    type: object
+  handler.UserResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      last_login_at:
+        type: string
+      role:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  response.ErrorResponse:
+    properties:
+      code:
+        type: string
+      details:
+        type: string
+      error:
+        type: string
+      success:
+        type: boolean
+    type: object
+  response.Response:
+    properties:
+      data: {}
+      error:
+        type: string
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  service.Alert:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      entity_id:
+        description: ID do payment, lease ou unit
+        type: string
+      severity:
+        description: '"high", "medium", "low"'
+        type: string
+      title:
+        type: string
+      type:
+        description: '"overdue_payment", "expiring_lease", "vacant_unit"'
+        type: string
+    type: object
+  service.ContractMetrics:
+    properties:
+      cancelled_contracts:
+        type: integer
+      contracts_expiring_soon:
+        type: integer
+      expired_contracts:
+        type: integer
+      total_active_contracts:
+        type: integer
+    type: object
+  service.DashboardAlerts:
+    properties:
+      expiring_leases:
+        items:
+          $ref: '#/definitions/service.Alert'
+        type: array
+      overdue_payments:
+        items:
+          $ref: '#/definitions/service.Alert'
+        type: array
+      total_alerts:
+        type: integer
+      vacant_units:
+        items:
+          $ref: '#/definitions/service.Alert'
+        type: array
+    type: object
+  service.FinancialMetrics:
+    properties:
+      collection_rate:
+        description: Taxa de cobrança efetiva
+        type: number
+      default_rate:
+        description: Taxa de inadimplência
+        type: number
+      monthly_projected_revenue:
+        type: number
+      monthly_realized_revenue:
+        type: number
+      overdue_amount:
+        type: number
+      total_pending_amount:
+        type: number
+    type: object
+  service.FinancialReportResponse:
+    properties:
+      by_month:
+        items:
+          $ref: '#/definitions/service.MonthlyRevenue'
+        type: array
+      by_type:
+        additionalProperties:
+          $ref: '#/definitions/service.TypeRevenue'
+        type: object
+      by_unit:
+        items:
+          $ref: '#/definitions/service.UnitRevenue'
+        type: array
+      generated_at:
+        type: string
+      period:
+        $ref: '#/definitions/service.Period'
+      summary:
+        $ref: '#/definitions/service.FinancialSummary'
+      total_payments:
+        type: integer
+    type: object
+  service.FinancialSummary:
+    properties:
+      cancelled_amount:
+        type: number
+      overdue_amount:
+        type: number
+      paid_amount:
+        type: number
+      pending_amount:
+        type: number
+      total_revenue:
+        type: number
+    type: object
+  service.LeaseStats:
+    properties:
+      active:
+        type: integer
+      cancelled:
+        type: integer
+      expired:
+        type: integer
+      expiring_soon:
+        type: integer
+      total:
+        type: integer
+    type: object
+  service.MonthlyRevenue:
+    properties:
+      amount:
+        type: number
+      count:
+        type: integer
+      month:
+        description: 'Formato: "2024-03"'
+        type: string
+      year:
+        type: integer
+    type: object
+  service.OccupancyMetrics:
+    properties:
+      availability_rate:
+        description: Percentual
+        type: number
+      available_units:
+        type: integer
+      maintenance_units:
+        type: integer
+      occupancy_rate:
+        description: Percentual
+        type: number
+      occupied_units:
+        type: integer
+      renovation_units:
+        type: integer
+      total_units:
+        type: integer
+    type: object
+  service.OccupancyStats:
+    properties:
+      available:
+        type: integer
+      maintenance:
+        type: integer
+      occupancy_rate:
+        description: Percentual
+        type: number
+      occupied:
+        type: integer
+      renovation:
+        type: integer
+      total:
+        type: integer
+    type: object
+  service.PaymentHistoryItem:
+    properties:
+      amount:
+        type: number
+      created_at:
+        type: string
+      due_date:
+        type: string
+      lease_id:
+        type: string
+      payment_date:
+        type: string
+      payment_id:
+        type: string
+      payment_method:
+        $ref: '#/definitions/domain.PaymentMethod'
+      payment_type:
+        $ref: '#/definitions/domain.PaymentType'
+      status:
+        $ref: '#/definitions/domain.PaymentStatus'
+      tenant_name:
+        type: string
+      unit_number:
+        type: string
+    type: object
+  service.PaymentHistoryResponse:
+    properties:
+      generated_at:
+        type: string
+      payments:
+        items:
+          $ref: '#/definitions/service.PaymentHistoryItem'
+        type: array
+      total_amount:
+        type: number
+      total_count:
+        type: integer
+    type: object
+  service.Period:
+    properties:
+      days:
+        type: integer
+      end_date:
+        type: string
+      start_date:
+        type: string
+    type: object
+  service.TypeRevenue:
+    properties:
+      amount:
+        type: number
+      count:
+        type: integer
+      type:
+        type: string
+    type: object
+  service.UnitRevenue:
+    properties:
+      amount:
+        type: number
+      count:
+        type: integer
+      unit_id:
+        type: string
+      unit_number:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: contato@example.com
+    name: Luciano Gabriel
+  description: |-
+    API para gestão de complexo de kitnets com 31 unidades
+    Sistema completo de gerenciamento de unidades, moradores, contratos e pagamentos
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: Kitnet Manager API
+  version: "1.0"
+paths:
+  /auth/change-password:
+    post:
+      consumes:
+      - application/json
+      description: Altera a senha do usuário autenticado
+      parameters:
+      - description: Senhas antiga e nova
+        in: body
+        name: passwords
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Trocar senha
+      tags:
+      - Auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Autentica um usuário e retorna um token JWT
+      parameters:
+      - description: Credenciais de login
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/handler.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Login
+      tags:
+      - Auth
+  /auth/me:
+    get:
+      description: Retorna os dados do usuário autenticado pelo token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter usuário atual
+      tags:
+      - Auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Gera um novo token JWT a partir de um token válido ou expirado
+      parameters:
+      - description: Token a ser renovado
+        in: body
+        name: token
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.RefreshTokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Renovar token
+      tags:
+      - Auth
+  /auth/users:
+    get:
+      description: Retorna lista de todos os usuários (apenas admin)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.UserResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar usuários
+      tags:
+      - Auth
+    post:
+      consumes:
+      - application/json
+      description: Cria um novo usuário no sistema (apenas admin)
+      parameters:
+      - description: Dados do usuário
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar usuário
+      tags:
+      - Auth
+  /auth/users/{id}:
+    get:
+      description: Retorna os dados de um usuário específico (apenas admin)
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Buscar usuário por ID
+      tags:
+      - Auth
+  /auth/users/{id}/activate:
+    post:
+      description: Ativa um usuário previamente desativado (apenas admin)
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Ativar usuário
+      tags:
+      - Auth
+  /auth/users/{id}/deactivate:
+    post:
+      description: Desativa um usuário (apenas admin)
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Desativar usuário
+      tags:
+      - Auth
+  /auth/users/{id}/role:
+    patch:
+      consumes:
+      - application/json
+      description: Altera o papel/permissão de um usuário (apenas admin)
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Novo role
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ChangeRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Alterar role de usuário
+      tags:
+      - Auth
+  /dashboard:
+    get:
+      description: Retorna métricas consolidadas de ocupação, financeiras, contratos
+        e alertas
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.DashboardResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter dados do dashboard
+      tags:
+      - Dashboard
+  /leases:
+    get:
+      description: Retorna lista de contratos com filtros opcionais
+      parameters:
+      - description: Filter by status
+        enum:
+        - active
+        - expiring_soon
+        - expired
+        - cancelled
+        in: query
+        name: status
+        type: string
+      - description: Filter by unit ID (UUID)
+        in: query
+        name: unit_id
+        type: string
+      - description: Filter by tenant ID (UUID)
+        in: query
+        name: tenant_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.LeaseResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar contratos
+      tags:
+      - Leases
+    post:
+      consumes:
+      - application/json
+      description: Cria um novo contrato de locação
+      parameters:
+      - description: Dados do contrato
+        in: body
+        name: lease
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateLeaseRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.LeaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar novo contrato
+      tags:
+      - Leases
+  /leases/{id}:
+    get:
+      description: Retorna os dados de um contrato específico
+      parameters:
+      - description: Lease ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.LeaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Buscar contrato por ID
+      tags:
+      - Leases
+  /leases/{id}/cancel:
+    post:
+      description: Cancela um contrato e libera a unidade
+      parameters:
+      - description: Lease ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Cancelar contrato
+      tags:
+      - Leases
+  /leases/{id}/painting-fee:
+    patch:
+      consumes:
+      - application/json
+      description: Registra pagamento da taxa de pintura
+      parameters:
+      - description: Lease ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Valor pago
+        in: body
+        name: payment
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdatePaintingFeePaidRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar taxa de pintura paga
+      tags:
+      - Leases
+  /leases/{id}/renew:
+    post:
+      consumes:
+      - application/json
+      description: Renova um contrato existente criando um novo contrato
+      parameters:
+      - description: Lease ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados da renovação
+        in: body
+        name: renewal
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RenewLeaseRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.LeaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Renovar contrato
+      tags:
+      - Leases
+  /leases/{lease_id}/payments:
+    get:
+      description: Retorna todos os pagamentos de um contrato específico
+      parameters:
+      - description: Lease ID (UUID)
+        in: path
+        name: lease_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.PaymentResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar pagamentos de um contrato
+      tags:
+      - Payments
+  /leases/{lease_id}/payments/stats:
+    get:
+      description: Retorna estatísticas agregadas dos pagamentos de um contrato
+      parameters:
+      - description: Lease ID (UUID)
+        in: path
+        name: lease_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.PaymentStatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Estatísticas de pagamentos de um contrato
+      tags:
+      - Payments
+  /leases/expiring-soon:
+    get:
+      description: Retorna contratos que expiram nos próximos 45 dias
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.LeaseResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar contratos expirando em breve
+      tags:
+      - Leases
+  /leases/stats:
+    get:
+      description: Retorna estatísticas agregadas dos contratos
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.LeaseStats'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Estatísticas de contratos
+      tags:
+      - Leases
+  /payments/{id}:
+    get:
+      description: Retorna os dados de um pagamento específico
+      parameters:
+      - description: Payment ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.PaymentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Buscar pagamento por ID
+      tags:
+      - Payments
+  /payments/{id}/cancel:
+    post:
+      description: Cancela um pagamento pendente
+      parameters:
+      - description: Payment ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Cancelar pagamento
+      tags:
+      - Payments
+  /payments/{id}/pay:
+    put:
+      consumes:
+      - application/json
+      description: Registra um pagamento como pago com data e forma de pagamento
+      parameters:
+      - description: Payment ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados do pagamento
+        in: body
+        name: payment
+        required: true
+        schema:
+          $ref: '#/definitions/handler.MarkPaymentAsPaidRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.PaymentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Marcar pagamento como pago
+      tags:
+      - Payments
+  /payments/overdue:
+    get:
+      description: Retorna todos os pagamentos com status overdue
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.PaymentResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar pagamentos atrasados
+      tags:
+      - Payments
+  /payments/upcoming:
+    get:
+      description: 'Retorna pagamentos que vencem nos próximos X dias (padrão: 7 dias)'
+      parameters:
+      - description: 'Número de dias à frente (padrão: 7)'
+        in: query
+        name: days
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.PaymentResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar pagamentos próximos ao vencimento
+      tags:
+      - Payments
+  /reports/financial:
+    get:
+      description: Retorna relatório financeiro consolidado com filtros de período
+        e tipo
+      parameters:
+      - description: Data inicial (YYYY-MM-DD)
+        in: query
+        name: start_date
+        required: true
+        type: string
+      - description: Data final (YYYY-MM-DD)
+        in: query
+        name: end_date
+        required: true
+        type: string
+      - description: Tipo de pagamento
+        enum:
+        - rent
+        - painting_fee
+        - adjustment
+        in: query
+        name: payment_type
+        type: string
+      - description: Status do pagamento
+        enum:
+        - pending
+        - paid
+        - overdue
+        - cancelled
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.FinancialReportResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter relatório financeiro
+      tags:
+      - Reports
+  /reports/payments:
+    get:
+      description: Retorna histórico detalhado de pagamentos com filtros
+      parameters:
+      - description: Filtrar por ID do contrato (UUID)
+        in: query
+        name: lease_id
+        type: string
+      - description: Filtrar por ID do morador (UUID)
+        in: query
+        name: tenant_id
+        type: string
+      - description: Filtrar por status
+        enum:
+        - pending
+        - paid
+        - overdue
+        - cancelled
+        in: query
+        name: status
+        type: string
+      - description: Data inicial (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: Data final (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.PaymentHistoryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter histórico de pagamentos
+      tags:
+      - Reports
+  /tenants:
+    get:
+      description: Retorna lista de moradores com opção de busca por nome
+      parameters:
+      - description: Search by name (case-insensitive)
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.TenantResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar moradores
+      tags:
+      - Tenants
+    post:
+      consumes:
+      - application/json
+      description: Cria um novo morador no sistema
+      parameters:
+      - description: Dados do morador
+        in: body
+        name: tenant
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateTenantRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.TenantResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar novo morador
+      tags:
+      - Tenants
+  /tenants/{id}:
+    delete:
+      description: Remove um morador do sistema
+      parameters:
+      - description: Tenant ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Deletar morador
+      tags:
+      - Tenants
+    get:
+      description: Retorna os dados de um morador específico
+      parameters:
+      - description: Tenant ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.TenantResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Buscar morador por ID
+      tags:
+      - Tenants
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um morador existente
+      parameters:
+      - description: Tenant ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: tenant
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateTenantRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.TenantResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar morador
+      tags:
+      - Tenants
+  /tenants/cpf:
+    get:
+      description: Retorna os dados de um morador pelo CPF
+      parameters:
+      - description: 'CPF (formato: XXX.XXX.XXX-XX)'
+        in: query
+        name: cpf
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.TenantResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Buscar morador por CPF
+      tags:
+      - Tenants
+  /units:
+    get:
+      description: Retorna lista de unidades com filtros opcionais
+      parameters:
+      - description: Filter by status
+        enum:
+        - available
+        - occupied
+        - maintenance
+        - renovation
+        in: query
+        name: status
+        type: string
+      - description: Filter by floor
+        in: query
+        name: floor
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.UnitResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar unidades
+      tags:
+      - Units
+    post:
+      consumes:
+      - application/json
+      description: Cria uma nova unidade no sistema
+      parameters:
+      - description: Dados da unidade
+        in: body
+        name: unit
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateUnitRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.UnitResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar nova unidade
+      tags:
+      - Units
+  /units/{id}:
+    delete:
+      description: Remove uma unidade do sistema
+      parameters:
+      - description: Unit ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Deletar unidade
+      tags:
+      - Units
+    get:
+      description: Retorna os dados de uma unidade específica
+      parameters:
+      - description: Unit ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.UnitResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Buscar unidade por ID
+      tags:
+      - Units
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de uma unidade existente
+      parameters:
+      - description: Unit ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: unit
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateUnitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.UnitResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar unidade
+      tags:
+      - Units
+  /units/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Atualiza apenas o status de uma unidade
+      parameters:
+      - description: Unit ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Novo status
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateUnitStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar status da unidade
+      tags:
+      - Units
+  /units/stats/occupancy:
+    get:
+      description: Retorna estatísticas de ocupação das unidades
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.OccupancyStats'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Estatísticas de ocupação
+      tags:
+      - Units
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
+tags:
+- description: Autenticação e gerenciamento de usuários
+  name: Auth
+- description: Operações relacionadas a unidades/kitnets
+  name: Units
+- description: Operações relacionadas a moradores/inquilinos
+  name: Tenants
+- description: Operações relacionadas a contratos de locação
+  name: Leases
+- description: Operações relacionadas a pagamentos
+  name: Payments
+- description: Métricas consolidadas e visão executiva
+  name: Dashboard
+- description: Relatórios financeiros e de pagamentos
+  name: Reports
+- description: Health check e status do sistema
+  name: Health
