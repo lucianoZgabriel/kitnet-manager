@@ -136,6 +136,8 @@ func (s *AuthService) ValidateToken(tokenString string) (*JWTClaims, error) {
 }
 
 // GetUserFromToken busca o usuário completo a partir de um token
+// DEPRECATED: Use GetUserFromTokenClaims para melhor performance
+// Esta função faz query no banco a cada chamada, causando problemas de connection pool
 func (s *AuthService) GetUserFromToken(ctx context.Context, tokenString string) (*domain.User, error) {
 	claims, err := s.ValidateToken(tokenString)
 	if err != nil {
@@ -158,6 +160,33 @@ func (s *AuthService) GetUserFromToken(ctx context.Context, tokenString string) 
 	// Verificar se usuário ainda está ativo
 	if !user.IsActive {
 		return nil, ErrUserInactive
+	}
+
+	return user, nil
+}
+
+// GetUserFromTokenClaims reconstrói o usuário apenas dos claims do JWT, sem query no banco
+// RECOMENDADO: Use esta função para autenticação em requests (melhor performance)
+// Nota: Não verifica se usuário foi desativado após emissão do token
+// Para verificações críticas que precisam de dados atualizados, use GetUserFromToken
+func (s *AuthService) GetUserFromTokenClaims(ctx context.Context, tokenString string) (*domain.User, error) {
+	claims, err := s.ValidateToken(tokenString)
+	if err != nil {
+		return nil, err
+	}
+
+	userID, err := uuid.Parse(claims.UserID)
+	if err != nil {
+		return nil, ErrInvalidTokenClaims
+	}
+
+	// Reconstruir usuário a partir dos claims
+	// Não faz query no banco, evitando overhead e connection pool exhaustion
+	user := &domain.User{
+		ID:       userID,
+		Username: claims.Username,
+		Role:     domain.UserRole(claims.Role),
+		IsActive: true, // Assumimos ativo se token é válido
 	}
 
 	return user, nil

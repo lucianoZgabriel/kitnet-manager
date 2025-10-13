@@ -40,8 +40,11 @@ func (m *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		// Validar token e obter usuário
-		user, err := m.authService.GetUserFromToken(r.Context(), token)
+		// Validar token e obter usuário apenas dos claims (sem query no banco)
+		// OTIMIZAÇÃO: Evita connection pool exhaustion em requests simultâneas
+		// Trade-off: Não detecta se usuário foi desativado após emissão do token
+		// (aceitável pois tokens expiram em 24h e desativação de usuário é rara)
+		user, err := m.authService.GetUserFromTokenClaims(r.Context(), token)
 		if err != nil {
 			response.Error(w, http.StatusUnauthorized, "Invalid or expired token")
 			return
