@@ -548,16 +548,19 @@ func TestRenewLease_Success(t *testing.T) {
 	mockLeaseRepo.On("Create", ctx, mock.AnythingOfType("*domain.Lease")).Return(nil)
 
 	// Act
-	newLease, err := service.RenewLease(ctx, oldLeaseID, paintingFeeTotal, paintingFeeInstallments)
+	result, err := service.RenewLease(ctx, oldLeaseID, paintingFeeTotal, paintingFeeInstallments)
 
 	// Assert
 	assert.NoError(t, err)
-	assert.NotNil(t, newLease)
-	assert.Equal(t, unitID, newLease.UnitID)
-	assert.Equal(t, tenantID, newLease.TenantID)
-	assert.Equal(t, domain.LeaseStatusActive, newLease.Status)
+	assert.NotNil(t, result)
+	assert.NotNil(t, result.Lease)
+	assert.Equal(t, unitID, result.Lease.UnitID)
+	assert.Equal(t, tenantID, result.Lease.TenantID)
+	assert.Equal(t, domain.LeaseStatusActive, result.Lease.Status)
 	assert.Equal(t, domain.LeaseStatusExpired, oldLease.Status) // Antigo marcado como expirado
-	assert.True(t, newLease.StartDate.After(oldLease.EndDate))  // Nova data de início após o fim do antigo
+	assert.True(t, result.Lease.StartDate.After(oldLease.EndDate))  // Nova data de início após o fim do antigo
+	// Payments vazios pois paymentService é nil
+	assert.Empty(t, result.Payments)
 	mockLeaseRepo.AssertExpectations(t)
 	mockUnitRepo.AssertExpectations(t)
 }
@@ -593,11 +596,11 @@ func TestRenewLease_CannotRenewCancelled(t *testing.T) {
 	mockLeaseRepo.On("GetByID", ctx, oldLeaseID).Return(oldLease, nil)
 
 	// Act
-	newLease, err := service.RenewLease(ctx, oldLeaseID, paintingFeeTotal, paintingFeeInstallments)
+	result, err := service.RenewLease(ctx, oldLeaseID, paintingFeeTotal, paintingFeeInstallments)
 
 	// Assert
 	assert.Error(t, err)
-	assert.Nil(t, newLease)
+	assert.Nil(t, result)
 	assert.Equal(t, ErrCannotRenewLease, err)
 	mockLeaseRepo.AssertExpectations(t)
 }
