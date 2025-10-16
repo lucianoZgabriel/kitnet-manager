@@ -75,11 +75,7 @@ func (h *LeaseHandler) CreateLease(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retornar resposta com lease e pagamentos gerados
-	responseData := map[string]interface{}{
-		"lease":    ToLeaseResponse(result.Lease),
-		"payments": ToPaymentResponseList(result.Payments),
-	}
-	response.Success(w, http.StatusCreated, "Lease created successfully with payments", responseData)
+	response.Success(w, http.StatusCreated, "Lease created successfully with payments", ToCreateLeaseResponse(result))
 }
 
 // GetLease godoc
@@ -220,7 +216,7 @@ func (h *LeaseHandler) RenewLease(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Renovar contrato
-	newLease, err := h.leaseService.RenewLease(
+	renewalResponse, err := h.leaseService.RenewLease(
 		r.Context(),
 		id,
 		req.PaintingFeeTotal,
@@ -231,7 +227,7 @@ func (h *LeaseHandler) RenewLease(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.Success(w, http.StatusCreated, "Lease renewed successfully", ToLeaseResponse(newLease))
+	response.Success(w, http.StatusCreated, "Lease renewed successfully", ToCreateLeaseResponse(renewalResponse))
 }
 
 // CancelLease godoc

@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/domain"
+	"github.com/lucianoZgabriel/kitnet-manager/internal/service"
 	"github.com/shopspring/decimal"
 )
 
@@ -69,6 +70,20 @@ func ToLeaseResponseList(leases []*domain.Lease) []*LeaseResponse {
 		responses[i] = ToLeaseResponse(lease)
 	}
 	return responses
+}
+
+// CreateLeaseResponseDTO representa a resposta ao criar um contrato com pagamentos
+type CreateLeaseResponseDTO struct {
+	Lease    *LeaseResponse    `json:"lease"`
+	Payments []*PaymentResponse `json:"payments"`
+}
+
+// ToCreateLeaseResponse converte service.CreateLeaseResponse para CreateLeaseResponseDTO
+func ToCreateLeaseResponse(response *service.CreateLeaseResponse) *CreateLeaseResponseDTO {
+	return &CreateLeaseResponseDTO{
+		Lease:    ToLeaseResponse(response.Lease),
+		Payments: ToPaymentResponseList(response.Payments),
+	}
 }
 
 // RenewLeaseRequestDTO representa os dados para renovação de contrato

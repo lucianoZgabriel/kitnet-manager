@@ -127,16 +127,21 @@ func (s *LeaseService) CreateLease(ctx context.Context, req CreateLeaseRequest) 
 	// 9. Gerar pagamentos automaticamente se paymentService estiver disponível
 	var payments []*domain.Payment
 	if s.paymentService != nil {
-		// Gerar primeiro pagamento de aluguel
-		rentPayment, err := s.paymentService.GenerateMonthlyRentPayment(ctx, GenerateMonthlyRentPaymentRequest{
-			LeaseID:        lease.ID,
-			ReferenceMonth: time.Date(lease.StartDate.Year(), lease.StartDate.Month(), 1, 0, 0, 0, 0, time.UTC),
-		})
-		if err != nil {
-			// Erro ao gerar não deve impedir criação de contrato
-			fmt.Printf("Warning: failed to generate rent payment: %v\n", err)
-		} else {
-			payments = append(payments, rentPayment)
+		// Gerar TODOS os 6 pagamentos de aluguel mensal (contrato de 6 meses)
+		for month := 0; month < 6; month++ {
+			referenceMonth := lease.StartDate.AddDate(0, month, 0)
+			referenceMonth = time.Date(referenceMonth.Year(), referenceMonth.Month(), 1, 0, 0, 0, 0, time.UTC)
+
+			rentPayment, err := s.paymentService.GenerateMonthlyRentPayment(ctx, GenerateMonthlyRentPaymentRequest{
+				LeaseID:        lease.ID,
+				ReferenceMonth: referenceMonth,
+			})
+			if err != nil {
+				// Erro ao gerar não deve impedir criação de contrato
+				fmt.Printf("Warning: failed to generate rent payment for month %d: %v\n", month+1, err)
+			} else {
+				payments = append(payments, rentPayment)
+			}
 		}
 
 		// Gerar pagamentos de taxa de pintura
@@ -382,7 +387,7 @@ type LeaseStats struct {
 }
 
 // RenewLease renova um contrato existente criando um novo contrato
-func (s *LeaseService) RenewLease(ctx context.Context, oldLeaseID uuid.UUID, paintingFeeTotal decimal.Decimal, paintingFeeInstallments int) (*domain.Lease, error) {
+func (s *LeaseService) RenewLease(ctx context.Context, oldLeaseID uuid.UUID, paintingFeeTotal decimal.Decimal, paintingFeeInstallments int) (*CreateLeaseResponse, error) {
 	// 1. Buscar o contrato antigo
 	oldLease, err := s.GetLeaseByID(ctx, oldLeaseID)
 	if err != nil {
@@ -438,7 +443,41 @@ func (s *LeaseService) RenewLease(ctx context.Context, oldLeaseID uuid.UUID, pai
 
 	// Aqui a unidade já está como occupied, não precisa atualizar
 
-	return newLease, nil
+	// 7. Gerar pagamentos para o contrato renovado
+	var payments []*domain.Payment
+	if s.paymentService != nil {
+		// Gerar TODOS os 6 pagamentos de aluguel mensal (contrato de 6 meses)
+		for month := 0; month < 6; month++ {
+			referenceMonth := newLease.StartDate.AddDate(0, month, 0)
+			referenceMonth = time.Date(referenceMonth.Year(), referenceMonth.Month(), 1, 0, 0, 0, 0, time.UTC)
+
+			rentPayment, err := s.paymentService.GenerateMonthlyRentPayment(ctx, GenerateMonthlyRentPaymentRequest{
+				LeaseID:        newLease.ID,
+				ReferenceMonth: referenceMonth,
+			})
+			if err != nil {
+				fmt.Printf("Warning: failed to generate rent payment for month %d: %v\n", month+1, err)
+			} else {
+				payments = append(payments, rentPayment)
+			}
+		}
+
+		// Gerar pagamentos de taxa de pintura
+		paintingFeePayments, err := s.paymentService.GeneratePaintingFeePayments(ctx, GeneratePaintingFeePaymentsRequest{
+			LeaseID:      newLease.ID,
+			Installments: paintingFeeInstallments,
+		})
+		if err != nil {
+			fmt.Printf("Warning: failed to generate painting fee payments: %v\n", err)
+		} else {
+			payments = append(payments, paintingFeePayments...)
+		}
+	}
+
+	return &CreateLeaseResponse{
+		Lease:    newLease,
+		Payments: payments,
+	}, nil
 }
 
 // RenewLeaseRequest representa os dados para renovação de contrato
