@@ -259,6 +259,50 @@ func (h *LeaseHandler) CancelLease(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, http.StatusOK, "Lease cancelled successfully", nil)
 }
 
+// CancelLeaseWithPayments godoc
+// @Summary      Cancelar contrato com seleção de pagamentos
+// @Description  Cancela um contrato e permite escolher quais pagamentos cancelar
+// @Tags         Leases
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "Lease ID (UUID)"
+// @Param        request body CancelLeaseWithPaymentsRequestDTO true "IDs dos pagamentos a cancelar"
+// @Success      200 {object} response.Response
+// @Failure      400 {object} response.ErrorResponse
+// @Failure      404 {object} response.ErrorResponse
+// @Security     BearerAuth
+// @Router       /leases/{id}/cancel-with-payments [post]
+func (h *LeaseHandler) CancelLeaseWithPayments(w http.ResponseWriter, r *http.Request) {
+	// Extrair ID da URL
+	idStr := chi.URLParam(r, "id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		response.Error(w, http.StatusBadRequest, "Invalid lease ID")
+		return
+	}
+
+	// Decodificar request
+	var req CancelLeaseWithPaymentsRequestDTO
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Validar
+	if err := h.validator.Struct(req); err != nil {
+		response.Error(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Cancelar contrato com pagamentos selecionados
+	if err := h.leaseService.CancelLeaseWithPayments(r.Context(), id, req.PaymentIDs); err != nil {
+		h.handleServiceError(w, err)
+		return
+	}
+
+	response.Success(w, http.StatusOK, "Lease and selected payments cancelled successfully", nil)
+}
+
 // UpdatePaintingFeePaid godoc
 // @Summary      Atualizar taxa de pintura paga
 // @Description  Registra pagamento da taxa de pintura
