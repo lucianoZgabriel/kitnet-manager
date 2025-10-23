@@ -17,6 +17,7 @@ import (
 	"github.com/lucianoZgabriel/kitnet-manager/internal/pkg/database"
 	authMiddleware "github.com/lucianoZgabriel/kitnet-manager/internal/pkg/middleware"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/pkg/response"
+	"github.com/lucianoZgabriel/kitnet-manager/internal/pkg/scheduler"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/repository/postgres"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/service"
 
@@ -158,6 +159,13 @@ func main() {
 	log.Println("✅ Rotas configuradas")
 	log.Printf("📚 Documentação Swagger: http://localhost:%s/swagger/index.html", cfg.Port)
 
+	// Iniciar scheduler de tarefas automáticas
+	taskScheduler := scheduler.New(paymentService, leaseService)
+	schedulerCtx, cancelScheduler := context.WithCancel(context.Background())
+	defer cancelScheduler()
+
+	go taskScheduler.Start(schedulerCtx)
+
 	// Configurar servidor
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
@@ -181,6 +189,10 @@ func main() {
 	<-quit
 
 	log.Println("🛑 Desligando servidor...")
+
+	// Parar scheduler
+	log.Println("⏹️ Parando scheduler...")
+	cancelScheduler()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
