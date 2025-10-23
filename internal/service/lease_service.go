@@ -255,6 +255,53 @@ func (s *LeaseService) CancelLease(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
+// CancelLeaseWithPaymentsRequest representa os dados para cancelar um contrato com seleção de pagamentos
+type CancelLeaseWithPaymentsRequest struct {
+	PaymentIDs []uuid.UUID `json:"payment_ids" validate:"required"`
+}
+
+// CancelLeaseWithPayments cancela um contrato e os pagamentos selecionados
+func (s *LeaseService) CancelLeaseWithPayments(ctx context.Context, id uuid.UUID, paymentIDs []uuid.UUID) error {
+	// 1. Buscar o contrato
+	lease, err := s.GetLeaseByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("error getting lease: %w", err)
+	}
+	if lease == nil {
+		return ErrLeaseNotFound
+	}
+
+	// 2. Validar que o contrato pode ser cancelado (não expirou e não está cancelado)
+	if lease.Status == domain.LeaseStatusExpired {
+		return ErrLeaseAlreadyExpired
+	}
+	if lease.Status == domain.LeaseStatusCancelled {
+		return ErrCannotCancelLease
+	}
+
+	// 3. Cancelar os pagamentos selecionados usando o payment service
+	if s.paymentService != nil && len(paymentIDs) > 0 {
+		if err := s.paymentService.CancelPayments(ctx, id, paymentIDs); err != nil {
+			return fmt.Errorf("error cancelling payments: %w", err)
+		}
+	}
+
+	// 4. Marcar o contrato como cancelado
+	lease.MarkAsCancelled()
+
+	// 5. Persistir o contrato no banco
+	if err := s.leaseRepo.Update(ctx, lease); err != nil {
+		return fmt.Errorf("error updating lease: %w", err)
+	}
+
+	// 6. Atualizar o status da unidade para disponível
+	if err := s.unitRepo.UpdateStatus(ctx, lease.UnitID, domain.UnitStatusAvailable); err != nil {
+		return fmt.Errorf("error updating unit status: %w", err)
+	}
+
+	return nil
+}
+
 // UpdatePaintingFeePaid atualiza o valor pago da taxa de pintura
 func (s *LeaseService) UpdatePaintingFeePaid(ctx context.Context, leaseID uuid.UUID, amountPaid decimal.Decimal) error {
 	// 1. Buscar o contrato

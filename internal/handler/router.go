@@ -99,6 +99,7 @@ func SetupRoutes(r chi.Router,
 			r.Get("/{id}", leaseHandler.GetLease)
 			r.Get("/{lease_id}/payments", paymentHandler.GetPaymentsByLease)
 			r.Get("/{lease_id}/payments/stats", paymentHandler.GetPaymentStatsByLease)
+			r.Get("/{lease_id}/cancellable-payments", paymentHandler.GetCancellablePayments)
 
 			// Rotas de escrita
 			r.Group(func(r chi.Router) {
@@ -106,6 +107,7 @@ func SetupRoutes(r chi.Router,
 				r.Post("/", leaseHandler.CreateLease)
 				r.Post("/{id}/renew", leaseHandler.RenewLease)
 				r.Post("/{id}/cancel", leaseHandler.CancelLease)
+				r.Post("/{id}/cancel-with-payments", leaseHandler.CancelLeaseWithPayments)
 				r.Patch("/{id}/painting-fee", leaseHandler.UpdatePaintingFeePaid)
 			})
 		})

@@ -229,6 +229,34 @@ func (s *PaymentService) GetPaymentsByLease(ctx context.Context, leaseID uuid.UU
 	return payments, nil
 }
 
+// GetCancellablePayments retorna pagamentos que podem ser cancelados (pending ou overdue)
+func (s *PaymentService) GetCancellablePayments(ctx context.Context, leaseID uuid.UUID) ([]*domain.Payment, error) {
+	// Validar que o contrato existe
+	lease, err := s.leaseRepo.GetByID(ctx, leaseID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting lease: %w", err)
+	}
+	if lease == nil {
+		return nil, ErrLeaseNotFoundForPayment
+	}
+
+	// Buscar todos os pagamentos do contrato
+	allPayments, err := s.paymentRepo.ListByLeaseID(ctx, leaseID)
+	if err != nil {
+		return nil, fmt.Errorf("error listing payments by lease: %w", err)
+	}
+
+	// Filtrar apenas pagamentos pending ou overdue
+	cancellablePayments := make([]*domain.Payment, 0)
+	for _, payment := range allPayments {
+		if payment.Status == domain.PaymentStatusPending || payment.Status == domain.PaymentStatusOverdue {
+			cancellablePayments = append(cancellablePayments, payment)
+		}
+	}
+
+	return cancellablePayments, nil
+}
+
 // GetOverduePayments retorna todos os pagamentos atrasados
 func (s *PaymentService) GetOverduePayments(ctx context.Context) ([]*domain.Payment, error) {
 	payments, err := s.paymentRepo.GetOverdue(ctx)
@@ -349,6 +377,52 @@ func (s *PaymentService) CancelPayment(ctx context.Context, paymentID uuid.UUID)
 	// Cancelar no repository
 	if err := s.paymentRepo.Cancel(ctx, paymentID); err != nil {
 		return fmt.Errorf("error cancelling payment: %w", err)
+	}
+
+	return nil
+}
+
+// CancelPaymentsRequest representa os dados para cancelar múltiplos pagamentos
+type CancelPaymentsRequest struct {
+	PaymentIDs []uuid.UUID `json:"payment_ids" validate:"required,min=1"`
+}
+
+// CancelPayments cancela múltiplos pagamentos de uma vez
+func (s *PaymentService) CancelPayments(ctx context.Context, leaseID uuid.UUID, paymentIDs []uuid.UUID) error {
+	// Validar que o contrato existe
+	lease, err := s.leaseRepo.GetByID(ctx, leaseID)
+	if err != nil {
+		return fmt.Errorf("error getting lease: %w", err)
+	}
+	if lease == nil {
+		return ErrLeaseNotFoundForPayment
+	}
+
+	// Cancelar cada pagamento
+	for _, paymentID := range paymentIDs {
+		// Buscar o pagamento
+		payment, err := s.paymentRepo.GetByID(ctx, paymentID)
+		if err != nil {
+			return fmt.Errorf("error getting payment %s: %w", paymentID, err)
+		}
+		if payment == nil {
+			return fmt.Errorf("payment %s not found", paymentID)
+		}
+
+		// Validar que o pagamento pertence ao contrato
+		if payment.LeaseID != leaseID {
+			return fmt.Errorf("payment %s does not belong to lease %s", paymentID, leaseID)
+		}
+
+		// Validar que não está pago
+		if payment.IsPaid() {
+			return fmt.Errorf("payment %s is already paid and cannot be cancelled", paymentID)
+		}
+
+		// Cancelar no repository
+		if err := s.paymentRepo.Cancel(ctx, paymentID); err != nil {
+			return fmt.Errorf("error cancelling payment %s: %w", paymentID, err)
+		}
 	}
 
 	return nil

@@ -96,3 +96,8 @@ type RenewLeaseRequestDTO struct {
 type UpdatePaintingFeePaidRequestDTO struct {
 	AmountPaid decimal.Decimal `json:"amount_paid" validate:"required"`
 }
+
+// CancelLeaseWithPaymentsRequestDTO representa os dados para cancelar um contrato com seleção de pagamentos
+type CancelLeaseWithPaymentsRequestDTO struct {
+	PaymentIDs []uuid.UUID `json:"payment_ids" validate:"required,min=1"`
+}

@@ -88,6 +88,36 @@ func (h *PaymentHandler) GetPaymentsByLease(w http.ResponseWriter, r *http.Reque
 	response.Success(w, http.StatusOK, "Payments retrieved successfully", ToPaymentResponseList(payments))
 }
 
+// GetCancellablePayments godoc
+// @Summary      Listar pagamentos canceláveis de um contrato
+// @Description  Retorna pagamentos com status pending ou overdue que podem ser cancelados
+// @Tags         Payments
+// @Produce      json
+// @Param        lease_id path string true "Lease ID (UUID)"
+// @Success      200 {array} PaymentResponse
+// @Failure      400 {object} response.ErrorResponse
+// @Failure      404 {object} response.ErrorResponse
+// @Security     BearerAuth
+// @Router       /leases/{lease_id}/cancellable-payments [get]
+func (h *PaymentHandler) GetCancellablePayments(w http.ResponseWriter, r *http.Request) {
+	// Extrair lease_id da URL
+	leaseIDStr := chi.URLParam(r, "lease_id")
+	leaseID, err := uuid.Parse(leaseIDStr)
+	if err != nil {
+		response.Error(w, http.StatusBadRequest, "Invalid lease ID")
+		return
+	}
+
+	// Buscar pagamentos canceláveis do contrato
+	payments, err := h.paymentService.GetCancellablePayments(r.Context(), leaseID)
+	if err != nil {
+		h.handleServiceError(w, err)
+		return
+	}
+
+	response.Success(w, http.StatusOK, "Cancellable payments retrieved successfully", ToPaymentResponseList(payments))
+}
+
 // GetOverduePayments godoc
 // @Summary      Listar pagamentos atrasados
 // @Description  Retorna todos os pagamentos com status overdue
