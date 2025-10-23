@@ -12,27 +12,35 @@ import (
 type Scheduler struct {
 	paymentService *service.PaymentService
 	leaseService   *service.LeaseService
+	intervalHours  int
 	stopChan       chan struct{}
 }
 
 // New cria uma nova instância do Scheduler
-func New(paymentService *service.PaymentService, leaseService *service.LeaseService) *Scheduler {
+func New(paymentService *service.PaymentService, leaseService *service.LeaseService, intervalHours int) *Scheduler {
+	// Garantir intervalo mínimo de 1 hora
+	if intervalHours < 1 {
+		intervalHours = 24 // Padrão: 1x ao dia
+	}
+
 	return &Scheduler{
 		paymentService: paymentService,
 		leaseService:   leaseService,
+		intervalHours:  intervalHours,
 		stopChan:       make(chan struct{}),
 	}
 }
 
 // Start inicia o scheduler em background
 func (s *Scheduler) Start(ctx context.Context) {
-	log.Println("⏰ Scheduler iniciado")
+	interval := time.Duration(s.intervalHours) * time.Hour
+	log.Printf("⏰ Scheduler iniciado (intervalo: %dh)", s.intervalHours)
 
 	// Executar verificações imediatamente na inicialização
 	s.runScheduledTasks(ctx)
 
-	// Criar ticker para executar a cada 6 horas
-	ticker := time.NewTicker(6 * time.Hour)
+	// Criar ticker para executar no intervalo configurado
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	for {

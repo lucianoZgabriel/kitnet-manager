@@ -15,6 +15,7 @@ type Config struct {
 	Environment string
 	Database    DatabaseConfig
 	JWT         JWTConfig
+	Scheduler   SchedulerConfig
 }
 
 // JWTConfig contém configurações de autenticação JWT
@@ -29,6 +30,11 @@ type DatabaseConfig struct {
 	MaxConnections int
 	MaxIdleConns   int
 	MaxLifetime    time.Duration
+}
+
+// SchedulerConfig contém configurações do scheduler de tarefas
+type SchedulerConfig struct {
+	IntervalHours int // Intervalo em horas entre execuções (padrão: 24h = 1x ao dia)
 }
 
 // Load carrega as configurações do ambiente
@@ -50,6 +56,9 @@ func Load() *Config {
 		JWT: JWTConfig{
 			Secret: getEnvOrDefault("JWT_SECRET", "your-secret-key-change-in-production"),
 			Expiry: time.Duration(getEnvAsInt("JWT_EXPIRY_HOURS", 24)) * time.Hour,
+		},
+		Scheduler: SchedulerConfig{
+			IntervalHours: getEnvAsInt("SCHEDULER_INTERVAL_HOURS", 24), // Padrão: 1x ao dia
 		},
 	}
 }
