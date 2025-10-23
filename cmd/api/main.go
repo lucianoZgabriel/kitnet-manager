@@ -160,7 +160,7 @@ func main() {
 	log.Printf("📚 Documentação Swagger: http://localhost:%s/swagger/index.html", cfg.Port)
 
 	// Iniciar scheduler de tarefas automáticas
-	taskScheduler := scheduler.New(paymentService, leaseService)
+	taskScheduler := scheduler.New(paymentService, leaseService, cfg.Scheduler.IntervalHours)
 	schedulerCtx, cancelScheduler := context.WithCancel(context.Background())
 	defer cancelScheduler()
 
