@@ -165,10 +165,12 @@ func (q *Queries) DeletePayment(ctx context.Context, id uuid.UUID) error {
 }
 
 const getOverduePayments = `-- name: GetOverduePayments :many
-SELECT id, lease_id, payment_type, reference_month, amount, status, due_date, payment_date, payment_method, proof_url, notes, created_at, updated_at FROM payments
-WHERE status IN ('pending', 'overdue')
-  AND due_date < CURRENT_DATE
-ORDER BY due_date ASC
+SELECT p.id, p.lease_id, p.payment_type, p.reference_month, p.amount, p.status, p.due_date, p.payment_date, p.payment_method, p.proof_url, p.notes, p.created_at, p.updated_at FROM payments p
+INNER JOIN leases l ON p.lease_id = l.id
+WHERE p.status IN ('pending', 'overdue')
+  AND p.due_date < CURRENT_DATE
+  AND l.status IN ('active', 'expiring_soon')
+ORDER BY p.due_date ASC
 `
 
 func (q *Queries) GetOverduePayments(ctx context.Context) ([]Payment, error) {

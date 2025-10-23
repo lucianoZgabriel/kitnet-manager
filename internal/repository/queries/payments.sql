@@ -37,10 +37,12 @@ WHERE status = $1
 ORDER BY due_date ASC;
 
 -- name: GetOverduePayments :many
-SELECT * FROM payments
-WHERE status IN ('pending', 'overdue')
-  AND due_date < CURRENT_DATE
-ORDER BY due_date ASC;
+SELECT p.* FROM payments p
+INNER JOIN leases l ON p.lease_id = l.id
+WHERE p.status IN ('pending', 'overdue')
+  AND p.due_date < CURRENT_DATE
+  AND l.status IN ('active', 'expiring_soon')
+ORDER BY p.due_date ASC;
 
 -- name: GetUpcomingPayments :many
 SELECT * FROM payments
