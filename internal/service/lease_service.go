@@ -532,3 +532,247 @@ type RenewLeaseRequest struct {
 	PaintingFeeTotal        decimal.Decimal `json:"painting_fee_total" validate:"required"`
 	PaintingFeeInstallments int             `json:"painting_fee_installments" validate:"required,min=1,max=4"`
 }
+
+// ChangePaymentDueDayRequest representa a requisição para alterar dia de vencimento
+type ChangePaymentDueDayRequest struct {
+	LeaseID          uuid.UUID `json:"lease_id" validate:"required"`
+	NewPaymentDueDay int       `json:"new_payment_due_day" validate:"required,min=1,max=31"`
+	EffectiveDate    time.Time `json:"effective_date" validate:"required"`
+	Reason           string    `json:"reason"`
+}
+
+// ProportionalPaymentInfo contém informações do pagamento proporcional gerado
+type ProportionalPaymentInfo struct {
+	ID              uuid.UUID       `json:"id"`
+	ReferencePeriod string          `json:"reference_period"`
+	Days            int             `json:"days"`
+	Amount          decimal.Decimal `json:"amount"`
+	DueDate         time.Time       `json:"due_date"`
+	Status          string          `json:"status"`
+}
+
+// UpdatedPaymentInfo contém informações sobre pagamentos que tiveram data alterada
+type UpdatedPaymentInfo struct {
+	ID             uuid.UUID `json:"id"`
+	ReferenceMonth time.Time `json:"reference_month"`
+	OldDueDate     time.Time `json:"old_due_date"`
+	NewDueDate     time.Time `json:"new_due_date"`
+}
+
+// ChangePaymentDueDayResponse representa a resposta da mudança
+type ChangePaymentDueDayResponse struct {
+	LeaseID              uuid.UUID                `json:"lease_id"`
+	OldPaymentDueDay     int                      `json:"old_payment_due_day"`
+	NewPaymentDueDay     int                      `json:"new_payment_due_day"`
+	EffectiveDate        time.Time                `json:"effective_date"`
+	ProportionalPayment  *ProportionalPaymentInfo `json:"proportional_payment,omitempty"`
+	UpdatedPaymentsCount int                      `json:"updated_payments_count"`
+	UpdatedPayments      []UpdatedPaymentInfo     `json:"updated_payments"`
+}
+
+// ChangePaymentDueDay altera o dia de vencimento de um contrato e recalcula pagamentos futuros
+func (s *LeaseService) ChangePaymentDueDay(ctx context.Context, req ChangePaymentDueDayRequest) (*ChangePaymentDueDayResponse, error) {
+	// ==================================================
+	// ETAPA 1: VALIDAÇÕES
+	// ==================================================
+
+	// 1.1. Buscar o contrato
+	lease, err := s.leaseRepo.GetByID(ctx, req.LeaseID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting lease: %w", err)
+	}
+	if lease == nil {
+		return nil, ErrLeaseNotFound
+	}
+
+	// 1.2. Validar que contrato está ativo
+	if lease.Status != domain.LeaseStatusActive && lease.Status != domain.LeaseStatusExpiringSoon {
+		return nil, errors.New("lease must be active to change payment due day")
+	}
+
+	// 1.3. Validar que o novo dia é diferente do atual
+	if req.NewPaymentDueDay == lease.PaymentDueDay {
+		return nil, errors.New("new payment due day must be different from current")
+	}
+
+	// 1.4. Validar que o novo dia está no range válido (1-31)
+	if req.NewPaymentDueDay < 1 || req.NewPaymentDueDay > 31 {
+		return nil, errors.New("payment due day must be between 1 and 31")
+	}
+
+	// 1.5. Validar que a data efetiva não está no passado
+	if req.EffectiveDate.Before(time.Now()) {
+		return nil, errors.New("effective date cannot be in the past")
+	}
+
+	// 1.6. Validar que a data efetiva está dentro da vigência do contrato
+	if req.EffectiveDate.Before(lease.StartDate) || req.EffectiveDate.After(lease.EndDate) {
+		return nil, errors.New("effective date must be within lease period")
+	}
+
+	// ==================================================
+	// ETAPA 2: CALCULAR PAGAMENTO PROPORCIONAL
+	// ==================================================
+
+	oldDueDay := lease.PaymentDueDay
+	newDueDay := req.NewPaymentDueDay
+
+	// Determinar a data do último vencimento no dia antigo
+	lastOldDueDate := time.Date(
+		req.EffectiveDate.Year(),
+		req.EffectiveDate.Month(),
+		oldDueDay,
+		0, 0, 0, 0,
+		time.UTC,
+	)
+
+	// Se a data efetiva é antes do dia antigo no mês atual,
+	// o último vencimento foi no mês anterior
+	if req.EffectiveDate.Day() < oldDueDay {
+		lastOldDueDate = lastOldDueDate.AddDate(0, -1, 0)
+	}
+
+	// A nova data de vencimento (data efetiva)
+	firstNewDueDate := req.EffectiveDate
+
+	// Calcular quantos dias entre o último vencimento antigo e o primeiro novo
+	proportionalDays := int(firstNewDueDate.Sub(lastOldDueDate).Hours() / 24)
+
+	// Calcular valor proporcional
+	// Valor proporcional = (valor_mensal / 30) * dias_proporcionais
+	dailyRate := lease.MonthlyRentValue.Div(decimal.NewFromInt(30))
+	proportionalAmount := dailyRate.Mul(decimal.NewFromInt(int64(proportionalDays)))
+
+	// Criar pagamento proporcional
+	var proportionalPayment *domain.Payment
+	if proportionalDays > 0 && proportionalAmount.GreaterThan(decimal.Zero) {
+		// Usar o mês de referência da data efetiva
+		referenceMonth := time.Date(
+			firstNewDueDate.Year(),
+			firstNewDueDate.Month(),
+			1, 0, 0, 0, 0,
+			time.UTC,
+		)
+
+		proportionalPayment, err = domain.NewPayment(
+			lease.ID,
+			domain.PaymentTypeAdjustment,
+			referenceMonth,
+			proportionalAmount,
+			firstNewDueDate,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error creating proportional payment: %w", err)
+		}
+
+		// Adicionar nota explicativa
+		note := fmt.Sprintf(
+			"Pagamento proporcional devido à mudança de vencimento do dia %d para dia %d. Período: %s a %s (%d dias)",
+			oldDueDay,
+			newDueDay,
+			lastOldDueDate.Format("02/01/2006"),
+			firstNewDueDate.Format("02/01/2006"),
+			proportionalDays,
+		)
+		proportionalPayment.AddNote(note)
+
+		// Salvar no banco
+		if err := s.paymentService.paymentRepo.Create(ctx, proportionalPayment); err != nil {
+			return nil, fmt.Errorf("error saving proportional payment: %w", err)
+		}
+	}
+
+	// ==================================================
+	// ETAPA 3: RECALCULAR PAGAMENTOS FUTUROS
+	// ==================================================
+
+	// Buscar todos os pagamentos do contrato
+	allPayments, err := s.paymentService.paymentRepo.ListByLeaseID(ctx, lease.ID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting lease payments: %w", err)
+	}
+
+	// Filtrar apenas pagamentos futuros que ainda não foram pagos
+	var paymentsToUpdate []*domain.Payment
+	for _, payment := range allPayments {
+		// Só atualiza se:
+		// - Status é pending ou overdue (não pago)
+		// - A data de vencimento é após a data efetiva
+		if (payment.Status == domain.PaymentStatusPending || payment.Status == domain.PaymentStatusOverdue) &&
+			payment.DueDate.After(req.EffectiveDate) {
+			paymentsToUpdate = append(paymentsToUpdate, payment)
+		}
+	}
+
+	// Atualizar a due_date de cada pagamento futuro
+	updatedPaymentsInfo := make([]UpdatedPaymentInfo, 0, len(paymentsToUpdate))
+
+	for _, payment := range paymentsToUpdate {
+		oldDueDate := payment.DueDate
+
+		// Calcular nova due_date mantendo o ano/mês, mas mudando o dia
+		newDueDate := time.Date(
+			payment.ReferenceMonth.Year(),
+			payment.ReferenceMonth.Month(),
+			req.NewPaymentDueDay,
+			0, 0, 0, 0,
+			time.UTC,
+		)
+
+		// Atualizar o pagamento
+		payment.DueDate = newDueDate
+		payment.UpdatedAt = time.Now()
+
+		// Salvar no banco
+		if err := s.paymentService.paymentRepo.Update(ctx, payment); err != nil {
+			return nil, fmt.Errorf("error updating payment %s: %w", payment.ID, err)
+		}
+
+		// Registrar a mudança
+		updatedPaymentsInfo = append(updatedPaymentsInfo, UpdatedPaymentInfo{
+			ID:             payment.ID,
+			ReferenceMonth: payment.ReferenceMonth,
+			OldDueDate:     oldDueDate,
+			NewDueDate:     newDueDate,
+		})
+	}
+
+	// ==================================================
+	// ETAPA 4: ATUALIZAR O CONTRATO
+	// ==================================================
+
+	oldPaymentDueDay := lease.PaymentDueDay
+	lease.PaymentDueDay = req.NewPaymentDueDay
+	lease.UpdatedAt = time.Now()
+
+	if err := s.leaseRepo.Update(ctx, lease); err != nil {
+		return nil, fmt.Errorf("error updating lease: %w", err)
+	}
+
+	// ==================================================
+	// ETAPA 5: MONTAR RESPOSTA
+	// ==================================================
+
+	response := &ChangePaymentDueDayResponse{
+		LeaseID:              lease.ID,
+		OldPaymentDueDay:     oldPaymentDueDay,
+		NewPaymentDueDay:     req.NewPaymentDueDay,
+		EffectiveDate:        req.EffectiveDate,
+		UpdatedPaymentsCount: len(updatedPaymentsInfo),
+		UpdatedPayments:      updatedPaymentsInfo,
+	}
+
+	// Incluir informações do pagamento proporcional se foi criado
+	if proportionalPayment != nil {
+		response.ProportionalPayment = &ProportionalPaymentInfo{
+			ID:              proportionalPayment.ID,
+			ReferencePeriod: fmt.Sprintf("%s - %s", lastOldDueDate.Format("02/01/2006"), firstNewDueDate.Format("02/01/2006")),
+			Days:            proportionalDays,
+			Amount:          proportionalAmount,
+			DueDate:         firstNewDueDate,
+			Status:          string(proportionalPayment.Status),
+		}
+	}
+
+	return response, nil
+}
