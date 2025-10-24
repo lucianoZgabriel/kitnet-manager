@@ -108,6 +108,7 @@ func SetupRoutes(r chi.Router,
 				r.Post("/{id}/renew", leaseHandler.RenewLease)
 				r.Post("/{id}/cancel", leaseHandler.CancelLease)
 				r.Post("/{id}/cancel-with-payments", leaseHandler.CancelLeaseWithPayments)
+				r.Post("/{id}/change-payment-due-day", leaseHandler.ChangePaymentDueDay)
 				r.Patch("/{id}/painting-fee", leaseHandler.UpdatePaintingFeePaid)
 			})
 		})

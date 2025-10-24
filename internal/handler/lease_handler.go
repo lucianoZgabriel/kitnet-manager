@@ -455,3 +455,146 @@ func ToPaymentResponseList(payments []*domain.Payment) []*PaymentResponse {
 	}
 	return responses
 }
+
+// ChangePaymentDueDayRequestDTO representa o request HTTP para mudança de vencimento
+type ChangePaymentDueDayRequestDTO struct {
+	NewPaymentDueDay int    `json:"new_payment_due_day" validate:"required,min=1,max=31"`
+	EffectiveDate    string `json:"effective_date" validate:"required"`
+	Reason           string `json:"reason"`
+}
+
+// ProportionalPaymentResponse representa o pagamento proporcional na resposta
+type ProportionalPaymentResponse struct {
+	ID              string  `json:"id"`
+	ReferencePeriod string  `json:"reference_period"`
+	Days            int     `json:"days"`
+	Amount          float64 `json:"amount"`
+	DueDate         string  `json:"due_date"`
+	Status          string  `json:"status"`
+}
+
+// UpdatedPaymentResponse representa um pagamento atualizado na resposta
+type UpdatedPaymentResponse struct {
+	ID             string `json:"id"`
+	ReferenceMonth string `json:"reference_month"`
+	OldDueDate     string `json:"old_due_date"`
+	NewDueDate     string `json:"new_due_date"`
+}
+
+// ChangePaymentDueDayResponse representa a resposta da mudança de vencimento
+type ChangePaymentDueDayResponse struct {
+	LeaseID              string                       `json:"lease_id"`
+	OldPaymentDueDay     int                          `json:"old_payment_due_day"`
+	NewPaymentDueDay     int                          `json:"new_payment_due_day"`
+	EffectiveDate        string                       `json:"effective_date"`
+	ProportionalPayment  *ProportionalPaymentResponse `json:"proportional_payment,omitempty"`
+	UpdatedPaymentsCount int                          `json:"updated_payments_count"`
+	UpdatedPayments      []UpdatedPaymentResponse     `json:"updated_payments"`
+}
+
+// ChangePaymentDueDay godoc
+// @Summary      Alterar dia de vencimento
+// @Description  Altera o dia de vencimento de um contrato e recalcula pagamentos futuros
+// @Tags         Leases
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "Lease ID (UUID)"
+// @Param        request body ChangePaymentDueDayRequestDTO true "Dados da mudança"
+// @Success      200 {object} ChangePaymentDueDayResponse
+// @Failure      400 {object} response.ErrorResponse
+// @Failure      404 {object} response.ErrorResponse
+// @Failure      500 {object} response.ErrorResponse
+// @Security     BearerAuth
+// @Router       /leases/{id}/change-payment-due-day [post]
+func (h *LeaseHandler) ChangePaymentDueDay(w http.ResponseWriter, r *http.Request) {
+	// Extrair lease_id da URL
+	idStr := chi.URLParam(r, "id")
+	leaseID, err := uuid.Parse(idStr)
+	if err != nil {
+		response.Error(w, http.StatusBadRequest, "Invalid lease ID")
+		return
+	}
+
+	// Decodificar JSON
+	var req ChangePaymentDueDayRequestDTO
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Validar request
+	if err := h.validator.Struct(req); err != nil {
+		response.Error(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Parse da effective_date
+	effectiveDate, err := time.Parse("2006-01-02", req.EffectiveDate)
+	if err != nil {
+		response.Error(w, http.StatusBadRequest, "Invalid effective_date format, expected YYYY-MM-DD")
+		return
+	}
+
+	// Montar request do service
+	serviceReq := service.ChangePaymentDueDayRequest{
+		LeaseID:          leaseID,
+		NewPaymentDueDay: req.NewPaymentDueDay,
+		EffectiveDate:    effectiveDate,
+		Reason:           req.Reason,
+	}
+
+	// Chamar o service
+	result, err := h.leaseService.ChangePaymentDueDay(r.Context(), serviceReq)
+	if err != nil {
+		h.handleServiceError(w, err)
+		return
+	}
+
+	// Converter para response DTO
+	responseDTO := ToChangePaymentDueDayResponse(result)
+
+	// Retornar sucesso
+	response.Success(w, http.StatusOK, "Payment due day changed successfully", responseDTO)
+}
+
+// ToChangePaymentDueDayResponse converte service response para DTO
+func ToChangePaymentDueDayResponse(resp *service.ChangePaymentDueDayResponse) *ChangePaymentDueDayResponse {
+	if resp == nil {
+		return nil
+	}
+
+	// Converter pagamentos atualizados
+	updatedPayments := make([]UpdatedPaymentResponse, len(resp.UpdatedPayments))
+	for i, up := range resp.UpdatedPayments {
+		updatedPayments[i] = UpdatedPaymentResponse{
+			ID:             up.ID.String(),
+			ReferenceMonth: up.ReferenceMonth.Format("2006-01-02"),
+			OldDueDate:     up.OldDueDate.Format("2006-01-02"),
+			NewDueDate:     up.NewDueDate.Format("2006-01-02"),
+		}
+	}
+
+	// Converter pagamento proporcional (se existir)
+	var proportionalPayment *ProportionalPaymentResponse
+	if resp.ProportionalPayment != nil {
+		amount, _ := resp.ProportionalPayment.Amount.Float64()
+		proportionalPayment = &ProportionalPaymentResponse{
+			ID:              resp.ProportionalPayment.ID.String(),
+			ReferencePeriod: resp.ProportionalPayment.ReferencePeriod,
+			Days:            resp.ProportionalPayment.Days,
+			Amount:          amount,
+			DueDate:         resp.ProportionalPayment.DueDate.Format("2006-01-02"),
+			Status:          resp.ProportionalPayment.Status,
+		}
+	}
+
+	return &ChangePaymentDueDayResponse{
+		LeaseID:              resp.LeaseID.String(),
+		OldPaymentDueDay:     resp.OldPaymentDueDay,
+		NewPaymentDueDay:     resp.NewPaymentDueDay,
+		EffectiveDate:        resp.EffectiveDate.Format("2006-01-02"),
+		ProportionalPayment:  proportionalPayment,
+		UpdatedPaymentsCount: resp.UpdatedPaymentsCount,
+		UpdatedPayments:      updatedPayments,
+	}
+}
