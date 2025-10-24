@@ -72,6 +72,9 @@ func (s *Scheduler) runScheduledTasks(ctx context.Context) {
 	// Tarefa 2: Atualizar contratos expirando em breve
 	s.checkExpiringSoonLeases(ctx)
 
+	// Tarefa 3: Renovar automaticamente contratos que não precisam de reajuste
+	s.autoRenewLeases(ctx)
+
 	log.Println("✅ Tarefas agendadas concluídas")
 }
 
@@ -106,5 +109,22 @@ func (s *Scheduler) checkExpiringSoonLeases(ctx context.Context) {
 		log.Printf("✅ %d contrato(s) marcado(s) como expirando em breve", updatedCount)
 	} else {
 		log.Println("✓ Nenhum contrato expirando em breve")
+	}
+}
+
+// autoRenewLeases renova automaticamente contratos que não precisam de reajuste
+func (s *Scheduler) autoRenewLeases(ctx context.Context) {
+	log.Println("🔄 Verificando contratos para renovação automática...")
+
+	renewedCount, err := s.leaseService.AutoRenewLeases(ctx)
+	if err != nil {
+		log.Printf("❌ Erro ao renovar contratos automaticamente: %v", err)
+		return
+	}
+
+	if renewedCount > 0 {
+		log.Printf("✅ %d contrato(s) renovado(s) automaticamente", renewedCount)
+	} else {
+		log.Println("✓ Nenhum contrato renovado automaticamente (contratos com reajuste pendente são renovados manualmente)")
 	}
 }

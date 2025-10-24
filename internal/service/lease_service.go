@@ -896,3 +896,59 @@ func (s *LeaseService) GetLeaseRentAdjustments(ctx context.Context, leaseID uuid
 
 	return adjustments, nil
 }
+
+// AutoRenewLeases renova automaticamente contratos expirando que não precisam de reajuste
+// Contratos que devem aplicar reajuste (gerações pares) não são renovados automaticamente
+func (s *LeaseService) AutoRenewLeases(ctx context.Context) (int, error) {
+	// Buscar contratos expirando em breve
+	expiringLeases, err := s.leaseRepo.GetExpiringSoon(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("error getting expiring leases: %w", err)
+	}
+
+	renewedCount := 0
+
+	for _, lease := range expiringLeases {
+		// Pular contratos que devem aplicar reajuste (renovação manual)
+		if lease.ShouldApplyAnnualAdjustment() {
+			continue
+		}
+
+		// Pular se não está em status apropriado
+		if lease.Status != domain.LeaseStatusActive && lease.Status != domain.LeaseStatusExpiringSoon {
+			continue
+		}
+
+		// Verificar se unidade ainda está ocupada
+		unit, err := s.unitRepo.GetByID(ctx, lease.UnitID)
+		if err != nil {
+			fmt.Printf("Warning: failed to get unit for auto-renewal: %v\n", err)
+			continue
+		}
+
+		if unit.Status != domain.UnitStatusOccupied {
+			continue
+		}
+
+		// Valores padrão para renovação automática
+		// Usa o valor atual do aluguel (sem reajuste)
+		// Taxa de pintura padrão: R$ 250,00 em 2 parcelas
+		req := RenewLeaseRequest{
+			PaintingFeeTotal:        decimal.NewFromFloat(250),
+			PaintingFeeInstallments: 2,
+		}
+
+		// Renovar contrato
+		_, err = s.RenewLease(ctx, lease.ID, req, nil)
+		if err != nil {
+			fmt.Printf("Warning: failed to auto-renew lease %s: %v\n", lease.ID, err)
+			continue
+		}
+
+		renewedCount++
+		fmt.Printf("✅ Contrato %s renovado automaticamente (geração %d → %d)\n",
+			lease.ID, lease.Generation, lease.Generation+1)
+	}
+
+	return renewedCount, nil
+}
