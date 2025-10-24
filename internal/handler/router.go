@@ -97,6 +97,7 @@ func SetupRoutes(r chi.Router,
 			r.Get("/stats", leaseHandler.GetLeaseStats)
 			r.Get("/expiring-soon", leaseHandler.GetExpiringSoonLeases)
 			r.Get("/{id}", leaseHandler.GetLease)
+			r.Get("/{id}/rent-adjustments", leaseHandler.GetLeaseRentAdjustments)
 			r.Get("/{lease_id}/payments", paymentHandler.GetPaymentsByLease)
 			r.Get("/{lease_id}/payments/stats", paymentHandler.GetPaymentStatsByLease)
 			r.Get("/{lease_id}/cancellable-payments", paymentHandler.GetCancellablePayments)

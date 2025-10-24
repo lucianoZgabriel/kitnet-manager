@@ -876,3 +876,23 @@ func (s *LeaseService) ChangePaymentDueDay(ctx context.Context, req ChangePaymen
 
 	return response, nil
 }
+
+// GetLeaseRentAdjustments retorna o histórico de reajustes de aluguel de um contrato
+func (s *LeaseService) GetLeaseRentAdjustments(ctx context.Context, leaseID uuid.UUID) ([]*domain.LeaseRentAdjustment, error) {
+	// Verificar se o contrato existe
+	lease, err := s.leaseRepo.GetByID(ctx, leaseID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting lease: %w", err)
+	}
+	if lease == nil {
+		return nil, ErrLeaseNotFound
+	}
+
+	// Buscar ajustes
+	adjustments, err := s.adjustmentRepo.ListByLeaseID(ctx, leaseID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting lease rent adjustments: %w", err)
+	}
+
+	return adjustments, nil
+}
