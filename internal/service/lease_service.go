@@ -541,16 +541,9 @@ func (s *LeaseService) RenewLease(ctx context.Context, oldLeaseID uuid.UUID, req
 			}
 		}
 
-		// Gerar pagamentos de taxa de pintura
-		paintingFeePayments, err := s.paymentService.GeneratePaintingFeePayments(ctx, GeneratePaintingFeePaymentsRequest{
-			LeaseID:      newLease.ID,
-			Installments: req.PaintingFeeInstallments,
-		})
-		if err != nil {
-			fmt.Printf("Warning: failed to generate painting fee payments: %v\n", err)
-		} else {
-			payments = append(payments, paintingFeePayments...)
-		}
+		// NOTA: Taxa de pintura NÃO é gerada em renovações
+		// Taxa de pintura é paga apenas no primeiro contrato (contrato original)
+		// O inquilino paga adiantado para que quando sair não precise pagar novamente
 	}
 
 	return &CreateLeaseResponse{
@@ -930,12 +923,12 @@ func (s *LeaseService) AutoRenewLeases(ctx context.Context) (int, error) {
 			continue
 		}
 
-		// Valores padrão para renovação automática
+		// Renovação automática sem taxa de pintura
+		// Taxa de pintura é paga apenas no primeiro contrato
 		// Usa o valor atual do aluguel (sem reajuste)
-		// Taxa de pintura padrão: R$ 250,00 em 2 parcelas
 		req := RenewLeaseRequest{
-			PaintingFeeTotal:        decimal.NewFromFloat(250),
-			PaintingFeeInstallments: 2,
+			PaintingFeeTotal:        decimal.Zero,
+			PaintingFeeInstallments: 0,
 		}
 
 		// Renovar contrato
