@@ -601,7 +601,17 @@ func (s *LeaseService) ChangePaymentDueDay(ctx context.Context, req ChangePaymen
 	}
 
 	// 1.5. Validar que a data efetiva não está no passado
-	if req.EffectiveDate.Before(time.Now()) {
+	// Comparar apenas a data (ignorando hora/minuto/segundo)
+	now := time.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	effectiveDateOnly := time.Date(
+		req.EffectiveDate.Year(),
+		req.EffectiveDate.Month(),
+		req.EffectiveDate.Day(),
+		0, 0, 0, 0,
+		req.EffectiveDate.Location(),
+	)
+	if effectiveDateOnly.Before(today) {
 		return nil, errors.New("effective date cannot be in the past")
 	}
 
