@@ -602,14 +602,15 @@ func (s *LeaseService) ChangePaymentDueDay(ctx context.Context, req ChangePaymen
 
 	// 1.5. Validar que a data efetiva não está no passado
 	// Comparar apenas a data (ignorando hora/minuto/segundo)
+	// Usar UTC para garantir comparação consistente
 	now := time.Now()
-	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 	effectiveDateOnly := time.Date(
 		req.EffectiveDate.Year(),
 		req.EffectiveDate.Month(),
 		req.EffectiveDate.Day(),
 		0, 0, 0, 0,
-		req.EffectiveDate.Location(),
+		time.UTC,
 	)
 	if effectiveDateOnly.Before(today) {
 		return nil, errors.New("effective date cannot be in the past")
@@ -618,6 +619,34 @@ func (s *LeaseService) ChangePaymentDueDay(ctx context.Context, req ChangePaymen
 	// 1.6. Validar que a data efetiva está dentro da vigência do contrato
 	if req.EffectiveDate.Before(lease.StartDate) || req.EffectiveDate.After(lease.EndDate) {
 		return nil, errors.New("effective date must be within lease period")
+	}
+
+	// 1.7. Buscar todos os pagamentos para validar a data efetiva
+	allPayments, err := s.paymentService.paymentRepo.ListByLeaseID(ctx, lease.ID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting lease payments for validation: %w", err)
+	}
+
+	// 1.8. Validar que a data efetiva faz sentido em relação aos pagamentos existentes
+	// A data efetiva deve ser após o último pagamento pago/cancelado ou pelo menos
+	// na mesma data ou depois do primeiro pagamento pendente
+	var lastPaidOrCancelledDate time.Time
+	var firstPendingPayment *domain.Payment
+	for _, payment := range allPayments {
+		if payment.Status == domain.PaymentStatusPaid || payment.Status == domain.PaymentStatusCancelled {
+			if payment.DueDate.After(lastPaidOrCancelledDate) {
+				lastPaidOrCancelledDate = payment.DueDate
+			}
+		} else if (payment.Status == domain.PaymentStatusPending || payment.Status == domain.PaymentStatusOverdue) &&
+			(firstPendingPayment == nil || payment.DueDate.Before(firstPendingPayment.DueDate)) {
+			firstPendingPayment = payment
+		}
+	}
+
+	// Se existe um pagamento já pago/cancelado, a data efetiva deve ser após ele
+	if !lastPaidOrCancelledDate.IsZero() && req.EffectiveDate.Before(lastPaidOrCancelledDate) {
+		return nil, fmt.Errorf("effective date (%s) cannot be before the last paid/cancelled payment date (%s)",
+			req.EffectiveDate.Format("2006-01-02"), lastPaidOrCancelledDate.Format("2006-01-02"))
 	}
 
 	// ==================================================
@@ -696,11 +725,7 @@ func (s *LeaseService) ChangePaymentDueDay(ctx context.Context, req ChangePaymen
 	// ETAPA 3: RECALCULAR PAGAMENTOS FUTUROS
 	// ==================================================
 
-	// Buscar todos os pagamentos do contrato
-	allPayments, err := s.paymentService.paymentRepo.ListByLeaseID(ctx, lease.ID)
-	if err != nil {
-		return nil, fmt.Errorf("error getting lease payments: %w", err)
-	}
+	// Nota: já temos allPayments da validação anterior (linha 625)
 
 	// Filtrar apenas pagamentos futuros que ainda não foram pagos
 	var paymentsToUpdate []*domain.Payment
