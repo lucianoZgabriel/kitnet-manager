@@ -727,15 +727,41 @@ func (s *LeaseService) ChangePaymentDueDay(ctx context.Context, req ChangePaymen
 
 	// Nota: já temos allPayments da validação anterior (linha 625)
 
-	// Filtrar apenas pagamentos futuros que ainda não foram pagos
+	// Filtrar pagamentos futuros que ainda não foram pagos
 	var paymentsToUpdate []*domain.Payment
+	var paymentToCancel *domain.Payment // Pagamento que será substituído pelo proporcional
+
 	for _, payment := range allPayments {
-		// Só atualiza se:
-		// - Status é pending ou overdue (não pago)
-		// - A data de vencimento é após a data efetiva
-		if (payment.Status == domain.PaymentStatusPending || payment.Status == domain.PaymentStatusOverdue) &&
-			payment.DueDate.After(req.EffectiveDate) {
-			paymentsToUpdate = append(paymentsToUpdate, payment)
+		// Só considera pagamentos pending ou overdue
+		if payment.Status != domain.PaymentStatusPending && payment.Status != domain.PaymentStatusOverdue {
+			continue
+		}
+
+		// Se a data de vencimento é após a data efetiva, será recalculado
+		if payment.DueDate.After(req.EffectiveDate) {
+			// Se criamos um pagamento proporcional, o primeiro pagamento futuro
+			// será cancelado (pois está sendo substituído pelo proporcional)
+			if proportionalPayment != nil && paymentToCancel == nil {
+				paymentToCancel = payment
+			} else {
+				paymentsToUpdate = append(paymentsToUpdate, payment)
+			}
+		}
+	}
+
+	// Cancelar o pagamento que foi substituído pelo proporcional
+	var cancelledPaymentInfo *UpdatedPaymentInfo
+	if paymentToCancel != nil {
+		cancelledPaymentInfo = &UpdatedPaymentInfo{
+			ID:             paymentToCancel.ID,
+			ReferenceMonth: paymentToCancel.ReferenceMonth,
+			OldDueDate:     paymentToCancel.DueDate,
+			NewDueDate:     time.Time{}, // Zero value indica cancelamento
+		}
+
+		paymentToCancel.MarkAsCancelled()
+		if err := s.paymentService.paymentRepo.Update(ctx, paymentToCancel); err != nil {
+			return nil, fmt.Errorf("error cancelling replaced payment %s: %w", paymentToCancel.ID, err)
 		}
 	}
 
@@ -770,6 +796,11 @@ func (s *LeaseService) ChangePaymentDueDay(ctx context.Context, req ChangePaymen
 			OldDueDate:     oldDueDate,
 			NewDueDate:     newDueDate,
 		})
+	}
+
+	// Incluir o pagamento cancelado na lista de atualizações (se existir)
+	if cancelledPaymentInfo != nil {
+		updatedPaymentsInfo = append(updatedPaymentsInfo, *cancelledPaymentInfo)
 	}
 
 	// ==================================================
