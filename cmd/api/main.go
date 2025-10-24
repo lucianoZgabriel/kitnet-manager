@@ -96,12 +96,13 @@ func main() {
 	paymentRepo := postgres.NewPaymentRepo(dbConn.DB)
 	dashboardRepo := postgres.NewDashboardRepo(dbConn.DB)
 	userRepo := postgres.NewUserRepository(dbConn.DB)
+	adjustmentRepo := postgres.NewLeaseRentAdjustmentRepository(dbConn.DB)
 
 	// Service
 	unitService := service.NewUnitService(unitRepo)
 	tenantService := service.NewTenantService(tenantRepo)
 	paymentService := service.NewPaymentService(paymentRepo, leaseRepo)
-	leaseService := service.NewLeaseService(leaseRepo, unitRepo, tenantRepo, paymentService)
+	leaseService := service.NewLeaseService(leaseRepo, unitRepo, tenantRepo, paymentService, adjustmentRepo)
 	dashboardService := service.NewDashboardService(dashboardRepo, leaseRepo, paymentRepo, unitRepo)
 	reportService := service.NewReportService(paymentRepo, leaseRepo, unitRepo, tenantRepo)
 	authService := service.NewAuthService(userRepo, cfg.JWT.Secret, cfg.JWT.Expiry)

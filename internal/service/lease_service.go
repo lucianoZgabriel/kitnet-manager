@@ -29,6 +29,7 @@ type LeaseService struct {
 	unitRepo       repository.UnitRepository
 	tenantRepo     repository.TenantRepository
 	paymentService *PaymentService
+	adjustmentRepo repository.LeaseRentAdjustmentRepository
 }
 
 // NewLeaseService cria uma nova instância do serviço de contratos
@@ -37,12 +38,14 @@ func NewLeaseService(
 	unitRepo repository.UnitRepository,
 	tenantRepo repository.TenantRepository,
 	paymentService *PaymentService,
+	adjustmentRepo repository.LeaseRentAdjustmentRepository,
 ) *LeaseService {
 	return &LeaseService{
 		leaseRepo:      leaseRepo,
 		unitRepo:       unitRepo,
 		tenantRepo:     tenantRepo,
 		paymentService: paymentService,
+		adjustmentRepo: adjustmentRepo,
 	}
 }
 
@@ -434,7 +437,7 @@ type LeaseStats struct {
 }
 
 // RenewLease renova um contrato existente criando um novo contrato
-func (s *LeaseService) RenewLease(ctx context.Context, oldLeaseID uuid.UUID, paintingFeeTotal decimal.Decimal, paintingFeeInstallments int) (*CreateLeaseResponse, error) {
+func (s *LeaseService) RenewLease(ctx context.Context, oldLeaseID uuid.UUID, req RenewLeaseRequest, userID *uuid.UUID) (*CreateLeaseResponse, error) {
 	// 1. Buscar o contrato antigo
 	oldLease, err := s.GetLeaseByID(ctx, oldLeaseID)
 	if err != nil {
@@ -458,22 +461,44 @@ func (s *LeaseService) RenewLease(ctx context.Context, oldLeaseID uuid.UUID, pai
 		return nil, ErrUnitNotFound
 	}
 
-	// 4. Criar novo contrato
+	// 4. Determinar valor do aluguel (usar reajuste se fornecido, senão usar valor da unidade)
+	rentValue := unit.CurrentRentValue
+	var rentAdjustment *domain.LeaseRentAdjustment
+
+	if req.NewRentValue != nil {
+		// Aplicar reajuste
+		rentAdjustment = domain.NewLeaseRentAdjustment(
+			oldLeaseID, // Registra o reajuste no contrato antigo
+			oldLease.MonthlyRentValue,
+			*req.NewRentValue,
+			req.AdjustmentReason,
+			userID,
+		)
+		rentValue = *req.NewRentValue
+	}
+
+	// 5. Criar novo contrato
 	// Start date = 1 dia após a data de término do contrato antigo
 	newStartDate := oldLease.EndDate.AddDate(0, 0, 1)
+	newGeneration := oldLease.Generation + 1
+
 	newLease, err := domain.NewLease(
 		oldLease.UnitID,
 		oldLease.TenantID,
 		time.Now(),
 		newStartDate,
 		oldLease.PaymentDueDay,
-		unit.CurrentRentValue,
-		paintingFeeTotal,
-		paintingFeeInstallments,
+		rentValue,
+		req.PaintingFeeTotal,
+		req.PaintingFeeInstallments,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error creating new lease: %w", err)
 	}
+
+	// Definir parent e generation
+	newLease.ParentLeaseID = &oldLeaseID
+	newLease.Generation = newGeneration
 
 	// 5. Marcar contrato antigo como expirado
 	oldLease.MarkAsExpired()
@@ -486,6 +511,13 @@ func (s *LeaseService) RenewLease(ctx context.Context, oldLeaseID uuid.UUID, pai
 	if err := s.leaseRepo.Create(ctx, newLease); err != nil {
 		// TODO: Rollback do update do oldLease
 		return nil, fmt.Errorf("erro creating new lease: %w", err)
+	}
+
+	// Salvar registro de reajuste (se aplicável)
+	if rentAdjustment != nil && s.adjustmentRepo != nil {
+		if err := s.adjustmentRepo.Create(ctx, rentAdjustment); err != nil {
+			return nil, fmt.Errorf("error saving rent adjustment: %w", err)
+		}
 	}
 
 	// Aqui a unidade já está como occupied, não precisa atualizar
@@ -509,16 +541,9 @@ func (s *LeaseService) RenewLease(ctx context.Context, oldLeaseID uuid.UUID, pai
 			}
 		}
 
-		// Gerar pagamentos de taxa de pintura
-		paintingFeePayments, err := s.paymentService.GeneratePaintingFeePayments(ctx, GeneratePaintingFeePaymentsRequest{
-			LeaseID:      newLease.ID,
-			Installments: paintingFeeInstallments,
-		})
-		if err != nil {
-			fmt.Printf("Warning: failed to generate painting fee payments: %v\n", err)
-		} else {
-			payments = append(payments, paintingFeePayments...)
-		}
+		// NOTA: Taxa de pintura NÃO é gerada em renovações
+		// Taxa de pintura é paga apenas no primeiro contrato (contrato original)
+		// O inquilino paga adiantado para que quando sair não precise pagar novamente
 	}
 
 	return &CreateLeaseResponse{
@@ -529,8 +554,10 @@ func (s *LeaseService) RenewLease(ctx context.Context, oldLeaseID uuid.UUID, pai
 
 // RenewLeaseRequest representa os dados para renovação de contrato
 type RenewLeaseRequest struct {
-	PaintingFeeTotal        decimal.Decimal `json:"painting_fee_total" validate:"required"`
-	PaintingFeeInstallments int             `json:"painting_fee_installments" validate:"required,min=1,max=4"`
+	PaintingFeeTotal        decimal.Decimal  `json:"painting_fee_total" validate:"required"`
+	PaintingFeeInstallments int              `json:"painting_fee_installments" validate:"required,min=1,max=4"`
+	NewRentValue            *decimal.Decimal `json:"new_rent_value,omitempty"`     // Valor reajustado (opcional)
+	AdjustmentReason        *string          `json:"adjustment_reason,omitempty"`  // Motivo do reajuste (opcional)
 }
 
 // ChangePaymentDueDayRequest representa a requisição para alterar dia de vencimento
@@ -841,4 +868,80 @@ func (s *LeaseService) ChangePaymentDueDay(ctx context.Context, req ChangePaymen
 	}
 
 	return response, nil
+}
+
+// GetLeaseRentAdjustments retorna o histórico de reajustes de aluguel de um contrato
+func (s *LeaseService) GetLeaseRentAdjustments(ctx context.Context, leaseID uuid.UUID) ([]*domain.LeaseRentAdjustment, error) {
+	// Verificar se o contrato existe
+	lease, err := s.leaseRepo.GetByID(ctx, leaseID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting lease: %w", err)
+	}
+	if lease == nil {
+		return nil, ErrLeaseNotFound
+	}
+
+	// Buscar ajustes
+	adjustments, err := s.adjustmentRepo.ListByLeaseID(ctx, leaseID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting lease rent adjustments: %w", err)
+	}
+
+	return adjustments, nil
+}
+
+// AutoRenewLeases renova automaticamente contratos expirando que não precisam de reajuste
+// Contratos que devem aplicar reajuste (gerações pares) não são renovados automaticamente
+func (s *LeaseService) AutoRenewLeases(ctx context.Context) (int, error) {
+	// Buscar contratos expirando em breve
+	expiringLeases, err := s.leaseRepo.GetExpiringSoon(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("error getting expiring leases: %w", err)
+	}
+
+	renewedCount := 0
+
+	for _, lease := range expiringLeases {
+		// Pular contratos que devem aplicar reajuste (renovação manual)
+		if lease.ShouldApplyAnnualAdjustment() {
+			continue
+		}
+
+		// Pular se não está em status apropriado
+		if lease.Status != domain.LeaseStatusActive && lease.Status != domain.LeaseStatusExpiringSoon {
+			continue
+		}
+
+		// Verificar se unidade ainda está ocupada
+		unit, err := s.unitRepo.GetByID(ctx, lease.UnitID)
+		if err != nil {
+			fmt.Printf("Warning: failed to get unit for auto-renewal: %v\n", err)
+			continue
+		}
+
+		if unit.Status != domain.UnitStatusOccupied {
+			continue
+		}
+
+		// Renovação automática sem taxa de pintura
+		// Taxa de pintura é paga apenas no primeiro contrato
+		// Usa o valor atual do aluguel (sem reajuste)
+		req := RenewLeaseRequest{
+			PaintingFeeTotal:        decimal.Zero,
+			PaintingFeeInstallments: 0,
+		}
+
+		// Renovar contrato
+		_, err = s.RenewLease(ctx, lease.ID, req, nil)
+		if err != nil {
+			fmt.Printf("Warning: failed to auto-renew lease %s: %v\n", lease.ID, err)
+			continue
+		}
+
+		renewedCount++
+		fmt.Printf("✅ Contrato %s renovado automaticamente (geração %d → %d)\n",
+			lease.ID, lease.Generation, lease.Generation+1)
+	}
+
+	return renewedCount, nil
 }

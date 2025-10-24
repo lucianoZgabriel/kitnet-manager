@@ -35,6 +35,10 @@ type LeaseResponse struct {
 	PaintingFeeInstallments int             `json:"painting_fee_installments"`
 	PaintingFeePaid         decimal.Decimal `json:"painting_fee_paid"`
 	Status                  string          `json:"status"`
+	ParentLeaseID           *uuid.UUID      `json:"parent_lease_id,omitempty"`
+	Generation              int             `json:"generation"`
+	TotalMonths             int             `json:"total_months"` // Total de meses desde contrato original
+	ShouldApplyAdjustment   bool            `json:"should_apply_adjustment"` // Indica se está na geração de reajuste
 	DaysUntilExpiry         int             `json:"days_until_expiry"`
 	IsExpiringSoon          bool            `json:"is_expiring_soon"`
 	CreatedAt               time.Time       `json:"created_at"`
@@ -56,6 +60,10 @@ func ToLeaseResponse(lease *domain.Lease) *LeaseResponse {
 		PaintingFeeInstallments: lease.PaintingFeeInstallments,
 		PaintingFeePaid:         lease.PaintingFeePaid,
 		Status:                  string(lease.Status),
+		ParentLeaseID:           lease.ParentLeaseID,
+		Generation:              lease.Generation,
+		TotalMonths:             lease.GetTotalMonths(),
+		ShouldApplyAdjustment:   lease.ShouldApplyAnnualAdjustment(),
 		DaysUntilExpiry:         lease.DaysUntilExpiry(),
 		IsExpiringSoon:          lease.IsExpiringSoon(),
 		CreatedAt:               lease.CreatedAt,
@@ -88,8 +96,10 @@ func ToCreateLeaseResponse(response *service.CreateLeaseResponse) *CreateLeaseRe
 
 // RenewLeaseRequestDTO representa os dados para renovação de contrato
 type RenewLeaseRequestDTO struct {
-	PaintingFeeTotal        decimal.Decimal `json:"painting_fee_total" validate:"required"`
-	PaintingFeeInstallments int             `json:"painting_fee_installments" validate:"required,min=1,max=4"`
+	PaintingFeeTotal        decimal.Decimal  `json:"painting_fee_total" validate:"required"`
+	PaintingFeeInstallments int              `json:"painting_fee_installments" validate:"required,min=1,max=4"`
+	NewRentValue            *decimal.Decimal `json:"new_rent_value,omitempty"`     // Opcional: valor reajustado
+	AdjustmentReason        *string          `json:"adjustment_reason,omitempty"`  // Opcional: motivo do reajuste
 }
 
 // UpdatePaintingFeePaidRequestDTO representa o valor pago da taxa de pintura

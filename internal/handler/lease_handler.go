@@ -215,13 +215,19 @@ func (h *LeaseHandler) RenewLease(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Montar request do service
+	serviceReq := service.RenewLeaseRequest{
+		PaintingFeeTotal:        req.PaintingFeeTotal,
+		PaintingFeeInstallments: req.PaintingFeeInstallments,
+		NewRentValue:            req.NewRentValue,
+		AdjustmentReason:        req.AdjustmentReason,
+	}
+
+	// TODO: Extrair userID do contexto de autenticação (JWT)
+	var userID *uuid.UUID
+
 	// Renovar contrato
-	renewalResponse, err := h.leaseService.RenewLease(
-		r.Context(),
-		id,
-		req.PaintingFeeTotal,
-		req.PaintingFeeInstallments,
-	)
+	renewalResponse, err := h.leaseService.RenewLease(r.Context(), id, serviceReq, userID)
 	if err != nil {
 		h.handleServiceError(w, err)
 		return
@@ -597,4 +603,85 @@ func ToChangePaymentDueDayResponse(resp *service.ChangePaymentDueDayResponse) *C
 		UpdatedPaymentsCount: resp.UpdatedPaymentsCount,
 		UpdatedPayments:      updatedPayments,
 	}
+}
+
+// LeaseRentAdjustmentResponse representa um reajuste de aluguel na resposta HTTP
+type LeaseRentAdjustmentResponse struct {
+	ID                   string  `json:"id"`
+	LeaseID              string  `json:"lease_id"`
+	PreviousRentValue    float64 `json:"previous_rent_value"`
+	NewRentValue         float64 `json:"new_rent_value"`
+	AdjustmentPercentage float64 `json:"adjustment_percentage"`
+	AppliedAt            string  `json:"applied_at"`
+	Reason               *string `json:"reason,omitempty"`
+	AppliedBy            *string `json:"applied_by,omitempty"`
+	CreatedAt            string  `json:"created_at"`
+}
+
+// ToLeaseRentAdjustmentResponse converte domain.LeaseRentAdjustment para DTO
+func ToLeaseRentAdjustmentResponse(adj *domain.LeaseRentAdjustment) *LeaseRentAdjustmentResponse {
+	if adj == nil {
+		return nil
+	}
+
+	previousValue, _ := adj.PreviousRentValue.Float64()
+	newValue, _ := adj.NewRentValue.Float64()
+	percentage, _ := adj.AdjustmentPercentage.Float64()
+
+	var appliedBy *string
+	if adj.AppliedBy != nil {
+		appliedByStr := adj.AppliedBy.String()
+		appliedBy = &appliedByStr
+	}
+
+	return &LeaseRentAdjustmentResponse{
+		ID:                   adj.ID.String(),
+		LeaseID:              adj.LeaseID.String(),
+		PreviousRentValue:    previousValue,
+		NewRentValue:         newValue,
+		AdjustmentPercentage: percentage,
+		AppliedAt:            adj.AppliedAt.Format(time.RFC3339),
+		Reason:               adj.Reason,
+		AppliedBy:            appliedBy,
+		CreatedAt:            adj.CreatedAt.Format(time.RFC3339),
+	}
+}
+
+// GetLeaseRentAdjustments godoc
+// @Summary      Listar reajustes de aluguel
+// @Description  Retorna o histórico de reajustes de aluguel de um contrato
+// @Tags         Leases
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "Lease ID (UUID)"
+// @Success      200 {array} LeaseRentAdjustmentResponse
+// @Failure      400 {object} response.ErrorResponse
+// @Failure      404 {object} response.ErrorResponse
+// @Failure      500 {object} response.ErrorResponse
+// @Security     BearerAuth
+// @Router       /leases/{id}/rent-adjustments [get]
+func (h *LeaseHandler) GetLeaseRentAdjustments(w http.ResponseWriter, r *http.Request) {
+	// Extrair lease_id da URL
+	idStr := chi.URLParam(r, "id")
+	leaseID, err := uuid.Parse(idStr)
+	if err != nil {
+		response.Error(w, http.StatusBadRequest, "Invalid lease ID")
+		return
+	}
+
+	// Buscar ajustes
+	adjustments, err := h.leaseService.GetLeaseRentAdjustments(r.Context(), leaseID)
+	if err != nil {
+		h.handleServiceError(w, err)
+		return
+	}
+
+	// Converter para response DTOs
+	responseList := make([]*LeaseRentAdjustmentResponse, len(adjustments))
+	for i, adj := range adjustments {
+		responseList[i] = ToLeaseRentAdjustmentResponse(adj)
+	}
+
+	// Retornar sucesso
+	response.Success(w, http.StatusOK, "Lease rent adjustments retrieved successfully", responseList)
 }

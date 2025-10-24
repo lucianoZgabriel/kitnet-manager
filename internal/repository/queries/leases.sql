@@ -12,10 +12,12 @@ INSERT INTO leases (
     painting_fee_installments,
     painting_fee_paid,
     status,
+    parent_lease_id,
+    generation,
     created_at,
     updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
 ) RETURNING *;
 
 -- name: GetLeaseByID :one
@@ -73,7 +75,9 @@ SET
     painting_fee_installments = $10,
     painting_fee_paid = $11,
     status = $12,
-    updated_at = $13
+    parent_lease_id = $13,
+    generation = $14,
+    updated_at = $15
 WHERE id = $1
 RETURNING *;
 

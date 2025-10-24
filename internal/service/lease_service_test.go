@@ -238,7 +238,7 @@ func TestCreateLease_Success(t *testing.T) {
 	mockUnitRepo := new(MockUnitRepo)
 	mockTenantRepo := new(MockTenantRepo)
 
-	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil)
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil, nil)
 
 	unit := createTestUnit(unitID, domain.UnitStatusAvailable)
 	tenant := createTestTenant(tenantID)
@@ -289,7 +289,7 @@ func TestCreateLease_UnitNotAvailable(t *testing.T) {
 	mockUnitRepo := new(MockUnitRepo)
 	mockTenantRepo := new(MockTenantRepo)
 
-	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil)
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil, nil)
 
 	// Unidade ocupada
 	unit := createTestUnit(unitID, domain.UnitStatusOccupied)
@@ -327,7 +327,7 @@ func TestCreateLease_UnitAlreadyHasActiveLease(t *testing.T) {
 	mockUnitRepo := new(MockUnitRepo)
 	mockTenantRepo := new(MockTenantRepo)
 
-	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil)
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil, nil)
 
 	unit := createTestUnit(unitID, domain.UnitStatusAvailable)
 	existingLease, _ := domain.NewLease(
@@ -377,7 +377,7 @@ func TestCancelLease_Success(t *testing.T) {
 	mockUnitRepo := new(MockUnitRepo)
 	mockTenantRepo := new(MockTenantRepo)
 
-	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil)
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil, nil)
 
 	lease, _ := domain.NewLease(
 		unitID,
@@ -414,7 +414,7 @@ func TestCancelLease_AlreadyExpired(t *testing.T) {
 	mockUnitRepo := new(MockUnitRepo)
 	mockTenantRepo := new(MockTenantRepo)
 
-	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil)
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil, nil)
 
 	lease, _ := domain.NewLease(
 		uuid.New(),
@@ -449,7 +449,7 @@ func TestUpdatePaintingFeePaid_Success(t *testing.T) {
 	mockUnitRepo := new(MockUnitRepo)
 	mockTenantRepo := new(MockTenantRepo)
 
-	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil)
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil, nil)
 
 	lease, _ := domain.NewLease(
 		uuid.New(),
@@ -488,7 +488,7 @@ func TestGetLeaseStats_Success(t *testing.T) {
 	mockUnitRepo := new(MockUnitRepo)
 	mockTenantRepo := new(MockTenantRepo)
 
-	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil)
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil, nil)
 
 	mockLeaseRepo.On("Count", ctx).Return(int64(10), nil)
 	mockLeaseRepo.On("CountByStatus", ctx, domain.LeaseStatusActive).Return(int64(7), nil)
@@ -521,7 +521,7 @@ func TestRenewLease_Success(t *testing.T) {
 	mockUnitRepo := new(MockUnitRepo)
 	mockTenantRepo := new(MockTenantRepo)
 
-	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil)
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil, nil)
 
 	// Contrato antigo que está expirando em breve
 	oldLease, _ := domain.NewLease(
@@ -542,13 +542,18 @@ func TestRenewLease_Success(t *testing.T) {
 	paintingFeeTotal := decimal.NewFromFloat(250)
 	paintingFeeInstallments := 3
 
+	req := RenewLeaseRequest{
+		PaintingFeeTotal:        paintingFeeTotal,
+		PaintingFeeInstallments: paintingFeeInstallments,
+	}
+
 	mockLeaseRepo.On("GetByID", ctx, oldLeaseID).Return(oldLease, nil)
 	mockUnitRepo.On("GetByID", ctx, unitID).Return(unit, nil)
 	mockLeaseRepo.On("Update", ctx, mock.AnythingOfType("*domain.Lease")).Return(nil)
 	mockLeaseRepo.On("Create", ctx, mock.AnythingOfType("*domain.Lease")).Return(nil)
 
 	// Act
-	result, err := service.RenewLease(ctx, oldLeaseID, paintingFeeTotal, paintingFeeInstallments)
+	result, err := service.RenewLease(ctx, oldLeaseID, req, nil)
 
 	// Assert
 	assert.NoError(t, err)
@@ -574,7 +579,7 @@ func TestRenewLease_CannotRenewCancelled(t *testing.T) {
 	mockUnitRepo := new(MockUnitRepo)
 	mockTenantRepo := new(MockTenantRepo)
 
-	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil)
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil, nil)
 
 	// Contrato cancelado
 	oldLease, _ := domain.NewLease(
@@ -593,14 +598,230 @@ func TestRenewLease_CannotRenewCancelled(t *testing.T) {
 	paintingFeeTotal := decimal.NewFromFloat(250)
 	paintingFeeInstallments := 3
 
+	req := RenewLeaseRequest{
+		PaintingFeeTotal:        paintingFeeTotal,
+		PaintingFeeInstallments: paintingFeeInstallments,
+	}
+
 	mockLeaseRepo.On("GetByID", ctx, oldLeaseID).Return(oldLease, nil)
 
 	// Act
-	result, err := service.RenewLease(ctx, oldLeaseID, paintingFeeTotal, paintingFeeInstallments)
+	result, err := service.RenewLease(ctx, oldLeaseID, req, nil)
 
 	// Assert
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	assert.Equal(t, ErrCannotRenewLease, err)
 	mockLeaseRepo.AssertExpectations(t)
+}
+
+func TestRenewLease_WithRentAdjustment(t *testing.T) {
+	// Arrange
+	ctx := context.Background()
+	oldLeaseID := uuid.New()
+	unitID := uuid.New()
+	tenantID := uuid.New()
+
+	mockLeaseRepo := new(MockLeaseRepo)
+	mockUnitRepo := new(MockUnitRepo)
+	mockTenantRepo := new(MockTenantRepo)
+	mockAdjustmentRepo := new(MockLeaseRentAdjustmentRepo)
+
+	service := NewLeaseService(mockLeaseRepo, mockUnitRepo, mockTenantRepo, nil, mockAdjustmentRepo)
+
+	// Contrato original (generation 1)
+	oldLease, _ := domain.NewLease(
+		unitID,
+		tenantID,
+		time.Now().AddDate(0, -6, 0),
+		time.Now().AddDate(0, -6, 0),
+		5,
+		decimal.NewFromFloat(800),
+		decimal.NewFromFloat(250),
+		3,
+	)
+	oldLease.ID = oldLeaseID
+	oldLease.Generation = 1
+	oldLease.Status = domain.LeaseStatusExpiringSoon
+
+	unit := createTestUnit(unitID, domain.UnitStatusOccupied)
+
+	newRentValue := decimal.NewFromFloat(880)
+	reason := "Reajuste anual IGPM"
+
+	req := RenewLeaseRequest{
+		PaintingFeeTotal:        decimal.NewFromFloat(250),
+		PaintingFeeInstallments: 3,
+		NewRentValue:            &newRentValue,
+		AdjustmentReason:        &reason,
+	}
+
+	mockLeaseRepo.On("GetByID", ctx, oldLeaseID).Return(oldLease, nil)
+	mockUnitRepo.On("GetByID", ctx, unitID).Return(unit, nil)
+	mockLeaseRepo.On("Update", ctx, mock.AnythingOfType("*domain.Lease")).Return(nil)
+	mockLeaseRepo.On("Create", ctx, mock.AnythingOfType("*domain.Lease")).Return(nil)
+	mockAdjustmentRepo.On("Create", ctx, mock.AnythingOfType("*domain.LeaseRentAdjustment")).Return(nil)
+
+	// Act
+	result, err := service.RenewLease(ctx, oldLeaseID, req, nil)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.NotNil(t, result.Lease)
+	assert.Equal(t, 2, result.Lease.Generation) // Segunda geração
+	assert.Equal(t, &oldLeaseID, result.Lease.ParentLeaseID)
+	assert.True(t, result.Lease.MonthlyRentValue.Equal(newRentValue))
+	mockLeaseRepo.AssertExpectations(t)
+	mockUnitRepo.AssertExpectations(t)
+	mockAdjustmentRepo.AssertExpectations(t)
+}
+
+func TestLeaseDomain_ShouldApplyAnnualAdjustment(t *testing.T) {
+	// Arrange
+	unitID := uuid.New()
+	tenantID := uuid.New()
+
+	tests := []struct {
+		name       string
+		generation int
+		expected   bool
+	}{
+		{
+			name:       "Generation 1 (original) - no adjustment",
+			generation: 1,
+			expected:   false,
+		},
+		{
+			name:       "Generation 2 (1st renewal) - apply adjustment",
+			generation: 2,
+			expected:   true,
+		},
+		{
+			name:       "Generation 3 (2nd renewal) - no adjustment",
+			generation: 3,
+			expected:   false,
+		},
+		{
+			name:       "Generation 4 (3rd renewal) - apply adjustment",
+			generation: 4,
+			expected:   true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Criar contrato
+			lease, _ := domain.NewLease(
+				unitID,
+				tenantID,
+				time.Now(),
+				time.Now(),
+				5,
+				decimal.NewFromFloat(800),
+				decimal.NewFromFloat(250),
+				3,
+			)
+			lease.Generation = tt.generation
+
+			// Act & Assert
+			assert.Equal(t, tt.expected, lease.ShouldApplyAnnualAdjustment())
+		})
+	}
+}
+
+func TestLeaseDomain_GetTotalMonths(t *testing.T) {
+	// Arrange
+	unitID := uuid.New()
+	tenantID := uuid.New()
+
+	lease, _ := domain.NewLease(
+		unitID,
+		tenantID,
+		time.Now(),
+		time.Now(),
+		5,
+		decimal.NewFromFloat(800),
+		decimal.NewFromFloat(250),
+		3,
+	)
+
+	tests := []struct {
+		generation    int
+		expectedMonths int
+	}{
+		{1, 6},   // 1ª geração = 6 meses
+		{2, 12},  // 2ª geração = 12 meses
+		{3, 18},  // 3ª geração = 18 meses
+		{4, 24},  // 4ª geração = 24 meses
+	}
+
+	for _, tt := range tests {
+		t.Run("Generation "+string(rune(tt.generation+'0')), func(t *testing.T) {
+			lease.Generation = tt.generation
+			assert.Equal(t, tt.expectedMonths, lease.GetTotalMonths())
+		})
+	}
+}
+
+func TestLeaseRentAdjustment_PercentageCalculation(t *testing.T) {
+	// Arrange
+	leaseID := uuid.New()
+	previousValue := decimal.NewFromFloat(800)
+	newValue := decimal.NewFromFloat(880)
+	reason := "Reajuste anual IGPM"
+
+	// Act
+	adjustment := domain.NewLeaseRentAdjustment(leaseID, previousValue, newValue, &reason, nil)
+
+	// Assert
+	assert.NotNil(t, adjustment)
+	assert.Equal(t, leaseID, adjustment.LeaseID)
+	assert.True(t, adjustment.PreviousRentValue.Equal(previousValue))
+	assert.True(t, adjustment.NewRentValue.Equal(newValue))
+	// Percentual esperado: (880-800)/800 * 100 = 10%
+	expectedPercentage := decimal.NewFromFloat(10)
+	assert.True(t, adjustment.AdjustmentPercentage.Equal(expectedPercentage))
+	assert.Equal(t, &reason, adjustment.Reason)
+}
+
+// Mock para LeaseRentAdjustmentRepository
+type MockLeaseRentAdjustmentRepo struct {
+	mock.Mock
+}
+
+func (m *MockLeaseRentAdjustmentRepo) Create(ctx context.Context, adjustment *domain.LeaseRentAdjustment) error {
+	args := m.Called(ctx, adjustment)
+	return args.Error(0)
+}
+
+func (m *MockLeaseRentAdjustmentRepo) GetByID(ctx context.Context, id uuid.UUID) (*domain.LeaseRentAdjustment, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*domain.LeaseRentAdjustment), args.Error(1)
+}
+
+func (m *MockLeaseRentAdjustmentRepo) ListByLeaseID(ctx context.Context, leaseID uuid.UUID) ([]*domain.LeaseRentAdjustment, error) {
+	args := m.Called(ctx, leaseID)
+	return args.Get(0).([]*domain.LeaseRentAdjustment), args.Error(1)
+}
+
+func (m *MockLeaseRentAdjustmentRepo) GetLatestByLeaseID(ctx context.Context, leaseID uuid.UUID) (*domain.LeaseRentAdjustment, error) {
+	args := m.Called(ctx, leaseID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*domain.LeaseRentAdjustment), args.Error(1)
+}
+
+func (m *MockLeaseRentAdjustmentRepo) CountByLeaseID(ctx context.Context, leaseID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, leaseID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockLeaseRentAdjustmentRepo) Delete(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
 }
