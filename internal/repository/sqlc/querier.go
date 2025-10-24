@@ -15,6 +15,7 @@ type Querier interface {
 	ActivateUser(ctx context.Context, arg ActivateUserParams) error
 	CancelPayment(ctx context.Context, arg CancelPaymentParams) (Payment, error)
 	CountActiveUsers(ctx context.Context) (int64, error)
+	CountAdjustmentsByLeaseID(ctx context.Context, leaseID uuid.UUID) (int64, error)
 	CountLeases(ctx context.Context) (int64, error)
 	CountLeasesByStatus(ctx context.Context, status string) (int64, error)
 	CountPayments(ctx context.Context) (int64, error)
@@ -25,12 +26,14 @@ type Querier interface {
 	CountUnitsByStatus(ctx context.Context, status UnitStatus) (int64, error)
 	CountUsers(ctx context.Context) (int64, error)
 	CreateLease(ctx context.Context, arg CreateLeaseParams) (Lease, error)
+	CreateLeaseRentAdjustment(ctx context.Context, arg CreateLeaseRentAdjustmentParams) (LeaseRentAdjustment, error)
 	CreatePayment(ctx context.Context, arg CreatePaymentParams) (Payment, error)
 	CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error)
 	CreateUnit(ctx context.Context, arg CreateUnitParams) (Unit, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeactivateUser(ctx context.Context, arg DeactivateUserParams) error
 	DeleteLease(ctx context.Context, id uuid.UUID) error
+	DeleteLeaseRentAdjustment(ctx context.Context, id uuid.UUID) error
 	DeletePayment(ctx context.Context, id uuid.UUID) error
 	DeleteTenant(ctx context.Context, id uuid.UUID) error
 	DeleteUnit(ctx context.Context, id uuid.UUID) error
@@ -38,7 +41,9 @@ type Querier interface {
 	GetActiveLeaseByTenantID(ctx context.Context, tenantID uuid.UUID) (Lease, error)
 	GetActiveLeaseByUnitID(ctx context.Context, unitID uuid.UUID) (Lease, error)
 	GetExpiringSoonLeases(ctx context.Context) ([]Lease, error)
+	GetLatestAdjustmentByLeaseID(ctx context.Context, leaseID uuid.UUID) (LeaseRentAdjustment, error)
 	GetLeaseByID(ctx context.Context, id uuid.UUID) (Lease, error)
+	GetLeaseRentAdjustmentByID(ctx context.Context, id uuid.UUID) (LeaseRentAdjustment, error)
 	GetLeaseWithDetails(ctx context.Context, id uuid.UUID) (GetLeaseWithDetailsRow, error)
 	GetMonthlyProjectedRevenue(ctx context.Context) (string, error)
 	GetMonthlyRealizedRevenue(ctx context.Context) (string, error)
@@ -58,6 +63,7 @@ type Querier interface {
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	ListAvailableUnits(ctx context.Context) ([]Unit, error)
+	ListLeaseRentAdjustmentsByLeaseID(ctx context.Context, leaseID uuid.UUID) ([]LeaseRentAdjustment, error)
 	ListLeases(ctx context.Context) ([]Lease, error)
 	ListLeasesByStatus(ctx context.Context, status string) ([]Lease, error)
 	ListLeasesByTenantID(ctx context.Context, tenantID uuid.UUID) ([]Lease, error)

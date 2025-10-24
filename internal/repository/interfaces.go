@@ -182,3 +182,13 @@ type UserRepository interface {
 	// CountActive retorna o total de usuários ativos
 	CountActive(ctx context.Context) (int64, error)
 }
+
+// LeaseRentAdjustmentRepository define as operações de persistência para LeaseRentAdjustment
+type LeaseRentAdjustmentRepository interface {
+	Create(ctx context.Context, adjustment *domain.LeaseRentAdjustment) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.LeaseRentAdjustment, error)
+	ListByLeaseID(ctx context.Context, leaseID uuid.UUID) ([]*domain.LeaseRentAdjustment, error)
+	GetLatestByLeaseID(ctx context.Context, leaseID uuid.UUID) (*domain.LeaseRentAdjustment, error)
+	CountByLeaseID(ctx context.Context, leaseID uuid.UUID) (int64, error)
+	Delete(ctx context.Context, id uuid.UUID) error
+}

@@ -43,6 +43,8 @@ func (r *LeaseRepo) Create(ctx context.Context, lease *domain.Lease) error {
 		PaintingFeeInstallments: int32(lease.PaintingFeeInstallments),
 		PaintingFeePaid:         lease.PaintingFeePaid.String(),
 		Status:                  string(lease.Status),
+		ParentLeaseID:           toNullUUIDPtr(lease.ParentLeaseID),
+		Generation:              int32(lease.Generation),
 		CreatedAt:               lease.CreatedAt,
 		UpdatedAt:               lease.UpdatedAt,
 	}
@@ -159,6 +161,8 @@ func (r *LeaseRepo) Update(ctx context.Context, lease *domain.Lease) error {
 		PaintingFeeInstallments: int32(lease.PaintingFeeInstallments),
 		PaintingFeePaid:         lease.PaintingFeePaid.String(),
 		Status:                  string(lease.Status),
+		ParentLeaseID:           toNullUUIDPtr(lease.ParentLeaseID),
+		Generation:              int32(lease.Generation),
 		UpdatedAt:               lease.UpdatedAt,
 	}
 
@@ -251,6 +255,8 @@ func (r *LeaseRepo) toDomain(row sqlc.Lease) *domain.Lease {
 		PaintingFeeInstallments: int(row.PaintingFeeInstallments),
 		PaintingFeePaid:         paintingFeePaid,
 		Status:                  domain.LeaseStatus(row.Status),
+		ParentLeaseID:           fromNullUUIDPtr(row.ParentLeaseID),
+		Generation:              int(row.Generation),
 		CreatedAt:               row.CreatedAt,
 		UpdatedAt:               row.UpdatedAt,
 	}

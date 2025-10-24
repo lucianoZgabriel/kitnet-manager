@@ -49,28 +49,32 @@ INSERT INTO leases (
     painting_fee_installments,
     painting_fee_paid,
     status,
+    parent_lease_id,
+    generation,
     created_at,
     updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
-) RETURNING id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, created_at, updated_at
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
+) RETURNING id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, parent_lease_id, generation, created_at, updated_at
 `
 
 type CreateLeaseParams struct {
-	ID                      uuid.UUID `json:"id"`
-	UnitID                  uuid.UUID `json:"unit_id"`
-	TenantID                uuid.UUID `json:"tenant_id"`
-	ContractSignedDate      time.Time `json:"contract_signed_date"`
-	StartDate               time.Time `json:"start_date"`
-	EndDate                 time.Time `json:"end_date"`
-	PaymentDueDay           int32     `json:"payment_due_day"`
-	MonthlyRentValue        string    `json:"monthly_rent_value"`
-	PaintingFeeTotal        string    `json:"painting_fee_total"`
-	PaintingFeeInstallments int32     `json:"painting_fee_installments"`
-	PaintingFeePaid         string    `json:"painting_fee_paid"`
-	Status                  string    `json:"status"`
-	CreatedAt               time.Time `json:"created_at"`
-	UpdatedAt               time.Time `json:"updated_at"`
+	ID                      uuid.UUID     `json:"id"`
+	UnitID                  uuid.UUID     `json:"unit_id"`
+	TenantID                uuid.UUID     `json:"tenant_id"`
+	ContractSignedDate      time.Time     `json:"contract_signed_date"`
+	StartDate               time.Time     `json:"start_date"`
+	EndDate                 time.Time     `json:"end_date"`
+	PaymentDueDay           int32         `json:"payment_due_day"`
+	MonthlyRentValue        string        `json:"monthly_rent_value"`
+	PaintingFeeTotal        string        `json:"painting_fee_total"`
+	PaintingFeeInstallments int32         `json:"painting_fee_installments"`
+	PaintingFeePaid         string        `json:"painting_fee_paid"`
+	Status                  string        `json:"status"`
+	ParentLeaseID           uuid.NullUUID `json:"parent_lease_id"`
+	Generation              int32         `json:"generation"`
+	CreatedAt               time.Time     `json:"created_at"`
+	UpdatedAt               time.Time     `json:"updated_at"`
 }
 
 func (q *Queries) CreateLease(ctx context.Context, arg CreateLeaseParams) (Lease, error) {
@@ -87,6 +91,8 @@ func (q *Queries) CreateLease(ctx context.Context, arg CreateLeaseParams) (Lease
 		arg.PaintingFeeInstallments,
 		arg.PaintingFeePaid,
 		arg.Status,
+		arg.ParentLeaseID,
+		arg.Generation,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
@@ -104,6 +110,8 @@ func (q *Queries) CreateLease(ctx context.Context, arg CreateLeaseParams) (Lease
 		&i.PaintingFeeInstallments,
 		&i.PaintingFeePaid,
 		&i.Status,
+		&i.ParentLeaseID,
+		&i.Generation,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -121,7 +129,7 @@ func (q *Queries) DeleteLease(ctx context.Context, id uuid.UUID) error {
 }
 
 const getActiveLeaseByTenantID = `-- name: GetActiveLeaseByTenantID :one
-SELECT id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, created_at, updated_at FROM leases
+SELECT id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, parent_lease_id, generation, created_at, updated_at FROM leases
 WHERE tenant_id = $1 AND status = 'active'
 LIMIT 1
 `
@@ -142,6 +150,8 @@ func (q *Queries) GetActiveLeaseByTenantID(ctx context.Context, tenantID uuid.UU
 		&i.PaintingFeeInstallments,
 		&i.PaintingFeePaid,
 		&i.Status,
+		&i.ParentLeaseID,
+		&i.Generation,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -149,7 +159,7 @@ func (q *Queries) GetActiveLeaseByTenantID(ctx context.Context, tenantID uuid.UU
 }
 
 const getActiveLeaseByUnitID = `-- name: GetActiveLeaseByUnitID :one
-SELECT id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, created_at, updated_at FROM leases
+SELECT id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, parent_lease_id, generation, created_at, updated_at FROM leases
 WHERE unit_id = $1 AND status = 'active'
 LIMIT 1
 `
@@ -170,6 +180,8 @@ func (q *Queries) GetActiveLeaseByUnitID(ctx context.Context, unitID uuid.UUID) 
 		&i.PaintingFeeInstallments,
 		&i.PaintingFeePaid,
 		&i.Status,
+		&i.ParentLeaseID,
+		&i.Generation,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -177,7 +189,7 @@ func (q *Queries) GetActiveLeaseByUnitID(ctx context.Context, unitID uuid.UUID) 
 }
 
 const getExpiringSoonLeases = `-- name: GetExpiringSoonLeases :many
-SELECT id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, created_at, updated_at FROM leases
+SELECT id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, parent_lease_id, generation, created_at, updated_at FROM leases
 WHERE status = 'active' 
   AND end_date <= CURRENT_DATE + INTERVAL '45 days'
   AND end_date > CURRENT_DATE
@@ -206,6 +218,8 @@ func (q *Queries) GetExpiringSoonLeases(ctx context.Context) ([]Lease, error) {
 			&i.PaintingFeeInstallments,
 			&i.PaintingFeePaid,
 			&i.Status,
+			&i.ParentLeaseID,
+			&i.Generation,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -223,7 +237,7 @@ func (q *Queries) GetExpiringSoonLeases(ctx context.Context) ([]Lease, error) {
 }
 
 const getLeaseByID = `-- name: GetLeaseByID :one
-SELECT id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, created_at, updated_at FROM leases
+SELECT id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, parent_lease_id, generation, created_at, updated_at FROM leases
 WHERE id = $1
 LIMIT 1
 `
@@ -244,6 +258,8 @@ func (q *Queries) GetLeaseByID(ctx context.Context, id uuid.UUID) (Lease, error)
 		&i.PaintingFeeInstallments,
 		&i.PaintingFeePaid,
 		&i.Status,
+		&i.ParentLeaseID,
+		&i.Generation,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -252,7 +268,7 @@ func (q *Queries) GetLeaseByID(ctx context.Context, id uuid.UUID) (Lease, error)
 
 const getLeaseWithDetails = `-- name: GetLeaseWithDetails :one
 SELECT 
-    l.id, l.unit_id, l.tenant_id, l.contract_signed_date, l.start_date, l.end_date, l.payment_due_day, l.monthly_rent_value, l.painting_fee_total, l.painting_fee_installments, l.painting_fee_paid, l.status, l.created_at, l.updated_at,
+    l.id, l.unit_id, l.tenant_id, l.contract_signed_date, l.start_date, l.end_date, l.payment_due_day, l.monthly_rent_value, l.painting_fee_total, l.painting_fee_installments, l.painting_fee_paid, l.status, l.parent_lease_id, l.generation, l.created_at, l.updated_at,
     u.number as unit_number,
     u.floor as unit_floor,
     t.full_name as tenant_name,
@@ -266,25 +282,27 @@ LIMIT 1
 `
 
 type GetLeaseWithDetailsRow struct {
-	ID                      uuid.UUID `json:"id"`
-	UnitID                  uuid.UUID `json:"unit_id"`
-	TenantID                uuid.UUID `json:"tenant_id"`
-	ContractSignedDate      time.Time `json:"contract_signed_date"`
-	StartDate               time.Time `json:"start_date"`
-	EndDate                 time.Time `json:"end_date"`
-	PaymentDueDay           int32     `json:"payment_due_day"`
-	MonthlyRentValue        string    `json:"monthly_rent_value"`
-	PaintingFeeTotal        string    `json:"painting_fee_total"`
-	PaintingFeeInstallments int32     `json:"painting_fee_installments"`
-	PaintingFeePaid         string    `json:"painting_fee_paid"`
-	Status                  string    `json:"status"`
-	CreatedAt               time.Time `json:"created_at"`
-	UpdatedAt               time.Time `json:"updated_at"`
-	UnitNumber              string    `json:"unit_number"`
-	UnitFloor               int32     `json:"unit_floor"`
-	TenantName              string    `json:"tenant_name"`
-	TenantCpf               string    `json:"tenant_cpf"`
-	TenantPhone             string    `json:"tenant_phone"`
+	ID                      uuid.UUID     `json:"id"`
+	UnitID                  uuid.UUID     `json:"unit_id"`
+	TenantID                uuid.UUID     `json:"tenant_id"`
+	ContractSignedDate      time.Time     `json:"contract_signed_date"`
+	StartDate               time.Time     `json:"start_date"`
+	EndDate                 time.Time     `json:"end_date"`
+	PaymentDueDay           int32         `json:"payment_due_day"`
+	MonthlyRentValue        string        `json:"monthly_rent_value"`
+	PaintingFeeTotal        string        `json:"painting_fee_total"`
+	PaintingFeeInstallments int32         `json:"painting_fee_installments"`
+	PaintingFeePaid         string        `json:"painting_fee_paid"`
+	Status                  string        `json:"status"`
+	ParentLeaseID           uuid.NullUUID `json:"parent_lease_id"`
+	Generation              int32         `json:"generation"`
+	CreatedAt               time.Time     `json:"created_at"`
+	UpdatedAt               time.Time     `json:"updated_at"`
+	UnitNumber              string        `json:"unit_number"`
+	UnitFloor               int32         `json:"unit_floor"`
+	TenantName              string        `json:"tenant_name"`
+	TenantCpf               string        `json:"tenant_cpf"`
+	TenantPhone             string        `json:"tenant_phone"`
 }
 
 func (q *Queries) GetLeaseWithDetails(ctx context.Context, id uuid.UUID) (GetLeaseWithDetailsRow, error) {
@@ -303,6 +321,8 @@ func (q *Queries) GetLeaseWithDetails(ctx context.Context, id uuid.UUID) (GetLea
 		&i.PaintingFeeInstallments,
 		&i.PaintingFeePaid,
 		&i.Status,
+		&i.ParentLeaseID,
+		&i.Generation,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.UnitNumber,
@@ -315,7 +335,7 @@ func (q *Queries) GetLeaseWithDetails(ctx context.Context, id uuid.UUID) (GetLea
 }
 
 const listLeases = `-- name: ListLeases :many
-SELECT id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, created_at, updated_at FROM leases
+SELECT id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, parent_lease_id, generation, created_at, updated_at FROM leases
 ORDER BY created_at DESC
 `
 
@@ -341,6 +361,8 @@ func (q *Queries) ListLeases(ctx context.Context) ([]Lease, error) {
 			&i.PaintingFeeInstallments,
 			&i.PaintingFeePaid,
 			&i.Status,
+			&i.ParentLeaseID,
+			&i.Generation,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -358,7 +380,7 @@ func (q *Queries) ListLeases(ctx context.Context) ([]Lease, error) {
 }
 
 const listLeasesByStatus = `-- name: ListLeasesByStatus :many
-SELECT id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, created_at, updated_at FROM leases
+SELECT id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, parent_lease_id, generation, created_at, updated_at FROM leases
 WHERE status = $1
 ORDER BY created_at DESC
 `
@@ -385,6 +407,8 @@ func (q *Queries) ListLeasesByStatus(ctx context.Context, status string) ([]Leas
 			&i.PaintingFeeInstallments,
 			&i.PaintingFeePaid,
 			&i.Status,
+			&i.ParentLeaseID,
+			&i.Generation,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -402,7 +426,7 @@ func (q *Queries) ListLeasesByStatus(ctx context.Context, status string) ([]Leas
 }
 
 const listLeasesByTenantID = `-- name: ListLeasesByTenantID :many
-SELECT id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, created_at, updated_at FROM leases
+SELECT id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, parent_lease_id, generation, created_at, updated_at FROM leases
 WHERE tenant_id = $1
 ORDER BY created_at DESC
 `
@@ -429,6 +453,8 @@ func (q *Queries) ListLeasesByTenantID(ctx context.Context, tenantID uuid.UUID) 
 			&i.PaintingFeeInstallments,
 			&i.PaintingFeePaid,
 			&i.Status,
+			&i.ParentLeaseID,
+			&i.Generation,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -446,7 +472,7 @@ func (q *Queries) ListLeasesByTenantID(ctx context.Context, tenantID uuid.UUID) 
 }
 
 const listLeasesByUnitID = `-- name: ListLeasesByUnitID :many
-SELECT id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, created_at, updated_at FROM leases
+SELECT id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, parent_lease_id, generation, created_at, updated_at FROM leases
 WHERE unit_id = $1
 ORDER BY created_at DESC
 `
@@ -473,6 +499,8 @@ func (q *Queries) ListLeasesByUnitID(ctx context.Context, unitID uuid.UUID) ([]L
 			&i.PaintingFeeInstallments,
 			&i.PaintingFeePaid,
 			&i.Status,
+			&i.ParentLeaseID,
+			&i.Generation,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -491,7 +519,7 @@ func (q *Queries) ListLeasesByUnitID(ctx context.Context, unitID uuid.UUID) ([]L
 
 const listLeasesWithDetails = `-- name: ListLeasesWithDetails :many
 SELECT 
-    l.id, l.unit_id, l.tenant_id, l.contract_signed_date, l.start_date, l.end_date, l.payment_due_day, l.monthly_rent_value, l.painting_fee_total, l.painting_fee_installments, l.painting_fee_paid, l.status, l.created_at, l.updated_at,
+    l.id, l.unit_id, l.tenant_id, l.contract_signed_date, l.start_date, l.end_date, l.payment_due_day, l.monthly_rent_value, l.painting_fee_total, l.painting_fee_installments, l.painting_fee_paid, l.status, l.parent_lease_id, l.generation, l.created_at, l.updated_at,
     u.number as unit_number,
     u.floor as unit_floor,
     t.full_name as tenant_name,
@@ -504,25 +532,27 @@ ORDER BY l.created_at DESC
 `
 
 type ListLeasesWithDetailsRow struct {
-	ID                      uuid.UUID `json:"id"`
-	UnitID                  uuid.UUID `json:"unit_id"`
-	TenantID                uuid.UUID `json:"tenant_id"`
-	ContractSignedDate      time.Time `json:"contract_signed_date"`
-	StartDate               time.Time `json:"start_date"`
-	EndDate                 time.Time `json:"end_date"`
-	PaymentDueDay           int32     `json:"payment_due_day"`
-	MonthlyRentValue        string    `json:"monthly_rent_value"`
-	PaintingFeeTotal        string    `json:"painting_fee_total"`
-	PaintingFeeInstallments int32     `json:"painting_fee_installments"`
-	PaintingFeePaid         string    `json:"painting_fee_paid"`
-	Status                  string    `json:"status"`
-	CreatedAt               time.Time `json:"created_at"`
-	UpdatedAt               time.Time `json:"updated_at"`
-	UnitNumber              string    `json:"unit_number"`
-	UnitFloor               int32     `json:"unit_floor"`
-	TenantName              string    `json:"tenant_name"`
-	TenantCpf               string    `json:"tenant_cpf"`
-	TenantPhone             string    `json:"tenant_phone"`
+	ID                      uuid.UUID     `json:"id"`
+	UnitID                  uuid.UUID     `json:"unit_id"`
+	TenantID                uuid.UUID     `json:"tenant_id"`
+	ContractSignedDate      time.Time     `json:"contract_signed_date"`
+	StartDate               time.Time     `json:"start_date"`
+	EndDate                 time.Time     `json:"end_date"`
+	PaymentDueDay           int32         `json:"payment_due_day"`
+	MonthlyRentValue        string        `json:"monthly_rent_value"`
+	PaintingFeeTotal        string        `json:"painting_fee_total"`
+	PaintingFeeInstallments int32         `json:"painting_fee_installments"`
+	PaintingFeePaid         string        `json:"painting_fee_paid"`
+	Status                  string        `json:"status"`
+	ParentLeaseID           uuid.NullUUID `json:"parent_lease_id"`
+	Generation              int32         `json:"generation"`
+	CreatedAt               time.Time     `json:"created_at"`
+	UpdatedAt               time.Time     `json:"updated_at"`
+	UnitNumber              string        `json:"unit_number"`
+	UnitFloor               int32         `json:"unit_floor"`
+	TenantName              string        `json:"tenant_name"`
+	TenantCpf               string        `json:"tenant_cpf"`
+	TenantPhone             string        `json:"tenant_phone"`
 }
 
 func (q *Queries) ListLeasesWithDetails(ctx context.Context) ([]ListLeasesWithDetailsRow, error) {
@@ -547,6 +577,8 @@ func (q *Queries) ListLeasesWithDetails(ctx context.Context) ([]ListLeasesWithDe
 			&i.PaintingFeeInstallments,
 			&i.PaintingFeePaid,
 			&i.Status,
+			&i.ParentLeaseID,
+			&i.Generation,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.UnitNumber,
@@ -582,25 +614,29 @@ SET
     painting_fee_installments = $10,
     painting_fee_paid = $11,
     status = $12,
-    updated_at = $13
+    parent_lease_id = $13,
+    generation = $14,
+    updated_at = $15
 WHERE id = $1
-RETURNING id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, created_at, updated_at
+RETURNING id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, parent_lease_id, generation, created_at, updated_at
 `
 
 type UpdateLeaseParams struct {
-	ID                      uuid.UUID `json:"id"`
-	UnitID                  uuid.UUID `json:"unit_id"`
-	TenantID                uuid.UUID `json:"tenant_id"`
-	ContractSignedDate      time.Time `json:"contract_signed_date"`
-	StartDate               time.Time `json:"start_date"`
-	EndDate                 time.Time `json:"end_date"`
-	PaymentDueDay           int32     `json:"payment_due_day"`
-	MonthlyRentValue        string    `json:"monthly_rent_value"`
-	PaintingFeeTotal        string    `json:"painting_fee_total"`
-	PaintingFeeInstallments int32     `json:"painting_fee_installments"`
-	PaintingFeePaid         string    `json:"painting_fee_paid"`
-	Status                  string    `json:"status"`
-	UpdatedAt               time.Time `json:"updated_at"`
+	ID                      uuid.UUID     `json:"id"`
+	UnitID                  uuid.UUID     `json:"unit_id"`
+	TenantID                uuid.UUID     `json:"tenant_id"`
+	ContractSignedDate      time.Time     `json:"contract_signed_date"`
+	StartDate               time.Time     `json:"start_date"`
+	EndDate                 time.Time     `json:"end_date"`
+	PaymentDueDay           int32         `json:"payment_due_day"`
+	MonthlyRentValue        string        `json:"monthly_rent_value"`
+	PaintingFeeTotal        string        `json:"painting_fee_total"`
+	PaintingFeeInstallments int32         `json:"painting_fee_installments"`
+	PaintingFeePaid         string        `json:"painting_fee_paid"`
+	Status                  string        `json:"status"`
+	ParentLeaseID           uuid.NullUUID `json:"parent_lease_id"`
+	Generation              int32         `json:"generation"`
+	UpdatedAt               time.Time     `json:"updated_at"`
 }
 
 func (q *Queries) UpdateLease(ctx context.Context, arg UpdateLeaseParams) (Lease, error) {
@@ -617,6 +653,8 @@ func (q *Queries) UpdateLease(ctx context.Context, arg UpdateLeaseParams) (Lease
 		arg.PaintingFeeInstallments,
 		arg.PaintingFeePaid,
 		arg.Status,
+		arg.ParentLeaseID,
+		arg.Generation,
 		arg.UpdatedAt,
 	)
 	var i Lease
@@ -633,6 +671,8 @@ func (q *Queries) UpdateLease(ctx context.Context, arg UpdateLeaseParams) (Lease
 		&i.PaintingFeeInstallments,
 		&i.PaintingFeePaid,
 		&i.Status,
+		&i.ParentLeaseID,
+		&i.Generation,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -645,7 +685,7 @@ SET
     status = $2,
     updated_at = $3
 WHERE id = $1
-RETURNING id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, created_at, updated_at
+RETURNING id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, parent_lease_id, generation, created_at, updated_at
 `
 
 type UpdateLeaseStatusParams struct {
@@ -670,6 +710,8 @@ func (q *Queries) UpdateLeaseStatus(ctx context.Context, arg UpdateLeaseStatusPa
 		&i.PaintingFeeInstallments,
 		&i.PaintingFeePaid,
 		&i.Status,
+		&i.ParentLeaseID,
+		&i.Generation,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -682,7 +724,7 @@ SET
     painting_fee_paid = $2,
     updated_at = $3
 WHERE id = $1
-RETURNING id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, created_at, updated_at
+RETURNING id, unit_id, tenant_id, contract_signed_date, start_date, end_date, payment_due_day, monthly_rent_value, painting_fee_total, painting_fee_installments, painting_fee_paid, status, parent_lease_id, generation, created_at, updated_at
 `
 
 type UpdatePaintingFeePaidParams struct {
@@ -707,6 +749,8 @@ func (q *Queries) UpdatePaintingFeePaid(ctx context.Context, arg UpdatePaintingF
 		&i.PaintingFeeInstallments,
 		&i.PaintingFeePaid,
 		&i.Status,
+		&i.ParentLeaseID,
+		&i.Generation,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

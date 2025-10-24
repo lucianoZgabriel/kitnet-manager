@@ -102,20 +102,34 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 }
 
 type Lease struct {
-	ID                      uuid.UUID `json:"id"`
-	UnitID                  uuid.UUID `json:"unit_id"`
-	TenantID                uuid.UUID `json:"tenant_id"`
-	ContractSignedDate      time.Time `json:"contract_signed_date"`
-	StartDate               time.Time `json:"start_date"`
-	EndDate                 time.Time `json:"end_date"`
-	PaymentDueDay           int32     `json:"payment_due_day"`
-	MonthlyRentValue        string    `json:"monthly_rent_value"`
-	PaintingFeeTotal        string    `json:"painting_fee_total"`
-	PaintingFeeInstallments int32     `json:"painting_fee_installments"`
-	PaintingFeePaid         string    `json:"painting_fee_paid"`
-	Status                  string    `json:"status"`
-	CreatedAt               time.Time `json:"created_at"`
-	UpdatedAt               time.Time `json:"updated_at"`
+	ID                      uuid.UUID     `json:"id"`
+	UnitID                  uuid.UUID     `json:"unit_id"`
+	TenantID                uuid.UUID     `json:"tenant_id"`
+	ContractSignedDate      time.Time     `json:"contract_signed_date"`
+	StartDate               time.Time     `json:"start_date"`
+	EndDate                 time.Time     `json:"end_date"`
+	PaymentDueDay           int32         `json:"payment_due_day"`
+	MonthlyRentValue        string        `json:"monthly_rent_value"`
+	PaintingFeeTotal        string        `json:"painting_fee_total"`
+	PaintingFeeInstallments int32         `json:"painting_fee_installments"`
+	PaintingFeePaid         string        `json:"painting_fee_paid"`
+	Status                  string        `json:"status"`
+	ParentLeaseID           uuid.NullUUID `json:"parent_lease_id"`
+	Generation              int32         `json:"generation"`
+	CreatedAt               time.Time     `json:"created_at"`
+	UpdatedAt               time.Time     `json:"updated_at"`
+}
+
+type LeaseRentAdjustment struct {
+	ID                   uuid.UUID      `json:"id"`
+	LeaseID              uuid.UUID      `json:"lease_id"`
+	PreviousRentValue    string         `json:"previous_rent_value"`
+	NewRentValue         string         `json:"new_rent_value"`
+	AdjustmentPercentage string         `json:"adjustment_percentage"`
+	AppliedAt            time.Time      `json:"applied_at"`
+	Reason               sql.NullString `json:"reason"`
+	AppliedBy            uuid.NullUUID  `json:"applied_by"`
+	CreatedAt            time.Time      `json:"created_at"`
 }
 
 type Payment struct {

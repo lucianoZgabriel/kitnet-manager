@@ -40,6 +40,8 @@ type Lease struct {
 	PaintingFeeInstallments int             `json:"painting_fee_installments"`
 	PaintingFeePaid         decimal.Decimal `json:"painting_fee_paid"`
 	Status                  LeaseStatus     `json:"status"`
+	ParentLeaseID           *uuid.UUID      `json:"parent_lease_id,omitempty"` // ID do contrato anterior (renovação)
+	Generation              int             `json:"generation"`                // Geração: 1=original, 2=1ª renovação, etc.
 	CreatedAt               time.Time       `json:"created_at"`
 	UpdatedAt               time.Time       `json:"updated_at"`
 }
@@ -74,6 +76,8 @@ func NewLease(unitID, tenantID uuid.UUID, contractSignedDate, startDate time.Tim
 		PaintingFeeInstallments: paintingFeeInstallments,
 		PaintingFeePaid:         decimal.Zero,
 		Status:                  LeaseStatusActive,
+		ParentLeaseID:           nil, // Contrato original não tem pai
+		Generation:              1,   // Contrato original é geração 1
 		CreatedAt:               time.Now(),
 		UpdatedAt:               time.Now(),
 	}
@@ -257,4 +261,25 @@ func (l *Lease) ChangeStatus(newStatus LeaseStatus) error {
 // String retorna uma representação em string do contrato
 func (l *Lease) String() string {
 	return "Lease " + l.ID.String() + " (Unit: " + l.UnitID.String() + ", Tenant: " + l.TenantID.String() + ")"
+}
+
+// ShouldApplyAnnualAdjustment verifica se o contrato está na geração de reajuste anual
+// Reajuste anual ocorre a cada 12 meses = a cada 2 gerações de contrato (6 meses cada)
+func (l *Lease) ShouldApplyAnnualAdjustment() bool {
+	return l.Generation > 1 && l.Generation%2 == 0
+}
+
+// GetTotalMonths retorna o total de meses desde o contrato original
+func (l *Lease) GetTotalMonths() int {
+	return l.Generation * 6
+}
+
+// IsOriginalContract verifica se este é o contrato original (não renovado)
+func (l *Lease) IsOriginalContract() bool {
+	return l.ParentLeaseID == nil && l.Generation == 1
+}
+
+// IsRenewal verifica se este contrato é uma renovação
+func (l *Lease) IsRenewal() bool {
+	return l.ParentLeaseID != nil && l.Generation > 1
 }

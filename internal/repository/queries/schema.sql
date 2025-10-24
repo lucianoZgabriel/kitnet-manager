@@ -43,7 +43,7 @@ CREATE INDEX idx_tenants_cpf ON tenants(cpf);
 CREATE INDEX idx_tenants_full_name ON tenants(full_name);
 CREATE INDEX idx_tenants_created_at ON tenants(created_at);
 
--- Tabela leases 
+-- Tabela leases
 CREATE TABLE leases (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     unit_id UUID NOT NULL REFERENCES units(id) ON DELETE RESTRICT,
@@ -57,6 +57,8 @@ CREATE TABLE leases (
     painting_fee_installments INTEGER NOT NULL CHECK (painting_fee_installments IN (1, 2, 3, 4)),
     painting_fee_paid DECIMAL(10,2) NOT NULL DEFAULT 0.00 CHECK (painting_fee_paid >= 0),
     status VARCHAR(20) NOT NULL,
+    parent_lease_id UUID REFERENCES leases(id) ON DELETE SET NULL,
+    generation INTEGER NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT chk_dates CHECK (start_date < end_date),
@@ -69,6 +71,8 @@ CREATE INDEX idx_leases_status ON leases(status);
 CREATE INDEX idx_leases_end_date ON leases(end_date);
 CREATE INDEX idx_leases_unit_status ON leases(unit_id, status);
 CREATE INDEX idx_leases_tenant_status ON leases(tenant_id, status);
+CREATE INDEX idx_leases_parent_lease_id ON leases(parent_lease_id);
+CREATE INDEX idx_leases_generation ON leases(generation);
 
 -- Payments table
 CREATE TABLE payments (
@@ -116,3 +120,19 @@ CREATE TABLE users (
 CREATE INDEX idx_users_username ON users(username);
 CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_users_is_active ON users(is_active);
+
+-- Lease rent adjustments table
+CREATE TABLE lease_rent_adjustments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    lease_id UUID NOT NULL REFERENCES leases(id) ON DELETE CASCADE,
+    previous_rent_value DECIMAL(10,2) NOT NULL CHECK (previous_rent_value > 0),
+    new_rent_value DECIMAL(10,2) NOT NULL CHECK (new_rent_value > 0),
+    adjustment_percentage DECIMAL(5,2) NOT NULL,
+    applied_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    reason TEXT,
+    applied_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_lease_rent_adjustments_lease_id ON lease_rent_adjustments(lease_id);
+CREATE INDEX idx_lease_rent_adjustments_applied_at ON lease_rent_adjustments(applied_at);

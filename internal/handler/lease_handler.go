@@ -215,13 +215,19 @@ func (h *LeaseHandler) RenewLease(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Montar request do service
+	serviceReq := service.RenewLeaseRequest{
+		PaintingFeeTotal:        req.PaintingFeeTotal,
+		PaintingFeeInstallments: req.PaintingFeeInstallments,
+		NewRentValue:            req.NewRentValue,
+		AdjustmentReason:        req.AdjustmentReason,
+	}
+
+	// TODO: Extrair userID do contexto de autenticação (JWT)
+	var userID *uuid.UUID
+
 	// Renovar contrato
-	renewalResponse, err := h.leaseService.RenewLease(
-		r.Context(),
-		id,
-		req.PaintingFeeTotal,
-		req.PaintingFeeInstallments,
-	)
+	renewalResponse, err := h.leaseService.RenewLease(r.Context(), id, serviceReq, userID)
 	if err != nil {
 		h.handleServiceError(w, err)
 		return
