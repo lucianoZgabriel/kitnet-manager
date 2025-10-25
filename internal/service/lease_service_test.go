@@ -101,6 +101,11 @@ func (m *MockLeaseRepo) CountByStatus(ctx context.Context, status domain.LeaseSt
 	return args.Get(0).(int64), args.Error(1)
 }
 
+func (m *MockLeaseRepo) UpdateAndCreateAtomic(ctx context.Context, oldLease, newLease *domain.Lease, adjustment *domain.LeaseRentAdjustment) error {
+	args := m.Called(ctx, oldLease, newLease, adjustment)
+	return args.Error(0)
+}
+
 type MockUnitRepo struct {
 	mock.Mock
 }
@@ -549,8 +554,7 @@ func TestRenewLease_Success(t *testing.T) {
 
 	mockLeaseRepo.On("GetByID", ctx, oldLeaseID).Return(oldLease, nil)
 	mockUnitRepo.On("GetByID", ctx, unitID).Return(unit, nil)
-	mockLeaseRepo.On("Update", ctx, mock.AnythingOfType("*domain.Lease")).Return(nil)
-	mockLeaseRepo.On("Create", ctx, mock.AnythingOfType("*domain.Lease")).Return(nil)
+	mockLeaseRepo.On("UpdateAndCreateAtomic", ctx, mock.AnythingOfType("*domain.Lease"), mock.AnythingOfType("*domain.Lease"), mock.AnythingOfType("*domain.LeaseRentAdjustment")).Return(nil)
 
 	// Act
 	result, err := service.RenewLease(ctx, oldLeaseID, req, nil)
@@ -658,9 +662,8 @@ func TestRenewLease_WithRentAdjustment(t *testing.T) {
 
 	mockLeaseRepo.On("GetByID", ctx, oldLeaseID).Return(oldLease, nil)
 	mockUnitRepo.On("GetByID", ctx, unitID).Return(unit, nil)
-	mockLeaseRepo.On("Update", ctx, mock.AnythingOfType("*domain.Lease")).Return(nil)
-	mockLeaseRepo.On("Create", ctx, mock.AnythingOfType("*domain.Lease")).Return(nil)
-	mockAdjustmentRepo.On("Create", ctx, mock.AnythingOfType("*domain.LeaseRentAdjustment")).Return(nil)
+	mockLeaseRepo.On("UpdateAndCreateAtomic", ctx, mock.AnythingOfType("*domain.Lease"), mock.AnythingOfType("*domain.Lease"), mock.AnythingOfType("*domain.LeaseRentAdjustment")).Return(nil)
+	// Nota: adjustment agora é criado dentro da transação UpdateAndCreateAtomic
 
 	// Act
 	result, err := service.RenewLease(ctx, oldLeaseID, req, nil)
@@ -674,7 +677,7 @@ func TestRenewLease_WithRentAdjustment(t *testing.T) {
 	assert.True(t, result.Lease.MonthlyRentValue.Equal(newRentValue))
 	mockLeaseRepo.AssertExpectations(t)
 	mockUnitRepo.AssertExpectations(t)
-	mockAdjustmentRepo.AssertExpectations(t)
+	// mockAdjustmentRepo não é mais usado diretamente, adjustment é criado via UpdateAndCreateAtomic
 }
 
 func TestLeaseDomain_ShouldApplyAnnualAdjustment(t *testing.T) {
