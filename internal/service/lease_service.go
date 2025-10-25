@@ -892,6 +892,7 @@ func (s *LeaseService) GetLeaseRentAdjustments(ctx context.Context, leaseID uuid
 
 // AutoRenewLeases renova automaticamente contratos expirando que não precisam de reajuste
 // Contratos que devem aplicar reajuste (gerações pares) não são renovados automaticamente
+// Renovação ocorre apenas quando faltam 7 dias ou menos para o vencimento
 func (s *LeaseService) AutoRenewLeases(ctx context.Context) (int, error) {
 	// Buscar contratos expirando em breve
 	expiringLeases, err := s.leaseRepo.GetExpiringSoon(ctx)
@@ -909,6 +910,14 @@ func (s *LeaseService) AutoRenewLeases(ctx context.Context) (int, error) {
 
 		// Pular se não está em status apropriado
 		if lease.Status != domain.LeaseStatusActive && lease.Status != domain.LeaseStatusExpiringSoon {
+			continue
+		}
+
+		// Verificar se está dentro da janela de renovação automática (7 dias ou menos)
+		daysUntilExpiration := int(time.Until(lease.EndDate).Hours() / 24)
+		if daysUntilExpiration > 7 {
+			fmt.Printf("⏳ Contrato %s expira em %d dias (aguardando janela de 7 dias)\n",
+				lease.ID, daysUntilExpiration)
 			continue
 		}
 
