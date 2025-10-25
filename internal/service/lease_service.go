@@ -935,9 +935,11 @@ func (s *LeaseService) AutoRenewLeases(ctx context.Context) (int, error) {
 		// Renovação automática sem taxa de pintura
 		// Taxa de pintura é paga apenas no primeiro contrato
 		// Usa o valor atual do aluguel (sem reajuste)
+		// NOTA: installments=1 é necessário para passar constraint do banco (aceita 1-4)
+		// Como total=0, nenhum pagamento de taxa será gerado
 		req := RenewLeaseRequest{
 			PaintingFeeTotal:        decimal.Zero,
-			PaintingFeeInstallments: 0,
+			PaintingFeeInstallments: 1,
 		}
 
 		// Renovar contrato
