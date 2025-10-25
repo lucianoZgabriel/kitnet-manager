@@ -98,14 +98,15 @@ func (l *Lease) Validate() error {
 	}
 
 	// Validar número de parcelas da taxa de pintura
-	// Permite 0 parcelas quando não há taxa de pintura (renovações)
+	// Permite 0 ou 1 parcela quando taxa=0 (renovações e contratos sem taxa)
+	// Constraint do banco aceita apenas 1-4, então usamos 1 parcela com valor 0
 	if l.PaintingFeeTotal.GreaterThan(decimal.Zero) {
 		if l.PaintingFeeInstallments < 1 || l.PaintingFeeInstallments > 4 {
 			return ErrInvalidPaintingFeeInstallments
 		}
 	} else {
-		// Se não há taxa de pintura, deve ter 0 parcelas
-		if l.PaintingFeeInstallments != 0 {
+		// Se não há taxa de pintura, aceita 0 ou 1 parcela (1 para compatibilidade com constraint)
+		if l.PaintingFeeInstallments < 0 || l.PaintingFeeInstallments > 1 {
 			return ErrInvalidPaintingFeeInstallments
 		}
 	}
