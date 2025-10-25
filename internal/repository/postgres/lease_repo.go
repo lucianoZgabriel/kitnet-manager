@@ -262,6 +262,111 @@ func (r *LeaseRepo) toDomain(row sqlc.Lease) *domain.Lease {
 	}
 }
 
+// WithTx executa uma função dentro de uma transação de banco de dados
+// Se a função retornar erro, a transação é revertida (rollback)
+// Se a função completar sem erro, a transação é confirmada (commit)
+func (r *LeaseRepo) WithTx(ctx context.Context, fn func(*sqlc.Queries) error) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	// Criar queries SQLC com a transação
+	qtx := sqlc.New(tx)
+
+	// Executar função passada
+	if err := fn(qtx); err != nil {
+		// Rollback em caso de erro
+		if rbErr := tx.Rollback(); rbErr != nil {
+			return fmt.Errorf("error rolling back transaction: %v (original error: %w)", rbErr, err)
+		}
+		return err
+	}
+
+	// Commit se tudo ocorreu bem
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
+}
+
+// UpdateAndCreateAtomic atualiza um contrato e cria um novo em uma transação atômica
+// Garante que ambas operações sejam executadas ou nenhuma (rollback em caso de erro)
+// Opcionalmente cria um registro de reajuste de aluguel
+// Usado na renovação de contratos para evitar inconsistências
+func (r *LeaseRepo) UpdateAndCreateAtomic(ctx context.Context, oldLease, newLease *domain.Lease, adjustment *domain.LeaseRentAdjustment) error {
+	return r.WithTx(ctx, func(qtx *sqlc.Queries) error {
+		// 1. Atualizar contrato antigo
+		updateParams := sqlc.UpdateLeaseParams{
+			ID:                      oldLease.ID,
+			UnitID:                  oldLease.UnitID,
+			TenantID:                oldLease.TenantID,
+			ContractSignedDate:      oldLease.ContractSignedDate,
+			StartDate:               oldLease.StartDate,
+			EndDate:                 oldLease.EndDate,
+			PaymentDueDay:           int32(oldLease.PaymentDueDay),
+			MonthlyRentValue:        oldLease.MonthlyRentValue.String(),
+			PaintingFeeTotal:        oldLease.PaintingFeeTotal.String(),
+			PaintingFeeInstallments: int32(oldLease.PaintingFeeInstallments),
+			PaintingFeePaid:         oldLease.PaintingFeePaid.String(),
+			Status:                  string(oldLease.Status),
+			ParentLeaseID:           toNullUUIDPtr(oldLease.ParentLeaseID),
+			Generation:              int32(oldLease.Generation),
+			UpdatedAt:               time.Now(),
+		}
+
+		if _, err := qtx.UpdateLease(ctx, updateParams); err != nil {
+			return fmt.Errorf("failed to update old lease: %w", err)
+		}
+
+		// 2. Criar novo contrato
+		createParams := sqlc.CreateLeaseParams{
+			ID:                      newLease.ID,
+			UnitID:                  newLease.UnitID,
+			TenantID:                newLease.TenantID,
+			ContractSignedDate:      newLease.ContractSignedDate,
+			StartDate:               newLease.StartDate,
+			EndDate:                 newLease.EndDate,
+			PaymentDueDay:           int32(newLease.PaymentDueDay),
+			MonthlyRentValue:        newLease.MonthlyRentValue.String(),
+			PaintingFeeTotal:        newLease.PaintingFeeTotal.String(),
+			PaintingFeeInstallments: int32(newLease.PaintingFeeInstallments),
+			PaintingFeePaid:         newLease.PaintingFeePaid.String(),
+			Status:                  string(newLease.Status),
+			ParentLeaseID:           toNullUUIDPtr(newLease.ParentLeaseID),
+			Generation:              int32(newLease.Generation),
+			CreatedAt:               newLease.CreatedAt,
+			UpdatedAt:               newLease.UpdatedAt,
+		}
+
+		if _, err := qtx.CreateLease(ctx, createParams); err != nil {
+			return fmt.Errorf("failed to create new lease: %w", err)
+		}
+
+		// 3. Criar registro de reajuste (se fornecido)
+		if adjustment != nil {
+			adjustmentParams := sqlc.CreateLeaseRentAdjustmentParams{
+				ID:                   adjustment.ID,
+				LeaseID:              adjustment.LeaseID,
+				PreviousRentValue:    adjustment.PreviousRentValue.String(),
+				NewRentValue:         adjustment.NewRentValue.String(),
+				AdjustmentPercentage: adjustment.AdjustmentPercentage.String(),
+				AppliedAt:            adjustment.AppliedAt,
+				Reason:               toNullStringPtr(adjustment.Reason),
+				AppliedBy:            toNullUUIDPtr(adjustment.AppliedBy),
+				CreatedAt:            adjustment.CreatedAt,
+			}
+
+			if _, err := qtx.CreateLeaseRentAdjustment(ctx, adjustmentParams); err != nil {
+				return fmt.Errorf("failed to create rent adjustment: %w", err)
+			}
+		}
+
+		return nil
+	})
+}
+
 // toDomainList converte múltiplos registros para domain models
 func (r *LeaseRepo) toDomainList(rows []sqlc.Lease) []*domain.Lease {
 	leases := make([]*domain.Lease, len(rows))

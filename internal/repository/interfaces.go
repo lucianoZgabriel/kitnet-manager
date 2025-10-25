@@ -95,6 +95,9 @@ type LeaseRepository interface {
 	Delete(ctx context.Context, id uuid.UUID) error
 	Count(ctx context.Context) (int64, error)
 	CountByStatus(ctx context.Context, status domain.LeaseStatus) (int64, error)
+	// UpdateAndCreateAtomic atualiza um contrato e cria um novo em uma transação atômica
+	// Usado para renovações para garantir consistência de dados
+	UpdateAndCreateAtomic(ctx context.Context, oldLease, newLease *domain.Lease, adjustment *domain.LeaseRentAdjustment) error
 }
 
 // PaymentRepository define as operações de persistência para Payment

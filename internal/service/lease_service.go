@@ -503,21 +503,11 @@ func (s *LeaseService) RenewLease(ctx context.Context, oldLeaseID uuid.UUID, req
 	// 5. Marcar contrato antigo como expirado
 	oldLease.MarkAsExpired()
 
-	// 6. Persistir as mudanças (idealmente em uma transação)
-	if err := s.leaseRepo.Update(ctx, oldLease); err != nil {
-		return nil, fmt.Errorf("error updating old lease: %w", err)
-	}
-
-	if err := s.leaseRepo.Create(ctx, newLease); err != nil {
-		// TODO: Rollback do update do oldLease
-		return nil, fmt.Errorf("erro creating new lease: %w", err)
-	}
-
-	// Salvar registro de reajuste (se aplicável)
-	if rentAdjustment != nil && s.adjustmentRepo != nil {
-		if err := s.adjustmentRepo.Create(ctx, rentAdjustment); err != nil {
-			return nil, fmt.Errorf("error saving rent adjustment: %w", err)
-		}
+	// 6. Persistir as mudanças em uma transação atômica
+	// Se qualquer operação falhar, todas são revertidas (rollback)
+	// Garante consistência: ou renova tudo ou não renova nada
+	if err := s.leaseRepo.UpdateAndCreateAtomic(ctx, oldLease, newLease, rentAdjustment); err != nil {
+		return nil, fmt.Errorf("error renewing lease atomically: %w", err)
 	}
 
 	// Aqui a unidade já está como occupied, não precisa atualizar
