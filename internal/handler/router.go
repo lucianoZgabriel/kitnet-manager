@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/pkg/middleware"
+	"github.com/lucianoZgabriel/kitnet-manager/internal/pkg/scheduler"
 	"github.com/lucianoZgabriel/kitnet-manager/internal/service"
 )
 
@@ -15,7 +16,8 @@ func SetupRoutes(r chi.Router,
 	dashboardService *service.DashboardService,
 	reportService *service.ReportService,
 	authService *service.AuthService,
-	authMiddleware *middleware.AuthMiddleware) {
+	authMiddleware *middleware.AuthMiddleware,
+	taskScheduler *scheduler.Scheduler) {
 	// Criar handlers
 	unitHandler := NewUnitHandler(unitService)
 	tenantHandler := NewTenantHandler(tenantService)
@@ -24,6 +26,7 @@ func SetupRoutes(r chi.Router,
 	dashboardHandler := NewDashboardHandler(dashboardService)
 	reportHandler := NewReportHandler(reportService)
 	authHandler := NewAuthHandler(authService)
+	adminHandler := NewAdminHandler(taskScheduler)
 
 	// Rotas públicas de autenticação
 	r.Route("/api/v1/auth", func(r chi.Router) {
@@ -136,6 +139,12 @@ func SetupRoutes(r chi.Router,
 		r.Route("/reports", func(r chi.Router) {
 			r.Get("/financial", reportHandler.GetFinancialReport)
 			r.Get("/payments", reportHandler.GetPaymentHistoryReport)
+		})
+
+		// Rotas administrativas (Admin apenas)
+		r.Route("/admin", func(r chi.Router) {
+			r.Use(authMiddleware.RequireAdmin)
+			r.Post("/force-scheduler", adminHandler.ForceSchedulerRun)
 		})
 	})
 }

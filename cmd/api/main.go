@@ -154,14 +154,14 @@ func main() {
 		httpSwagger.URL("/swagger/doc.json"), // Relative URL works in all environments
 	))
 
+	// Iniciar scheduler de tarefas automáticas
+	taskScheduler := scheduler.New(paymentService, leaseService, cfg.Scheduler.IntervalHours)
+
 	// Registrar rotas da aplicação
-	handler.SetupRoutes(r, unitService, tenantService, leaseService, paymentService, dashboardService, reportService, authService, authMiddleware)
+	handler.SetupRoutes(r, unitService, tenantService, leaseService, paymentService, dashboardService, reportService, authService, authMiddleware, taskScheduler)
 
 	log.Println("✅ Rotas configuradas")
 	log.Printf("📚 Documentação Swagger: http://localhost:%s/swagger/index.html", cfg.Port)
-
-	// Iniciar scheduler de tarefas automáticas
-	taskScheduler := scheduler.New(paymentService, leaseService, cfg.Scheduler.IntervalHours)
 	schedulerCtx, cancelScheduler := context.WithCancel(context.Background())
 	defer cancelScheduler()
 

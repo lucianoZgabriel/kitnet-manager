@@ -62,6 +62,12 @@ func (s *Scheduler) Stop() {
 	close(s.stopChan)
 }
 
+// RunScheduledTasks executa todas as tarefas agendadas manualmente
+// Útil para testes e execução forçada
+func (s *Scheduler) RunScheduledTasks(ctx context.Context) {
+	s.runScheduledTasks(ctx)
+}
+
 // runScheduledTasks executa todas as tarefas agendadas
 func (s *Scheduler) runScheduledTasks(ctx context.Context) {
 	log.Println("🔄 Executando tarefas agendadas...")
